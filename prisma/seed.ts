@@ -6,12 +6,21 @@ import bcrypt from "bcryptjs";
 import { LCJR_FLAT } from "../src/lib/lcjr";
 import { LCJR_TEMPLATE_ID } from "../src/lib/discipline-template";
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL,
+});
 const prisma = new PrismaClient({ adapter });
 
 const DEMO_PASSWORD = "Password123!";
 
 async function main() {
+  // Deploy builds call this with SEED_ONLY_IF_EMPTY so demo data lands once
+  // on a fresh database and every later build is a no-op.
+  if (process.env.SEED_ONLY_IF_EMPTY === "true" && (await prisma.user.count()) > 0) {
+    console.log("Database already has users; skipping demo seed.");
+    return;
+  }
+
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
 
   // ── Institution ────────────────────────────────────────────────────────

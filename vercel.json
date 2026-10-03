@@ -1,5 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npx prisma migrate deploy && npm run build",
+  "buildCommand": "npx prisma migrate deploy && if [ \"$SEED_DEMO_DATA\" = \"true\" ]; then SEED_ONLY_IF_EMPTY=true npm run db:seed; fi && npm run build",
   "regions": ["fra1"]
 }
