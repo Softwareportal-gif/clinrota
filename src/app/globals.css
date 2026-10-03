@@ -24,3 +24,30 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Seamless-loop marquee for the landing page's "Trusted by..." partner
+   strip (src/app/landing-page.tsx) — the track renders its content twice
+   back to back and slides exactly one copy's width (-50%) before looping,
+   so there's no visible seam regardless of how many partners are in it. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Fade-in for each rotating line in the login page's tips strip
+   (src/app/login/login-tips.tsx) — re-triggers because the element is
+   re-keyed on every rotation, not because the animation loops itself. */
+@keyframes loginTipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

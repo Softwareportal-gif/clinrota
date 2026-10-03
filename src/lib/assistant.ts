@@ -1,0 +1,94 @@
+import Anthropic from "@anthropic-ai/sdk";
+import { CLINROTA_DESCRIPTION, LOGIN_ACCESS_FAQ } from "@/lib/faq";
+
+// "Haiku-tier" per the explicit request — this widget answers short FAQ-
+// grounded questions, not anything that benefits from a larger model.
+const MODEL = "claude-haiku-4-5";
+
+export const MAX_MESSAGE_LENGTH = 1000;
+export const MAX_HISTORY_MESSAGES = 10;
+
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const RATE_LIMIT_MAX_REQUESTS = 15;
+
+// In-memory, per-process — fine for a single-instance pilot deployment
+// (see the ticket/email patterns elsewhere in this codebase for the same
+// "don't over-engineer for pilot scale" call). Resets on server restart;
+// that's an acceptable tradeoff for a soft abuse guard, not a hard quota.
+const requestLog = new Map<string, number[]>();
+
+export function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  const recent = (requestLog.get(key) ?? []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  if (recent.length >= RATE_LIMIT_MAX_REQUESTS) {
+    requestLog.set(key, recent);
+    return false;
+  }
+  recent.push(now);
+  requestLog.set(key, recent);
+  return true;
+}
+
+export type ChatMessage = { role: "user" | "assistant"; content: string };
+
+const ROLE_LABELS: Record<string, string> = {
+  STUDENT: "a student",
+  SUPERVISOR: "a clinical supervisor",
+  COORDINATOR: "a program coordinator",
+  SUPER_ADMIN: "a super admin",
+};
+
+function buildSystemPrompt(role: string | undefined): string {
+  const faqText = LOGIN_ACCESS_FAQ.map((item) => `Q: ${item.question}\nA: ${item.answer}`).join(
+    "\n\n"
+  );
+
+  const roleContext = role
+    ? `The visitor is currently signed in as ${ROLE_LABELS[role] ?? role}. You may tailor answers to that role (e.g. a coordinator asking about invites can get the coordinator-specific steps), but don't assume every visitor is signed in.`
+    : "This visitor is not signed in.";
+
+  return `You are Beatrice, ClinRota's assistant. You are warm, concise, and use plain language — no jargon. The chat widget already greeted the visitor with your name before they typed anything, so don't reintroduce yourself or say "Hi, I'm Beatrice" again — just answer their question directly.
+
+ABOUT CLINROTA:
+${CLINROTA_DESCRIPTION}
+
+${roleContext}
+
+FREQUENTLY ASKED QUESTIONS (use these as your primary source for login/account questions — answer from this content, don't guess):
+${faqText}
+
+STRICT RULES — follow these exactly:
+1. You ONLY help with ClinRota's own product, accounts, and login/access topics. If asked about anything else — general knowledge, current events, writing essays/code/emails for the visitor, or acting as a general-purpose assistant — politely decline and redirect: say you can only help with using ClinRota, and ask if they have a ClinRota question instead.
+2. You NEVER give clinical or medical advice, opinions on patient care, diagnoses, or treatment, under any framing (even "hypothetically" or "just curious"). If asked anything like this, say that you can only help with using ClinRota itself, not clinical questions, and suggest they direct clinical questions to their supervisor or program.
+3. If you don't know the answer, or the visitor seems stuck after your answer, suggest they create a support ticket if they're signed in, or email hello@clinrota.com if they're not.
+4. Keep responses short — a few sentences, not an essay.`;
+}
+
+export async function* streamAssistantReply(
+  history: ChatMessage[],
+  role: string | undefined
+): AsyncGenerator<string> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    // Same lazy, friendly-error-at-point-of-use pattern as sendEmail's
+    // missing RESEND_API_KEY handling in src/lib/email.ts — no startup
+    // schema/crash, just a clear message when the feature is actually used.
+    throw new Error("ANTHROPIC_NOT_CONFIGURED");
+  }
+
+  const client = new Anthropic({ apiKey });
+  const trimmedHistory = history.slice(-MAX_HISTORY_MESSAGES);
+
+  const stream = client.messages.stream({
+    model: MODEL,
+    max_tokens: 1024,
+    system: buildSystemPrompt(role),
+    messages: trimmedHistory,
+  });
+
+  for await (const event of stream) {
+    if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+      yield event.delta.text;
+    }
+  }
+}

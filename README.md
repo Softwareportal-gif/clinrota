@@ -1,36 +1,180 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ClinRota
 
-## Getting Started
+Digital clinical preceptorship & logbook system replacing the paper logbook workflow used by
+clinical training programs (nursing, midwifery, medicine, allied health, etc.) in Ghana.
 
-First, run the development server:
+Students log clinical cases as structured SOAP notes, supervisors review and sign off digitally,
+and coordinators get real-time visibility into rotations, compliance, and a configurable weighted
+scoring engine — all built offline-first for unreliable clinical-site connectivity.
+
+## Tech stack
+
+- **Framework**: Next.js 16 (App Router), TypeScript
+- **Database**: PostgreSQL via Prisma ORM 7 (driver adapter: `@prisma/adapter-pg`)
+- **Auth**: NextAuth.js / Auth.js v5 — email/password + magic-link email
+- **UI**: Tailwind CSS + shadcn/ui, mobile-first
+- **Offline**: Serwist (service worker) + Dexie.js (IndexedDB write queue) — added in Phase 7
+- **Forms**: React Hook Form + Zod
+- **Deploy target**: Vercel + hosted Postgres (Neon or Supabase free tier)
+
+## Prisma 7 notes
+
+This project pins `prisma`/`@prisma/client` to **7.10.0** (the last stable line at the time this
+was built) rather than the `8.0.0-rc` that `latest` resolves to on npm, since 8.x is a release
+candidate with a reworked CLI. Two things are different from older Prisma tutorials you may find:
+
+- The datasource connection string is **not** read from `schema.prisma`. It lives in
+  **`prisma7.config.ts`** (used by `prisma migrate`, `prisma db seed`, `prisma studio`, etc.) and
+  is read from `DATABASE_URL` in `.env` via `dotenv/config`.
+- `PrismaClient` requires an explicit **driver adapter** at runtime (no more implicit
+  `DATABASE_URL` pickup). See [`src/lib/prisma.ts`](src/lib/prisma.ts) — it constructs
+  `PrismaPg({ connectionString: process.env.DATABASE_URL })` and passes it as `adapter`.
+
+If Prisma 8 is stable by the time you pick this up, upgrading should mostly mean bumping the
+version and renaming `prisma7.config.ts` → `prisma.config.ts`.
+
+## Getting started
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Set up a Postgres database
+
+Copy `.env.example` to `.env` and set `DATABASE_URL`. Three options:
+
+- **Local, zero-setup (recommended for dev)**: Prisma ships a local dev Postgres server (uses
+  Docker under the hood). Run:
+
+  ```bash
+  npx prisma dev -d -n clinrota
+  ```
+
+  This prints a `postgres://...` connection string — copy it into `DATABASE_URL` in `.env`.
+  Manage it later with `npx prisma dev ls` / `stop` / `rm`.
+
+- **Hosted free tier (for staging/production)**: create a project on
+  [Neon](https://neon.tech) or [Supabase](https://supabase.com) and use the connection string
+  they give you (include `?sslmode=require` for hosted Postgres).
+
+### 3. Run migrations and seed demo data
+
+```bash
+npm run db:migrate   # applies prisma/migrations, or creates a new one if the schema changed
+npm run db:seed       # populates demo Institution, Programs, users for every role, etc.
+```
+
+The seed script ([`prisma/seed.ts`](prisma/seed.ts)) creates one demo account per role, all
+sharing the password `Password123!`:
+
+| Role | Email |
+|---|---|
+| Super Admin | `superadmin@clinrota.demo` |
+| Coordinator | `coordinator@clinrota.demo` (BSc Nursing), `coordinator2@clinrota.demo` (Diploma in Midwifery) |
+| Supervisor | `supervisor1@clinrota.demo`, `supervisor2@clinrota.demo` |
+| Student | `student1@clinrota.demo`, `student2@clinrota.demo` |
+
+It also seeds two Programs (BSc Nursing, Diploma in Midwifery), competencies, a clinical site
+with departments and capacity windows, two active rotations, sample SOAP log entries in several
+statuses (draft/submitted/approved/needs-revision), a supervisor review, a competency evaluation,
+timesheet entries, and compliance documents (including one set to expire soon, to test the
+coordinator's expiry-flagging dashboard later).
+
+### 4. Run the app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Other useful commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run db:studio     # Prisma Studio — browse/edit data in a GUI
+npx prisma format     # format schema.prisma
+npx prisma validate   # validate schema.prisma
+```
 
-## Learn More
+## Project structure (as of Phase 1)
 
-To learn more about Next.js, take a look at the following resources:
+```
+prisma/
+  schema.prisma       Full data model (see below)
+  seed.ts             Demo data seed script
+  migrations/         SQL migration history
+src/
+  lib/prisma.ts        Prisma client singleton (driver-adapter based)
+  generated/prisma/    Generated Prisma Client (gitignored, regenerated by `prisma generate`)
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Data model
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`prisma/schema.prisma` models the full paper-logbook replacement:
 
-## Deploy on Vercel
+- **Institution → Program → Cohort** — school/program/term structure
+- **Competency** + **ProgramCompetencyRequirement** — required skills per program (managed at
+  `/coordinator/competencies`, never hard-deleted — only deactivated, since LogEntry case
+  categories reference them), referenced by LogEntry case categories for coverage tracking.
+  Each requirement also carries a coordinator-set `minEntrustmentLevel` (default
+  `DIRECT_SUPERVISION`) used only by the `/coordinator/competencies/coverage` reporting view —
+  the scoring engine's own coverage sub-metric does not read this field
+- **ClinicalSite → SiteDepartment → SiteCapacityWindow** — sites, wards, and per-period
+  capacity for the coordinator's calendar/capacity view
+- **User** (role-based: `STUDENT` / `SUPERVISOR` / `COORDINATOR` / `SUPER_ADMIN`) with
+  **StudentProfile** / **SupervisorProfile** / **CoordinatorProfile** for role-specific fields,
+  plus the NextAuth `Account` / `Session` / `VerificationToken` models
+- **Rotation** — links a student, program, clinical site, department, and supervisor for a
+  date range, with optional per-rotation overrides of the program's minimum case/hour targets
+- **LogEntry** — the digital SOAP case entry (Subjective / Objective / Assessment / Plan),
+  linked to one or more Competencies, with structured numeric vitals in Objective and a
+  status lifecycle (`DRAFT → SUBMITTED → APPROVED / REJECTED / NEEDS_REVISION`). The
+  student's self-reported `studentRole` (an `EntrustmentLevel`, 1–5: observation-only through
+  supervising-others) and the supervisor's independent `supervisorAssessedRole` are tracked
+  separately — see [`src/lib/entrustment.ts`](src/lib/entrustment.ts)
+- **SupervisorReview** — one per LogEntry: decision, comments, and an attestation checkbox
+- **CompetencyEvaluation** + **LcjrRating** — the periodic supervisor evaluation, structured
+  as the Lasater Clinical Judgment Rubric (4 dimensions, 11 sub-dimensions, each scored on a
+  4-level Beginning–Exemplary scale) rather than a generic per-competency rubric — see
+  [`src/lib/lcjr.ts`](src/lib/lcjr.ts)
+- **TimesheetEntry** — per-shift hours, supervisor-approved
+- **ComplianceDocument** — per student, typed, with expiry tracking and verification status
+- **ScoringConfig** — per-program configurable supervisor/logbook weight split and pass
+  threshold; **RotationScore** — the computed + overridable final result per student per
+  rotation, retaining the original computed score when overridden. The scoring formula
+  itself (including the logbook sub-weights, which aren't yet coordinator-configurable) lives
+  in [`src/lib/scoring.ts`](src/lib/scoring.ts)
+- **RequiredDocumentType** — per-program list of compliance document types a coordinator
+  manages (mirrors ProgramCompetencyRequirement); **ComplianceDocument** references it rather
+  than a fixed enum, so requirements can differ by program. Its "Expired"/"Expiring soon"
+  states are never stored — always computed at read time from `expiryDate` — see
+  [`src/lib/compliance-status.ts`](src/lib/compliance-status.ts). Uploaded files (compliance
+  docs, site MOUs) are saved to `public/uploads/` on local disk for this pilot — see
+  [`src/lib/upload.ts`](src/lib/upload.ts) — swap for real object storage before production
+- **Notification**, **AuditLog** — in-app/email notifications and a full audit trail. AuditLog
+  specifically records it when a coordinator assigns a rotation despite an outstanding
+  compliance or site-contract warning (see `/coordinator/rotations/new`)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Client-facing records that need to be created offline at a clinical site (`LogEntry`,
+`TimesheetEntry`, `SupervisorReview`, etc.) use client-generatable UUID primary keys so they
+merge cleanly once synced — see Phase 7 (offline PWA support) for the sync queue itself.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Roadmap
+
+Built in phases, checking in after each one:
+
+1. ✅ Project scaffold + Prisma schema + migrations + seed data
+2. ✅ Auth + role-based routing
+3. ✅ Student SOAP log entry flow + supervisor review flow
+4. ✅ Scoring engine + coordinator score review/override dashboard
+5. ⏭️ Competency mapping + timesheet/hours tracking — competency management and the coverage
+   report are done (see Phase 6 note below); timesheet UI is still missing (the
+   `TimesheetEntry` model and Phase 1 seed data exist, but there's no page for
+   logging/approving hours yet)
+6. ✅ Compliance document tracking + clinical site/contract management (also added the
+   rotation-assignment screen referenced by this phase, which hadn't existed before, and the
+   competency CRUD + coverage report that had been deferred from Phase 5)
+7. Offline PWA support (service worker + IndexedDB sync queue)
+8. Reporting/export (CSV/PDF) + Unified Student Record view

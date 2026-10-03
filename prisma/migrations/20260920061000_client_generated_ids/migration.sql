@@ -1,0 +1,13 @@
+-- No SQL changes. LogEntry, TimesheetEntry, and SupervisorReview's "id"
+-- columns have always been plain `TEXT NOT NULL PRIMARY KEY` with no
+-- database-level DEFAULT (confirmed via `prisma migrate diff` against the
+-- prior schema, which produced an empty script) — `@default(uuid())` was
+-- only ever a Prisma-Client-side convenience that generated the value in
+-- Node.js when the field was omitted from .create()/.upsert().
+--
+-- This migration exists purely to keep migration history in sync with
+-- schema.prisma after removing that annotation: all three models now
+-- require the caller to always supply an id, generated client-side via
+-- crypto.randomUUID() for both the online and offline write paths (see
+-- src/lib/offline/). No existing rows, foreign keys, or seed data are
+-- affected.

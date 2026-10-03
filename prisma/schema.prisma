@@ -1,0 +1,957 @@
+// ClinRota — Digital Clinical Preceptorship & Logbook System
+// See prisma7.config.ts for how the CLI loads DATABASE_URL for this schema.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────
+
+enum Role {
+  STUDENT
+  SUPERVISOR
+  COORDINATOR
+  SUPER_ADMIN
+}
+
+// Onboarding lifecycle for an account created via bulk import (or, in
+// principle, any account) — separate from `isActive` (which gates login
+// outright). IMPORTED = record created, no invite sent yet. INVITED =
+// invite email sent, hasn't signed in yet. ACTIVE = has signed in at
+// least once (see the `signIn` event in src/auth.ts). Existing accounts
+// default to ACTIVE in the migration so nothing already working breaks.
+enum UserStatus {
+  IMPORTED
+  INVITED
+  ACTIVE
+}
+
+enum RotationStatus {
+  SCHEDULED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum LogEntryStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  NEEDS_REVISION
+}
+
+// Entrustable Professional Activity (EPA) style entrustment-supervision scale,
+// ordered 1 (least autonomy) to 5 (most). The numeric order is not encoded by
+// Postgres/Prisma enums — see ENTRUSTMENT_LEVEL_VALUE in src/lib/entrustment.ts.
+enum EntrustmentLevel {
+  OBSERVATION_ONLY // 1 — watched only, no hands-on involvement
+  DIRECT_SUPERVISION // 2 — performed with supervisor present and actively guiding
+  INDIRECT_SUPERVISION // 3 — performed with supervisor available but not directly guiding
+  UNSUPERVISED // 4 — performed without supervision
+  SUPERVISING_OTHERS // 5 — performed while supervising/teaching another learner
+}
+
+enum ReviewDecision {
+  APPROVED
+  REJECTED
+  NEEDS_REVISION
+}
+
+enum TimesheetStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Records the human review decision only. "Expired" is deliberately not a
+// storable value here — it's a computed, read-time overlay derived from
+// expiryDate (see src/lib/compliance-status.ts), so it can never go stale.
+enum ComplianceDocStatus {
+  PENDING_VERIFICATION
+  VERIFIED
+  REJECTED
+}
+
+enum EvaluationStatus {
+  DRAFT
+  SUBMITTED
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  BOTH
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Institution / Program structure
+// ─────────────────────────────────────────────────────────────────────────
+
+model Institution {
+  id        String   @id @default(uuid())
+  name      String
+  location  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  programs      Program[]
+  clinicalSites ClinicalSite[]
+  users         User[]
+}
+
+model Program {
+  id                   String  @id @default(uuid())
+  institutionId        String
+  name                 String // e.g. "BSc Nursing"
+  degreeLevel          String? // e.g. "Diploma", "BSc", "MSc"
+  disciplineTemplateId String // which evaluation rubric + log fields this program uses — every Program must resolve to one; see DisciplineTemplate
+
+  // Default requirements — a Rotation may override these per placement.
+  defaultMinCases Int?
+  defaultMinHours Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  institution           Institution                    @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  disciplineTemplate    DisciplineTemplate             @relation(fields: [disciplineTemplateId], references: [id])
+  cohorts               Cohort[]
+  competencies          Competency[]
+  requiredCompetencies  ProgramCompetencyRequirement[]
+  requiredDocumentTypes RequiredDocumentType[]
+  studentProfiles       StudentProfile[]
+  coordinatorProfiles   CoordinatorProfile[]
+  rotations             Rotation[]
+  scoringConfig         ScoringConfig?
+  studentImportBatches  StudentImportBatch[]
+
+  @@index([institutionId])
+  @@index([disciplineTemplateId])
+}
+
+// Defines a discipline's evaluation rubric (dimensions → sub-dimensions →
+// scale levels) and any extra structured fields a discipline appends to the
+// standard SOAP log — both stored as flexible JSON rather than fixed
+// columns/enums, so a new discipline (e.g. physiotherapy) can be added by
+// inserting a row here, not by writing new code. `rubric` and
+// `extraLogFields` are parsed/validated at read time by
+// src/lib/discipline-template.ts — see that file for the exact shapes
+// (`RubricDefinition`, `ExtraLogField[]`).
+//
+// The Lasater Clinical Judgment Rubric (LCJR) used by nursing/midwifery is
+// the first row of this kind, not special-cased code — see
+// src/lib/lcjr.ts for its rubric content. "Entrustment only (generic
+// fallback)" is the required default every Program resolves to until a
+// real discipline-specific template is built for it.
+model DisciplineTemplate {
+  id             String  @id @default(uuid())
+  name           String  @unique
+  description    String?
+  rubric         Json // RubricDefinition: { scaleLevels: {value,label}[], dimensions: {key,label,subDimensions:{key,label,levelHints?}[]}[] }
+  extraLogFields Json    @default("[]") // ExtraLogField[]: { key, label, type }[] — empty for templates that need nothing beyond the standard SOAP fields
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  programs Program[]
+}
+
+// A compliance document type a Program requires every student to have on
+// file (e.g. "Immunization Record"). Coordinator-managed per program, since
+// requirements differ by discipline — mirrors ProgramCompetencyRequirement.
+model RequiredDocumentType {
+  id          String  @id @default(uuid())
+  programId   String
+  name        String
+  description String?
+  isActive    Boolean @default(true)
+
+  program   Program              @relation(fields: [programId], references: [id], onDelete: Cascade)
+  documents ComplianceDocument[]
+
+  @@unique([programId, name])
+  @@index([programId])
+}
+
+model Cohort {
+  id           String   @id @default(uuid())
+  programId    String
+  name         String // e.g. "Level 300"
+  academicYear String // e.g. "2026/2027"
+  term         String // e.g. "Semester 1"
+  startDate    DateTime
+  endDate      DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  program              Program              @relation(fields: [programId], references: [id], onDelete: Cascade)
+  studentProfiles      StudentProfile[]
+  rotations            Rotation[]
+  studentImportBatches StudentImportBatch[]
+  preferenceCycles     PreferenceCycle[]
+
+  @@index([programId])
+}
+
+// A coordinator-defined window during which every student in this cohort
+// ranks their preferred clinical sites for an upcoming term — the "wishlist"
+// step that happens before Rotations are actually assigned. Rotation
+// assignment itself (coordinator/rotations/new) is unchanged by this; a
+// cycle only collects preferences, it doesn't create Rotation rows itself.
+model PreferenceCycle {
+  id                 String    @id @default(uuid())
+  cohortId           String
+  minSelections      Int
+  maxSelections      Int
+  submissionDeadline DateTime
+  // Lets a coordinator close the cycle early; otherwise it's considered
+  // locked once submissionDeadline passes (computed, not stored — see
+  // src/lib/preference-cycle.ts).
+  lockedAt           DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cohort      Cohort                 @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  preferences RotationPreference[]
+  submissions PreferenceSubmission[]
+
+  @@index([cohortId])
+}
+
+// One ranked, shortlisted site within a student's wishlist for a cycle.
+// Freely added/removed/reordered until the student submits (see
+// PreferenceSubmission) or the cycle locks.
+model RotationPreference {
+  id             String @id @default(uuid())
+  cycleId        String
+  studentId      String
+  clinicalSiteId String
+  rank           Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cycle        PreferenceCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  student      StudentProfile  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  clinicalSite ClinicalSite    @relation(fields: [clinicalSiteId], references: [id], onDelete: Cascade)
+
+  @@unique([cycleId, studentId, clinicalSiteId])
+  @@unique([cycleId, studentId, rank])
+  @@index([studentId])
+  @@index([clinicalSiteId])
+}
+
+// Marks a student's ranked list for a cycle as locked in — its mere
+// existence is the "submitted" state; the RotationPreference rows
+// underneath stop being editable once this row exists (enforced in
+// src/app/student/preferences/actions.ts, not just the UI).
+model PreferenceSubmission {
+  id          String   @id @default(uuid())
+  cycleId     String
+  studentId   String
+  submittedAt DateTime @default(now())
+
+  cycle   PreferenceCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  student StudentProfile  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([cycleId, studentId])
+}
+
+model Competency {
+  id          String  @id @default(uuid())
+  programId   String
+  name        String
+  description String?
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  program            Program                        @relation(fields: [programId], references: [id], onDelete: Cascade)
+  programRequirement ProgramCompetencyRequirement[]
+  logEntryLinks      LogEntryCompetency[]
+
+  @@index([programId])
+}
+
+// Which competencies a Program requires every student to demonstrate.
+model ProgramCompetencyRequirement {
+  id             String @id @default(uuid())
+  programId      String
+  competencyId   String
+  minOccurrences Int    @default(1) // minimum times it must be logged/approved
+
+  // The entrustment level (self-reported or supervisor-assessed, whichever
+  // is set — see LogEntry) an approved case must reach for this competency
+  // to count as "demonstrated" on the coverage report. Coordinator-set per
+  // competency; defaults to DIRECT_SUPERVISION (2). Reporting-only for now —
+  // the scoring engine's coverage sub-metric does not read this field.
+  minEntrustmentLevel EntrustmentLevel @default(DIRECT_SUPERVISION)
+
+  program    Program    @relation(fields: [programId], references: [id], onDelete: Cascade)
+  competency Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+
+  @@unique([programId, competencyId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Clinical sites
+// ─────────────────────────────────────────────────────────────────────────
+
+model ClinicalSite {
+  id            String  @id @default(uuid())
+  institutionId String
+  name          String
+  location      String?
+  contactName   String?
+  contactPhone  String?
+  contactEmail  String?
+
+  // Affiliation agreement / MOU
+  mouStartDate       DateTime?
+  mouEndDate         DateTime?
+  mouDocumentUrl     String?
+  maxStudentCapacity Int? // fallback capacity when no per-department record exists
+
+  // Off by default — most sites use only the main clinical supervisor set
+  // on the Rotation. When on, a student's first LogEntry at this site must
+  // pick a ward + ward supervisor before it can be created (see WardAssignment).
+  wardSupervisionEnabled Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  institution Institution      @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  departments SiteDepartment[]
+  rotations   Rotation[]
+
+  wardSupervisorEligibilities WardSupervisorEligibility[]
+  rotationPreferences         RotationPreference[]
+
+  @@index([institutionId])
+}
+
+// Coordinator-managed roster of supervisors allowed to be picked as a ward
+// supervisor at this site. Separate from Rotation.supervisorId (the main
+// clinical supervisor) — a supervisor can be eligible here without ever
+// being the main supervisor on any rotation at this site, and vice versa.
+model WardSupervisorEligibility {
+  id                  String   @id @default(uuid())
+  clinicalSiteId      String
+  supervisorProfileId String
+  createdAt           DateTime @default(now())
+
+  clinicalSite      ClinicalSite      @relation(fields: [clinicalSiteId], references: [id], onDelete: Cascade)
+  supervisorProfile SupervisorProfile @relation(fields: [supervisorProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([clinicalSiteId, supervisorProfileId])
+}
+
+// A ward/department within a site, used for capacity planning.
+model SiteDepartment {
+  id             String @id @default(uuid())
+  clinicalSiteId String
+  name           String // e.g. "Labour Ward", "OPD"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clinicalSite ClinicalSite         @relation(fields: [clinicalSiteId], references: [id], onDelete: Cascade)
+  capacities   SiteCapacityWindow[]
+  rotations    Rotation[]
+
+  @@unique([clinicalSiteId, name])
+}
+
+// Max student capacity for a department during a specific date window.
+model SiteCapacityWindow {
+  id               String   @id @default(uuid())
+  siteDepartmentId String
+  startDate        DateTime
+  endDate          DateTime
+  maxStudents      Int
+
+  siteDepartment SiteDepartment @relation(fields: [siteDepartmentId], references: [id], onDelete: Cascade)
+
+  @@index([siteDepartmentId, startDate, endDate])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Users & role profiles
+// ─────────────────────────────────────────────────────────────────────────
+
+model User {
+  id            String     @id @default(uuid())
+  institutionId String
+  role          Role
+  name          String
+  email         String     @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String? // set for email/password auth; null until invited user sets one
+  isActive      Boolean    @default(true)
+  status        UserStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  // NextAuth
+  accounts Account[]
+  sessions Session[]
+
+  // Role profiles (at most one populated, matching `role`)
+  studentProfile     StudentProfile?
+  supervisorProfile  SupervisorProfile?
+  coordinatorProfile CoordinatorProfile?
+
+  // Reverse relations
+  reviewsGiven          SupervisorReview[]     @relation("SupervisorReviews")
+  evaluationsGiven      CompetencyEvaluation[] @relation("SupervisorEvaluations")
+  timesheetsApproved    TimesheetEntry[]       @relation("TimesheetApprover")
+  documentsVerified     ComplianceDocument[]   @relation("DocumentVerifier")
+  scoresOverridden      RotationScore[]        @relation("ScoreOverriddenBy")
+  scoringConfigsUpdated ScoringConfig[]        @relation("ScoringConfigUpdatedBy")
+  notifications         Notification[]
+  auditLogs             AuditLog[]             @relation("AuditActor")
+  studentImportBatches  StudentImportBatch[]
+  supportTickets        SupportTicket[]
+
+  @@index([institutionId])
+  @@index([role])
+}
+
+enum TicketStatus {
+  OPEN
+  RESOLVED
+}
+
+// A support request from any signed-in user, routed to Super Admin via
+// email (existing Resend integration) plus a stored row so the submitter
+// gets a status view. No in-app reply threads — resolving it happens out
+// of band (email/phone) and just gets marked done here.
+model SupportTicket {
+  id          String       @id @default(uuid())
+  subject     String
+  description String       @db.Text
+  status      TicketStatus @default(OPEN)
+  createdById String
+  createdAt   DateTime     @default(now())
+  resolvedAt  DateTime?
+  updatedAt   DateTime     @updatedAt
+
+  createdBy User @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([createdById])
+  @@index([status])
+}
+
+model StudentProfile {
+  id                String    @id @default(uuid())
+  userId            String    @unique
+  studentIdNumber   String    @unique
+  programId         String
+  cohortId          String?
+  phone             String?
+  dateOfBirth       DateTime?
+  // Free text, student-editable from their own dashboard profile card —
+  // not coordinator-managed, so no reason to model this as a fixed enum
+  // list yet.
+  areasOfInterest   String?
+  personalStatement String?   @db.Text
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program Program @relation(fields: [programId], references: [id])
+  cohort  Cohort? @relation(fields: [cohortId], references: [id])
+
+  rotations             Rotation[]
+  logEntries            LogEntry[]
+  timesheetEntries      TimesheetEntry[]
+  complianceDocuments   ComplianceDocument[]
+  competencyEvaluations CompetencyEvaluation[]
+  rotationScores        RotationScore[]
+  rotationPreferences   RotationPreference[]
+  preferenceSubmissions PreferenceSubmission[]
+
+  @@index([programId])
+  @@index([cohortId])
+}
+
+// Audit trail for one bulk-CSV student import, so it doesn't "vanish into
+// nothing" — a coordinator can see "last import: 340 students, 12 errors."
+// `cohortId` is nullable: a file's rows can each name a different cohort
+// (the CSV's own "cohort" column, validated per row), so there isn't
+// always one single cohort to attribute the whole batch to. It's set only
+// when every successfully-imported row in the batch shares the same cohort.
+model StudentImportBatch {
+  id            String  @id @default(uuid())
+  coordinatorId String
+  programId     String
+  cohortId      String?
+  fileName      String
+  totalRows     Int
+  successCount  Int
+  errorCount    Int
+
+  createdAt DateTime @default(now())
+
+  coordinator User    @relation(fields: [coordinatorId], references: [id])
+  program     Program @relation(fields: [programId], references: [id])
+  cohort      Cohort? @relation(fields: [cohortId], references: [id])
+
+  @@index([programId])
+  @@index([coordinatorId])
+}
+
+model SupervisorProfile {
+  id                 String  @id @default(uuid())
+  userId             String  @unique
+  registrationNumber String? // professional registration/license number
+  professionalTitle  String? // e.g. "RGN", "Midwife Specialist"
+  phone              String?
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rotations Rotation[]
+
+  wardEligibleSites WardSupervisorEligibility[]
+  wardAssignments   WardAssignment[]
+
+  @@index([userId])
+}
+
+model CoordinatorProfile {
+  id        String @id @default(uuid())
+  userId    String @unique
+  programId String
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program Program @relation(fields: [programId], references: [id])
+
+  @@index([programId])
+}
+
+// NextAuth required models
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Rotations / placements
+// ─────────────────────────────────────────────────────────────────────────
+
+model Rotation {
+  id               String         @id @default(uuid())
+  studentId        String
+  programId        String
+  cohortId         String?
+  clinicalSiteId   String
+  siteDepartmentId String?
+  supervisorId     String
+  startDate        DateTime
+  endDate          DateTime
+  status           RotationStatus @default(SCHEDULED)
+
+  // Overrides Program defaults when set; otherwise Program defaults apply.
+  minCasesOverride Int?
+  minHoursOverride Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student        StudentProfile    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  program        Program           @relation(fields: [programId], references: [id])
+  cohort         Cohort?           @relation(fields: [cohortId], references: [id])
+  clinicalSite   ClinicalSite      @relation(fields: [clinicalSiteId], references: [id])
+  siteDepartment SiteDepartment?   @relation(fields: [siteDepartmentId], references: [id])
+  supervisor     SupervisorProfile @relation(fields: [supervisorId], references: [id])
+
+  logEntries            LogEntry[]
+  timesheetEntries      TimesheetEntry[]
+  competencyEvaluations CompetencyEvaluation[]
+  rotationScore         RotationScore?
+  wardAssignments       WardAssignment[]
+
+  @@index([studentId])
+  @@index([supervisorId])
+  @@index([clinicalSiteId])
+  @@index([startDate, endDate])
+}
+
+// A student's assignment to a specific ward within one Rotation, and to the
+// ward supervisor who reviews (but does not grade — see LogEntry.review vs.
+// CompetencyEvaluation) their LogEntries while there. Only one row per
+// rotation may be active (endedAt null) at a time — enforced by a partial
+// unique index added in this model's migration, and re-checked in the
+// server action that creates one, since neither layer alone is TOCTOU-safe.
+model WardAssignment {
+  // Client-generated, like LogEntry.id — a student can start their first
+  // entry (and so create this) while offline. See src/lib/offline/.
+  id               String    @id
+  rotationId       String
+  wardName         String // free text — wards vary per site, not a fixed list
+  wardSupervisorId String
+  startedAt        DateTime  @default(now())
+  endedAt          DateTime? // null while active; set when the student switches wards
+  createdAt        DateTime  @default(now())
+
+  rotation       Rotation          @relation(fields: [rotationId], references: [id], onDelete: Cascade)
+  wardSupervisor SupervisorProfile @relation(fields: [wardSupervisorId], references: [id])
+
+  logEntries LogEntry[]
+
+  @@index([rotationId])
+  @@index([wardSupervisorId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Logbook — SOAP entries
+// ─────────────────────────────────────────────────────────────────────────
+
+model LogEntry {
+  // No @default(uuid()) — the client (browser, online or offline) always
+  // generates this id up front via crypto.randomUUID() so an offline write
+  // has a stable id from the moment it's queued. See src/lib/offline/.
+  id         String         @id
+  studentId  String
+  rotationId String
+  status     LogEntryStatus @default(DRAFT)
+
+  caseTitle  String // short label, e.g. "Normal vaginal delivery"
+  occurredAt DateTime // when the case actually happened
+
+  // Entrustment/supervision level — self-reported by the student at
+  // submission. Supervisors don't always agree with the student's own
+  // assessment, so their (optional) independent read is captured separately
+  // rather than overwriting it — the gap between the two is itself useful data.
+  studentRole            EntrustmentLevel
+  supervisorAssessedRole EntrustmentLevel?
+
+  // Subjective — de-identified patient-reported history/complaint
+  subjective String @db.Text
+
+  // Objective — structured vitals + free-text findings (de-identified)
+  vitalTempC        Float?
+  vitalBpSystolic   Int?
+  vitalBpDiastolic  Int?
+  vitalPulse        Int?
+  vitalRespRate     Int?
+  vitalSpo2         Int?
+  objectiveFindings String @db.Text
+
+  // Assessment
+  assessment String @db.Text
+
+  // Plan
+  plan String @db.Text
+
+  // Discipline-specific fields beyond the standard SOAP structure (e.g.
+  // physiotherapy's ICF impairment/activity-limitation/participation fields),
+  // keyed by DisciplineTemplate.extraLogFields[].key — one flexible JSON
+  // column rather than new columns per discipline. Null/empty for any
+  // template (like LCJR and the generic fallback) that defines none.
+  extraFields Json?
+
+  submittedAt DateTime? // when student submitted for review — used for timeliness scoring
+
+  // Set at creation time from the rotation's currently-active WardAssignment
+  // when the clinical site has ward supervision on — never chosen per entry.
+  // Null when the site doesn't use ward supervision (today's default) or for
+  // any entry created before this feature existed; SupervisorReview routing
+  // and grading both treat null exactly as before. See src/lib/log-entry-review.ts.
+  wardAssignmentId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student        StudentProfile  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  rotation       Rotation        @relation(fields: [rotationId], references: [id], onDelete: Cascade)
+  wardAssignment WardAssignment? @relation(fields: [wardAssignmentId], references: [id])
+
+  competencies LogEntryCompetency[]
+  review       SupervisorReview?
+
+  @@index([studentId])
+  @@index([rotationId])
+  @@index([status])
+  @@index([occurredAt])
+  @@index([wardAssignmentId])
+}
+
+model LogEntryCompetency {
+  id           String @id @default(uuid())
+  logEntryId   String
+  competencyId String
+
+  logEntry   LogEntry   @relation(fields: [logEntryId], references: [id], onDelete: Cascade)
+  competency Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+
+  @@unique([logEntryId, competencyId])
+}
+
+model SupervisorReview {
+  id           String         @id // client-generated — see LogEntry's id comment
+  logEntryId   String         @unique
+  supervisorId String
+  decision     ReviewDecision
+  comments     String?        @db.Text
+  attested     Boolean        @default(false) // "I attest this is accurate" checkbox
+  reviewedAt   DateTime       @default(now())
+
+  logEntry   LogEntry @relation(fields: [logEntryId], references: [id], onDelete: Cascade)
+  supervisor User     @relation("SupervisorReviews", fields: [supervisorId], references: [id])
+
+  @@index([supervisorId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Competency evaluations (periodic rubric)
+// ─────────────────────────────────────────────────────────────────────────
+
+model CompetencyEvaluation {
+  id              String           @id @default(uuid())
+  rotationId      String
+  studentId       String
+  supervisorId    String
+  status          EvaluationStatus @default(DRAFT)
+  evaluationDate  DateTime         @default(now())
+  overallComments String?          @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rotation   Rotation       @relation(fields: [rotationId], references: [id], onDelete: Cascade)
+  student    StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  supervisor User           @relation("SupervisorEvaluations", fields: [supervisorId], references: [id])
+
+  ratings LcjrRating[]
+
+  @@index([rotationId])
+  @@index([studentId])
+}
+
+// One row per rubric sub-dimension per evaluation. `dimension`/`subDimension`
+// are free-form keys defined by the evaluation's Program's DisciplineTemplate
+// (see that model) rather than a fixed enum — this table now stores ratings
+// for ANY discipline's rubric, not just the original Lasater/LCJR one (kept
+// as the model name since it was the first, and renaming it churns every
+// call site for no functional gain). `level` is a raw scale position;
+// interpret it against DisciplineTemplate.rubric.scaleLevels, not a fixed
+// 1–4 range — see src/lib/discipline-template.ts's `levelToPercent`.
+model LcjrRating {
+  id           String @id @default(uuid())
+  evaluationId String
+  dimension    String
+  subDimension String
+  level        Int
+
+  evaluation CompetencyEvaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@unique([evaluationId, subDimension])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Timesheets
+// ─────────────────────────────────────────────────────────────────────────
+
+model TimesheetEntry {
+  id         String          @id // client-generated — see LogEntry's id comment
+  studentId  String
+  rotationId String
+  shiftDate  DateTime
+  clockIn    DateTime?
+  clockOut   DateTime?
+  hours      Float
+  status     TimesheetStatus @default(PENDING)
+  notes      String?
+
+  approvedById String?
+  approvedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student    StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  rotation   Rotation       @relation(fields: [rotationId], references: [id], onDelete: Cascade)
+  approvedBy User?          @relation("TimesheetApprover", fields: [approvedById], references: [id])
+
+  @@index([studentId])
+  @@index([rotationId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Compliance documents
+// ─────────────────────────────────────────────────────────────────────────
+
+model ComplianceDocument {
+  id                     String              @id @default(uuid())
+  studentId              String
+  requiredDocumentTypeId String
+  fileUrl                String
+  issueDate              DateTime?
+  expiryDate             DateTime?
+  verificationStatus     ComplianceDocStatus @default(PENDING_VERIFICATION)
+  rejectionReason        String?
+
+  verifiedById String?
+  verifiedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student              StudentProfile       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  requiredDocumentType RequiredDocumentType @relation(fields: [requiredDocumentTypeId], references: [id])
+  verifiedBy           User?                @relation("DocumentVerifier", fields: [verifiedById], references: [id])
+
+  // One current document slot per required type per student — re-uploading
+  // replaces it rather than accumulating a history.
+  @@unique([studentId, requiredDocumentTypeId])
+  @@index([studentId])
+  @@index([expiryDate])
+  @@index([verificationStatus])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scoring
+// ─────────────────────────────────────────────────────────────────────────
+
+model ScoringConfig {
+  id        String @id @default(uuid())
+  programId String @unique
+
+  // Top-level component weights (must sum to 1.0)
+  supervisorWeight Float @default(0.70)
+  logbookWeight    Float @default(0.30)
+
+  // Logbook sub-component weights (must sum to 1.0) — see
+  // src/lib/scoring.ts for the documented formula these feed.
+  logbookCaseCoverageWeight Float @default(0.30) // required categories/competencies met
+  logbookApprovalRateWeight Float @default(0.30) // approved vs rejected/needs-revision
+  logbookTimelinessWeight   Float @default(0.20) // submitted promptly, not backfilled
+  logbookCompletenessWeight Float @default(0.20) // all four SOAP sections meaningfully filled
+
+  passThreshold Float @default(60) // percentage required to pass the rotation
+
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  updatedBy User?   @relation("ScoringConfigUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model RotationScore {
+  id         String @id @default(uuid())
+  rotationId String @unique
+  studentId  String
+
+  supervisorScore Float // 0–100, normalized average of evaluation items
+  logbookScore    Float // 0–100 composite of sub-scores below
+
+  logbookCaseCoverageScore Float
+  logbookApprovalRateScore Float
+  logbookTimelinessScore   Float
+  logbookCompletenessScore Float
+
+  computedFinalScore Float // weighted result before any override
+  finalScore         Float // = computedFinalScore unless overridden
+  letterGrade        String?
+  passed             Boolean
+
+  isOverridden   Boolean   @default(false)
+  overrideReason String?
+  overriddenById String?
+  overriddenAt   DateTime?
+
+  computedAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  rotation     Rotation       @relation(fields: [rotationId], references: [id], onDelete: Cascade)
+  student      StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  overriddenBy User?          @relation("ScoreOverriddenBy", fields: [overriddenById], references: [id])
+
+  @@index([studentId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Notifications & audit log
+// ─────────────────────────────────────────────────────────────────────────
+
+model Notification {
+  id          String              @id @default(uuid())
+  userId      String
+  type        String // e.g. "PENDING_REVIEW", "LOGBOOK_DUE", "DOCUMENT_EXPIRING"
+  title       String
+  body        String
+  channel     NotificationChannel @default(IN_APP)
+  isRead      Boolean             @default(false)
+  emailSentAt DateTime?
+
+  relatedEntityType String?
+  relatedEntityId   String?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String
+  action     String // e.g. "LOG_ENTRY_APPROVED", "SCORE_OVERRIDDEN"
+  entityType String
+  entityId   String
+  beforeData Json?
+  afterData  Json?
+  createdAt  DateTime @default(now())
+
+  actor User @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+}
