@@ -54,3 +54,5 @@ next-env.d.ts
 # from being served as-is), registering a service worker with old cached
 # pages that dev mode was never supposed to have at all.
 /public/sw.js
+
+.vercel
