@@ -21,8 +21,15 @@ export type UploadSubdir = (typeof UPLOAD_SUBDIRS)[number];
 // Vercel's filesystem is read-only, so deployed uploads go to a *private*
 // Blob store (unreadable except through the authenticated /uploads route).
 // Without a Blob token — local dev — they go to ./uploads, outside public/.
+// Newer Blob stores authenticate via Vercel OIDC plus a store ID instead of a
+// read-write token. The SDK only auto-reads BLOB_STORE_ID; this project's
+// store was connected with a custom prefix, hence the second name.
+function blobStoreId(): string | undefined {
+  return process.env.BLOB_STORE_ID ?? process.env.BLOB_READ_WRITE_TOKEN_STORE_ID;
+}
+
 function blobStorageEnabled(): boolean {
-  return !!process.env.BLOB_READ_WRITE_TOKEN;
+  return !!(process.env.BLOB_READ_WRITE_TOKEN || blobStoreId());
 }
 
 function localUploadRoot(): string {
@@ -50,7 +57,11 @@ export async function saveUploadedFile(
   const pathname = `uploads/${subdir}/${randomUUID()}${ext}`;
 
   if (blobStorageEnabled()) {
-    await put(pathname, bytes, { access: "private", contentType: UPLOAD_CONTENT_TYPES[ext] });
+    await put(pathname, bytes, {
+      access: "private",
+      contentType: UPLOAD_CONTENT_TYPES[ext],
+      storeId: blobStoreId(),
+    });
   } else {
     const fullPath = path.join(localUploadRoot(), pathname.slice("uploads/".length));
     await mkdir(path.dirname(fullPath), { recursive: true });
@@ -66,7 +77,7 @@ export async function readUploadedFile(
   filename: string
 ): Promise<ReadableStream<Uint8Array> | Uint8Array<ArrayBuffer> | null> {
   if (blobStorageEnabled()) {
-    const result = await get(`uploads/${subdir}/${filename}`, { access: "private" });
+    const result = await get(`uploads/${subdir}/${filename}`, { access: "private", storeId: blobStoreId() });
     return result?.statusCode === 200 ? result.stream : null;
   }
   try {
