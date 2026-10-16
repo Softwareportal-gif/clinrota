@@ -10,7 +10,17 @@ const withSerwist = withSerwistInit({
   disable: process.env.NODE_ENV === "development",
 });
 
+// pdfkit (under @react-pdf/renderer) loads its built-in fonts with a dynamic
+// require that file tracing can't see, so Vercel shipped the PDF routes
+// without them and every PDF download 500'd ("Cannot find module
+// .../pdfkit/js/standard-fonts/Helvetica.cjs").
+const PDFKIT_FONTS = ["./node_modules/pdfkit/js/standard-fonts/**/*"];
+
 const nextConfig: NextConfig = {
+  outputFileTracingIncludes: {
+    "/student/profile/cv": PDFKIT_FONTS,
+    "/coordinator/students/*/pdf": PDFKIT_FONTS,
+  },
   experimental: {
     serverActions: {
       // Room for a MAX_UPLOAD_MB (4MB) file plus multipart overhead, while

@@ -1,49 +1,120 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { ENTRUSTMENT_LEVEL_VALUE } from "@/lib/entrustment";
 import { CV_LEVEL_LABELS, type StudentCvData } from "@/lib/student-cv";
 
+const DARK = "#0A3F38";
 const TEAL = "#0E6F63";
+const TEAL_SOFT = "#A7D3CA";
+const CREAM = "#F3EFE7";
 const TEXT = "#1E2A27";
 const MUTED = "#5B6B67";
-const RULE = "#D9D3C6";
+const RULE = "#E4DDD0";
+
+const PAGE_X = 44;
+const PAGE_TOP = 40;
+const SKILLS_KEPT_TOGETHER = 14;
 
 const styles = StyleSheet.create({
-  page: { paddingTop: 40, paddingBottom: 56, paddingHorizontal: 44, fontSize: 10, fontFamily: "Helvetica", color: TEXT, lineHeight: 1.4 },
-  // Explicit lineHeight: the page-level 1.4 otherwise sizes this line box
-  // for 10pt body text and the next line overlaps the name.
-  name: { fontSize: 22, lineHeight: 1.2, fontFamily: "Helvetica-Bold", marginBottom: 4 },
-  headline: { fontSize: 11, color: TEAL, marginBottom: 4 },
-  contact: { fontSize: 9, color: MUTED },
-  sectionTitle: {
-    fontSize: 10,
-    fontFamily: "Helvetica-Bold",
-    color: TEAL,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    marginTop: 18,
-    marginBottom: 6,
-    paddingBottom: 3,
-    borderBottom: `0.75pt solid ${RULE}`,
+  page: {
+    paddingTop: PAGE_TOP,
+    paddingBottom: 60,
+    paddingHorizontal: PAGE_X,
+    fontSize: 9.5,
+    fontFamily: "Helvetica",
+    color: TEXT,
+    lineHeight: 1.45,
   },
-  paragraph: { marginBottom: 4 },
-  itemRow: { flexDirection: "row", justifyContent: "space-between" },
-  itemTitle: { fontFamily: "Helvetica-Bold", fontSize: 10.5 },
-  // flex: 1 only inside the row layout — in a column it collapses to 0 height.
-  itemTitleInRow: { flex: 1, paddingRight: 8 },
-  itemDates: { fontSize: 9, color: MUTED },
-  itemSub: { fontSize: 9, color: MUTED, marginTop: 1 },
-  item: { marginBottom: 10 },
-  summary: { fontSize: 9.5, marginBottom: 8 },
-  skillHeader: { flexDirection: "row", borderBottom: `0.75pt solid ${RULE}`, paddingBottom: 3, marginBottom: 2 },
-  skillRow: { flexDirection: "row", paddingVertical: 3, borderBottom: `0.5pt solid #EEEAE1` },
-  skillName: { flex: 3, paddingRight: 6 },
-  skillCases: { flex: 1, textAlign: "right", paddingRight: 10 },
-  skillLevel: { flex: 2 },
-  headerCell: { fontSize: 8, color: MUTED, fontFamily: "Helvetica-Bold" },
-  footer: { position: "absolute", bottom: 24, left: 44, right: 44, fontSize: 7.5, color: MUTED, textAlign: "center" },
+
+  // Header band bleeds to the page edges on page 1 only (it's in the flow,
+  // not `fixed`), so later pages start with normal top padding.
+  header: {
+    marginTop: -PAGE_TOP,
+    marginHorizontal: -PAGE_X,
+    paddingTop: 34,
+    paddingBottom: 26,
+    paddingHorizontal: PAGE_X,
+    backgroundColor: DARK,
+  },
+  name: { fontSize: 26, lineHeight: 1.15, fontFamily: "Helvetica-Bold", color: "#FFFFFF", letterSpacing: 0.3 },
+  headline: { fontSize: 11, color: TEAL_SOFT, marginTop: 4 },
+  contactRow: { flexDirection: "row", flexWrap: "wrap", marginTop: 12 },
+  contactItem: { fontSize: 9, color: "#E6F1EE", marginRight: 18 },
+  contactLabel: { fontFamily: "Helvetica-Bold", color: TEAL_SOFT },
+
+  stats: { flexDirection: "row", marginTop: 18 },
+  stat: { flex: 1, backgroundColor: CREAM, borderRadius: 4, paddingVertical: 9, paddingHorizontal: 10, marginRight: 8 },
+  statLast: { marginRight: 0 },
+  statValue: { fontSize: 16, lineHeight: 1.1, fontFamily: "Helvetica-Bold", color: DARK },
+  statLabel: { fontSize: 7.5, color: MUTED, marginTop: 2, textTransform: "uppercase", letterSpacing: 0.6 },
+
+  section: { marginTop: 20 },
+  sectionHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
+  sectionAccent: { width: 14, height: 2.5, backgroundColor: TEAL, marginRight: 7 },
+  sectionTitle: { fontSize: 9.5, fontFamily: "Helvetica-Bold", color: DARK, textTransform: "uppercase", letterSpacing: 1.2 },
+  sectionRule: { flex: 1, height: 0.75, backgroundColor: RULE, marginLeft: 8 },
+
+  twoCol: { flexDirection: "row" },
+  col: { flex: 1 },
+  colGap: { width: 24 },
+
+  strong: { fontFamily: "Helvetica-Bold", fontSize: 10.5, color: TEXT },
+  muted: { color: MUTED, fontSize: 9 },
+
+  chips: { flexDirection: "row", flexWrap: "wrap" },
+  chip: {
+    fontSize: 8.5,
+    color: DARK,
+    backgroundColor: CREAM,
+    borderRadius: 9,
+    paddingVertical: 2.5,
+    paddingHorizontal: 8,
+    marginRight: 5,
+    marginBottom: 5,
+  },
+
+  // Timeline: a dot per placement on a continuous left rule.
+  timelineItem: { flexDirection: "row" },
+  rail: { width: 16, alignItems: "center" },
+  dot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: TEAL, marginTop: 3.5 },
+  dotCurrent: { backgroundColor: "#FFFFFF", borderWidth: 2, borderColor: TEAL },
+  line: { width: 1, flexGrow: 1, backgroundColor: RULE, marginTop: 2 },
+  timelineBody: { flex: 1, paddingBottom: 12, paddingLeft: 4 },
+  placementTop: { flexDirection: "row", justifyContent: "space-between" },
+  placementTitle: { fontFamily: "Helvetica-Bold", fontSize: 10.5, flex: 1, paddingRight: 10 },
+  dates: { fontSize: 8.5, color: TEAL, fontFamily: "Helvetica-Bold" },
+  badgeRow: { flexDirection: "row", flexWrap: "wrap", marginTop: 4 },
+  badge: {
+    fontSize: 8,
+    color: TEAL,
+    borderWidth: 0.75,
+    borderColor: TEAL_SOFT,
+    borderRadius: 3,
+    paddingVertical: 1.5,
+    paddingHorizontal: 5,
+    marginRight: 5,
+  },
+
+  skillHeader: { flexDirection: "row", paddingBottom: 4, borderBottomWidth: 0.75, borderBottomColor: RULE },
+  skillRow: { flexDirection: "row", alignItems: "center", paddingVertical: 5, borderBottomWidth: 0.5, borderBottomColor: "#EFEAE0" },
+  skillName: { flex: 3.2, paddingRight: 8 },
+  skillCases: { width: 38, textAlign: "center" },
+  skillLevel: { flex: 2.4, flexDirection: "row", alignItems: "center" },
+  th: { fontSize: 7.5, color: MUTED, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 0.6 },
+  meter: { flexDirection: "row", marginRight: 7 },
+  pip: { width: 6, height: 6, borderRadius: 3, marginRight: 2.5, backgroundColor: "#E2DCCF" },
+  pipOn: { backgroundColor: TEAL },
+  levelText: { fontSize: 8.5, color: MUTED },
+
+  // Separate absolutely-positioned pieces: a fixed flex-row View holding a
+  // `render` Text didn't paint at all in @react-pdf.
+  footerRule: { position: "absolute", bottom: 40, left: PAGE_X, right: PAGE_X, height: 0.5, backgroundColor: RULE },
+  footerLeft: { position: "absolute", bottom: 26, left: PAGE_X, fontSize: 7.5, color: MUTED },
 });
 
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function fmtMonth(d: Date) {
-  return new Date(d).toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+  const date = new Date(d);
+  return `${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
 }
 
 function fmtHours(h: number) {
@@ -54,100 +125,169 @@ function plural(n: number, word: string) {
   return `${n} ${word}${n === 1 ? "" : "s"}`;
 }
 
+function SectionHeader({ title }: { title: string }) {
+  return (
+    <View style={styles.sectionHeader} wrap={false}>
+      <View style={styles.sectionAccent} />
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.sectionRule} />
+    </View>
+  );
+}
+
+function LevelMeter({ value }: { value: number }) {
+  return (
+    <View style={styles.meter}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <View key={i} style={i <= value ? [styles.pip, styles.pipOn] : styles.pip} />
+      ))}
+    </View>
+  );
+}
+
 export function StudentCvDocument({ data }: { data: StudentCvData }) {
   const generated = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-  const contact = [data.email, data.phone].filter(Boolean).join("  ·  ");
+  const interests = (data.areasOfInterest ?? "")
+    .split(/[,;\n]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  // Zero-value boxes ("0 approved cases") undersell a newer student, so only
+  // non-zero stats show, and the strip only once something is approved.
+  const stats = [
+    { n: data.totalApprovedHours, value: fmtHours(data.totalApprovedHours), label: "Approved hours" },
+    { n: data.totalApprovedCases, value: `${data.totalApprovedCases}`, label: "Approved cases" },
+    { n: data.placements.length, value: `${data.placements.length}`, label: data.placements.length === 1 ? "Placement" : "Placements" },
+    { n: data.skills.length, value: `${data.skills.length}`, label: data.skills.length === 1 ? "Clinical skill" : "Clinical skills" },
+  ].filter((s) => s.n > 0);
+  const showStats = data.totalApprovedHours > 0 || data.totalApprovedCases > 0;
+  const hasClinicalRecord = data.placements.length > 0;
 
   return (
-    <Document title={`${data.name} — CV`} author={data.name} creator="Praxxt">
+    <Document title={`${data.name} — Curriculum Vitae`} author={data.name} subject="Curriculum Vitae" creator="Praxxt">
       <Page size="A4" style={styles.page}>
-        <Text style={styles.name}>{data.name}</Text>
-        <Text style={styles.headline}>
-          {data.programName} student · {data.institutionName}
-        </Text>
-        <Text style={styles.contact}>{contact}</Text>
-
-        {data.personalStatement && (
-          <>
-            <Text style={styles.sectionTitle}>Profile</Text>
-            <Text style={styles.paragraph}>{data.personalStatement}</Text>
-          </>
-        )}
-
-        {data.areasOfInterest && (
-          <>
-            <Text style={styles.sectionTitle}>Areas of interest</Text>
-            <Text style={styles.paragraph}>{data.areasOfInterest}</Text>
-          </>
-        )}
-
-        <Text style={styles.sectionTitle}>Education</Text>
-        <View style={styles.item}>
-          <Text style={styles.itemTitle}>{data.programName}</Text>
-          <Text style={styles.itemSub}>
-            {data.institutionName}
-            {data.cohortLabel ? `  ·  ${data.cohortLabel}` : ""}
+        <View style={styles.header}>
+          <Text style={styles.name}>{data.name}</Text>
+          <Text style={styles.headline}>
+            {data.programName} Student · {data.institutionName}
           </Text>
-        </View>
-
-        {/* Empty sections are omitted rather than given placeholder text: the
-            reader is an employer, not the student using the app. */}
-        {data.placements.length > 0 && (
-          <>
-            <Text style={styles.sectionTitle}>Clinical placements</Text>
-            {(data.totalApprovedHours > 0 || data.totalApprovedCases > 0) && (
-              <Text style={styles.summary}>
-                {fmtHours(data.totalApprovedHours)} supervisor-approved clinical hours and{" "}
-                {plural(data.totalApprovedCases, "approved case")} across{" "}
-                {plural(data.placements.length, "placement")}.
+          <View style={styles.contactRow}>
+            <Text style={styles.contactItem}>
+              <Text style={styles.contactLabel}>Email </Text>
+              {data.email}
+            </Text>
+            {data.phone && (
+              <Text style={styles.contactItem}>
+                <Text style={styles.contactLabel}>Phone </Text>
+                {data.phone}
               </Text>
             )}
-            {data.placements.map((p) => (
-              <View key={p.id} style={styles.item} wrap={false}>
-                <View style={styles.itemRow}>
-                  <Text style={[styles.itemTitle, styles.itemTitleInRow]}>
-                    {p.siteName}
-                    {p.departmentName ? ` — ${p.departmentName}` : ""}
-                  </Text>
-                  <Text style={styles.itemDates}>
-                    {fmtMonth(p.startDate)} – {p.isCurrent ? "Present" : fmtMonth(p.endDate)}
-                  </Text>
-                </View>
-                <Text style={styles.itemSub}>
-                  {[
-                    p.location,
-                    `Preceptor: ${p.preceptorName}`,
-                    p.approvedHours > 0 ? `${fmtHours(p.approvedHours)} approved hours` : null,
-                    p.approvedCases > 0 ? plural(p.approvedCases, "approved case") : null,
-                  ]
-                    .filter(Boolean)
-                    .join("  ·  ")}
-                </Text>
-              </View>
-            ))}
-          </>
-        )}
+          </View>
+        </View>
 
-        {data.skills.length > 0 && (
-          <View>
-            <Text style={styles.sectionTitle}>Clinical skills</Text>
-            <View style={styles.skillHeader} wrap={false}>
-              <Text style={[styles.skillName, styles.headerCell]}>SKILL</Text>
-              <Text style={[styles.skillCases, styles.headerCell]}>CASES</Text>
-              <Text style={[styles.skillLevel, styles.headerCell]}>HIGHEST LEVEL PERFORMED</Text>
-            </View>
-            {data.skills.map((s) => (
-              <View key={s.name} style={styles.skillRow} wrap={false}>
-                <Text style={styles.skillName}>{s.name}</Text>
-                <Text style={styles.skillCases}>{s.approvedCases}</Text>
-                <Text style={styles.skillLevel}>{CV_LEVEL_LABELS[s.highestLevel]}</Text>
+        {showStats && (
+          <View style={styles.stats} wrap={false}>
+            {stats.map((s, i) => (
+              <View key={s.label} style={i === stats.length - 1 ? [styles.stat, styles.statLast] : styles.stat}>
+                <Text style={styles.statValue}>{s.value}</Text>
+                <Text style={styles.statLabel}>{s.label}</Text>
               </View>
             ))}
           </View>
         )}
 
-        <Text style={styles.footer} fixed>
-          Clinical placements, hours and skills on this CV are supervisor-verified records from Praxxt · Generated {generated}
+        {data.personalStatement && (
+          <View style={styles.section}>
+            <SectionHeader title="Professional Profile" />
+            <Text>{data.personalStatement}</Text>
+          </View>
+        )}
+
+        <View style={[styles.section, styles.twoCol]} wrap={false}>
+          <View style={styles.col}>
+            <SectionHeader title="Education" />
+            <Text style={styles.strong}>{data.programName}</Text>
+            <Text style={styles.muted}>{data.institutionName}</Text>
+            {data.cohortLabel && <Text style={styles.muted}>{data.cohortLabel}</Text>}
+          </View>
+          {interests.length > 0 && (
+            <>
+              <View style={styles.colGap} />
+              <View style={styles.col}>
+                <SectionHeader title="Areas of Interest" />
+                <View style={styles.chips}>
+                  {interests.map((interest) => (
+                    <Text key={interest} style={styles.chip}>
+                      {interest}
+                    </Text>
+                  ))}
+                </View>
+              </View>
+            </>
+          )}
+        </View>
+
+        {/* Empty sections are omitted rather than given placeholder text: the
+            reader is an employer, not the student using the app. */}
+        {hasClinicalRecord && (
+          <View style={styles.section}>
+            <SectionHeader title="Clinical Placements" />
+            {data.placements.map((p, i) => (
+              <View key={p.id} style={styles.timelineItem} wrap={false}>
+                <View style={styles.rail}>
+                  <View style={p.isCurrent ? [styles.dot, styles.dotCurrent] : styles.dot} />
+                  {i < data.placements.length - 1 && <View style={styles.line} />}
+                </View>
+                <View style={styles.timelineBody}>
+                  <View style={styles.placementTop}>
+                    <Text style={styles.placementTitle}>
+                      {p.siteName}
+                      {p.departmentName ? ` — ${p.departmentName}` : ""}
+                    </Text>
+                    <Text style={styles.dates}>
+                      {fmtMonth(p.startDate)} – {p.isCurrent ? "Present" : fmtMonth(p.endDate)}
+                    </Text>
+                  </View>
+                  <Text style={styles.muted}>
+                    {[p.location, `Preceptor: ${p.preceptorName}`].filter(Boolean).join("  ·  ")}
+                  </Text>
+                  {(p.approvedHours > 0 || p.approvedCases > 0) && (
+                    <View style={styles.badgeRow}>
+                      {p.approvedHours > 0 && <Text style={styles.badge}>{fmtHours(p.approvedHours)} approved hours</Text>}
+                      {p.approvedCases > 0 && <Text style={styles.badge}>{plural(p.approvedCases, "approved case")}</Text>}
+                    </View>
+                  )}
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {data.skills.length > 0 && (
+          // A table that fits on one page moves whole rather than splitting
+          // with its header stranded; a longer one has to flow across pages.
+          <View style={styles.section} wrap={data.skills.length > SKILLS_KEPT_TOGETHER}>
+            <SectionHeader title="Clinical Skills" />
+            <View style={styles.skillHeader} wrap={false}>
+              <Text style={[styles.skillName, styles.th]}>Skill</Text>
+              <Text style={[styles.skillCases, styles.th]}>Cases</Text>
+              <Text style={[styles.skillLevel, styles.th]}>Highest level performed</Text>
+            </View>
+            {data.skills.map((s) => (
+              <View key={s.name} style={styles.skillRow} wrap={false}>
+                <Text style={styles.skillName}>{s.name}</Text>
+                <Text style={styles.skillCases}>{s.approvedCases}</Text>
+                <View style={styles.skillLevel}>
+                  <LevelMeter value={ENTRUSTMENT_LEVEL_VALUE[s.highestLevel]} />
+                  <Text style={styles.levelText}>{CV_LEVEL_LABELS[s.highestLevel]}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        <View style={styles.footerRule} fixed />
+        <Text style={styles.footerLeft} fixed>
+          Placements, hours and skills verified by clinical supervisors on Praxxt · Generated {generated}
         </Text>
       </Page>
     </Document>
