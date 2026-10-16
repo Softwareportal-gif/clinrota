@@ -61,6 +61,6 @@ export const config = {
   // uploads/ is excluded for the same reason, but is NOT public: its route
   // handler enforces sign-in and per-student ownership itself.
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|sw.js|manifest.json|icons/|images/|uploads/).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|icon.png|sw.js|manifest.json|icons/|images/|uploads/).*)",
   ],
 };
