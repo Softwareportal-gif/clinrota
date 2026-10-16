@@ -1,0 +1,17 @@
+PRAXXT COLOURS
+
+Ink        #17153B   Text, dark backgrounds
+Violet     #5A3BF0   Primary brand, buttons
+Blue       #2563EB   Gradient middle
+Aqua       #12B5C9   Gradient end, accents
+Magenta    #D63A74   Highlights, sparingly
+Lavender   #F8F7FF   Page background
+Mist       #ECEBF5   Borders, dividers
+Slate      #4A4867   Body text
+
+Brand gradient: #5A3BF0 -> #2563EB -> #12B5C9
+
+Status (always paired with a text label):
+Complete   #2F9E56
+Due soon   #E0A331
+Missing    #D9534F
