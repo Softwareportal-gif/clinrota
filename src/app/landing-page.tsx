@@ -93,13 +93,13 @@ const SECURITY = [
   { title: "Encrypted in transit", body: "All traffic runs over HTTPS, on every device." },
 ];
 
+// An account without a URL yet is hidden rather than rendered as a dead link.
 const SOCIALS = [
-  // TODO: replace each href="#" with the real profile URL once the account exists
-  { label: "LinkedIn", Icon: LinkedInIcon, href: "#" },
-  { label: "Facebook", Icon: FacebookIcon, href: "#" },
-  { label: "Instagram", Icon: InstagramIcon, href: "#" },
-  { label: "YouTube", Icon: YouTubeIcon, href: "#" },
-];
+  { label: "LinkedIn", Icon: LinkedInIcon, href: "https://www.linkedin.com/company/praxxt" },
+  { label: "Facebook", Icon: FacebookIcon, href: null },
+  { label: "Instagram", Icon: InstagramIcon, href: null },
+  { label: "YouTube", Icon: YouTubeIcon, href: null },
+].filter((s): s is typeof s & { href: string } => s.href !== null);
 
 function Eyebrow({ children, color = VIOLET }: { children: React.ReactNode; color?: string }) {
   return (
@@ -427,7 +427,14 @@ export function LandingPage() {
               <p className="max-w-xs leading-relaxed">The connected record for clinical education.</p>
               <div className="flex gap-3">
                 {SOCIALS.map(({ label, Icon, href }) => (
-                  <a key={label} href={href} aria-label={label} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20">
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Praxxt on ${label}`}
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20"
+                  >
                     <Icon className="h-4 w-4" color="#FFFFFF" />
                   </a>
                 ))}
