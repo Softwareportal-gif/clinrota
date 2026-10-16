@@ -96,8 +96,8 @@ const SECURITY = [
 // An account without a URL yet is hidden rather than rendered as a dead link.
 const SOCIALS = [
   { label: "LinkedIn", Icon: LinkedInIcon, href: "https://www.linkedin.com/company/praxxt" },
-  { label: "Facebook", Icon: FacebookIcon, href: null },
-  { label: "Instagram", Icon: InstagramIcon, href: null },
+  { label: "Facebook", Icon: FacebookIcon, href: "https://www.facebook.com/profile.php?id=61595247760565" },
+  { label: "Instagram", Icon: InstagramIcon, href: "https://www.instagram.com/pra__xxt/" },
   { label: "YouTube", Icon: YouTubeIcon, href: null },
 ].filter((s): s is typeof s & { href: string } => s.href !== null);
 
