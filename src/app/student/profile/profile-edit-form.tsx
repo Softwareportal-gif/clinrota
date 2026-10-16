@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { updateStudentProfile } from "./actions";
-import { TEAL, TEXT_SECONDARY, BORDER } from "../dashboard-sections/colors";
+import { ACCENT, TEXT_SECONDARY, BORDER } from "../dashboard-sections/colors";
 
 export function ProfileEditForm({
   phone,
@@ -58,12 +58,12 @@ export function ProfileEditForm({
         />
       </div>
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
-      {state?.ok && <p className="text-sm" style={{ color: TEAL }}>Saved.</p>}
+      {state?.ok && <p className="text-sm" style={{ color: ACCENT }}>Saved.</p>}
       <button
         type="submit"
         disabled={isPending}
         className="rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-        style={{ backgroundColor: TEAL }}
+        style={{ backgroundColor: ACCENT }}
       >
         {isPending ? "Saving..." : "Save changes"}
       </button>

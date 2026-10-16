@@ -2,7 +2,7 @@
 // language as the landing page's icon sets (48-unit viewBox, stroke-width
 // 3, round caps), single-color via a `color` prop.
 
-export function PlayIcon({ className, color = "#0A3F38" }: { className?: string; color?: string }) {
+export function PlayIcon({ className, color = "#17153B" }: { className?: string; color?: string }) {
   return (
     <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
       <circle cx="24" cy="24" r="19" fill="none" stroke={color} strokeWidth="3" />
@@ -11,7 +11,7 @@ export function PlayIcon({ className, color = "#0A3F38" }: { className?: string;
   );
 }
 
-export function TicketIcon({ className, color = "#0A3F38" }: { className?: string; color?: string }) {
+export function TicketIcon({ className, color = "#17153B" }: { className?: string; color?: string }) {
   return (
     <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
       <path

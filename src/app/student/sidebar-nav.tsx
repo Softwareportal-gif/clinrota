@@ -11,7 +11,7 @@ import {
   ClinicalLogIcon,
   MessagesIcon,
 } from "./sidebar-icons";
-import { TEAL } from "./dashboard-sections/colors";
+import { ACCENT } from "./dashboard-sections/colors";
 
 const NAV_ITEMS = [
   { href: "/student", label: "Dashboard", Icon: DashboardIcon, exact: true },
@@ -41,14 +41,14 @@ export function StudentSidebarNav() {
               padding: "10px 12px",
               borderRadius: 8,
               background: isActive ? "rgba(255,255,255,0.08)" : "transparent",
-              borderLeft: isActive ? `3px solid ${TEAL}` : "3px solid transparent",
+              borderLeft: isActive ? `3px solid ${ACCENT}` : "3px solid transparent",
               marginLeft: -3,
             }}
           >
-            <Icon color={isActive ? "#FFFFFF" : "#C9DCD7"} />
+            <Icon color={isActive ? "#FFFFFF" : "#C4C1E6"} />
             <span
               style={{
-                color: isActive ? "#FFFFFF" : "#DCE9E5",
+                color: isActive ? "#FFFFFF" : "#DDDBF2",
                 fontSize: 14,
                 fontWeight: isActive ? 600 : 400,
               }}

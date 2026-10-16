@@ -7,8 +7,8 @@ import { PlayIcon, TicketIcon } from "./help-icons";
 // Same palette as the landing page / login page — kept as local constants
 // here too, matching how those two files already do it (no shared config
 // yet, since nothing besides color values would be shared).
-const DEEP_TEAL = "#0A3F38";
-const CORAL = "#E8734A";
+const INK = "#17153B";
+const HIGHLIGHT = "#D63A74";
 
 // Same address used everywhere else on the site (landing page contact
 // section, login page footer link) — deliberately the one real address.
@@ -50,7 +50,7 @@ function QuickLinksPanel({ isSignedIn }: { isSignedIn: boolean }) {
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
           style={{ backgroundColor: "rgba(232,115,74,0.1)" }}
         >
-          <TicketIcon className="h-5 w-5" color={CORAL} />
+          <TicketIcon className="h-5 w-5" color={HIGHLIGHT} />
         </span>
         <span>
           <span className="block text-sm font-bold text-gray-900">Create a ticket</span>
@@ -69,7 +69,7 @@ export default async function HelpPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="px-6 py-4" style={{ backgroundColor: DEEP_TEAL }}>
+      <header className="px-6 py-4" style={{ backgroundColor: INK }}>
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <Link
             href="/"
@@ -91,7 +91,7 @@ export default async function HelpPage() {
           </div>
 
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: DEEP_TEAL }}>
+            <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: INK }}>
               Help &amp; troubleshooting
             </h1>
             <p className="mt-2 text-base text-gray-600">
@@ -99,7 +99,7 @@ export default async function HelpPage() {
             </p>
 
             <section id="login-access" className="mt-10 scroll-mt-6">
-              <h2 className="text-sm font-extrabold uppercase tracking-widest" style={{ color: CORAL }}>
+              <h2 className="text-sm font-extrabold uppercase tracking-widest" style={{ color: HIGHLIGHT }}>
                 Login &amp; access
               </h2>
               <dl className="mt-6 space-y-8">
@@ -113,7 +113,7 @@ export default async function HelpPage() {
             </section>
 
             <section className="mt-14 border-t border-gray-100 pt-10">
-              <h2 className="text-sm font-extrabold uppercase tracking-widest" style={{ color: CORAL }}>
+              <h2 className="text-sm font-extrabold uppercase tracking-widest" style={{ color: HIGHLIGHT }}>
                 Still stuck?
               </h2>
               <p className="mt-4 text-base text-gray-600">
@@ -121,7 +121,7 @@ export default async function HelpPage() {
                 <a
                   href={`mailto:${CONTACT_EMAIL}`}
                   className="font-semibold underline"
-                  style={{ color: DEEP_TEAL }}
+                  style={{ color: INK }}
                 >
                   {CONTACT_EMAIL}
                 </a>

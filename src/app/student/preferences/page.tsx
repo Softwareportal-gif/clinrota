@@ -2,7 +2,7 @@ import { requireRole } from "@/lib/require-role";
 import { getStudentProfileByUserId } from "@/lib/student";
 import { getActiveCycleForStudent, getPreferenceStatus } from "@/lib/preference-cycle";
 import { prisma } from "@/lib/prisma";
-import { DARK_GREEN, TEXT_SECONDARY } from "../dashboard-sections/colors";
+import { INK, TEXT_SECONDARY } from "../dashboard-sections/colors";
 import { RotationPreferencesSection } from "../dashboard-sections/rotation-preferences-section";
 
 function fmtDeadline(d: Date) {
@@ -52,7 +52,7 @@ export default async function StudentPreferencesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-bold" style={{ color: DARK_GREEN }}>Rotation Preferences</h1>
+        <h1 className="text-xl font-bold" style={{ color: INK }}>Rotation Preferences</h1>
         <p className="mt-1 text-sm" style={{ color: TEXT_SECONDARY }}>
           Rank your preferred clinical sites before the submission deadline.
         </p>

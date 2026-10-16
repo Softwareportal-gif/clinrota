@@ -3,7 +3,7 @@
 import { useActionState, useRef } from "react";
 import { createTicket } from "./actions";
 
-const DEEP_TEAL = "#0A3F38";
+const INK = "#17153B";
 
 export function TicketForm({
   initialSubject,
@@ -63,7 +63,7 @@ export function TicketForm({
         type="submit"
         disabled={isPending}
         className="rounded-md px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-        style={{ backgroundColor: DEEP_TEAL }}
+        style={{ backgroundColor: INK }}
       >
         {isPending ? "Sending..." : "Submit ticket"}
       </button>

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/wordmark";
 
-const DEEP_TEAL = "#0A3F38";
-const CORAL = "#E8734A";
+const INK = "#17153B";
+const HIGHLIGHT = "#D63A74";
 
 type Video = { title: string; description: string; embedUrl: string };
 
@@ -48,7 +48,7 @@ function VideoEntry({ video }: { video: Video }) {
 export default function TrainingVideosPage() {
   return (
     <div className="min-h-screen bg-white">
-      <header className="px-6 py-4" style={{ backgroundColor: DEEP_TEAL }}>
+      <header className="px-6 py-4" style={{ backgroundColor: INK }}>
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <Link
             href="/"
@@ -64,7 +64,7 @@ export default function TrainingVideosPage() {
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: DEEP_TEAL }}>
+        <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: INK }}>
           Training videos
         </h1>
         <p className="mt-2 text-base text-gray-600">
@@ -76,7 +76,7 @@ export default function TrainingVideosPage() {
             <section key={section.title}>
               <h2
                 className="text-sm font-extrabold uppercase tracking-widest"
-                style={{ color: CORAL }}
+                style={{ color: HIGHLIGHT }}
               >
                 {section.title}
               </h2>

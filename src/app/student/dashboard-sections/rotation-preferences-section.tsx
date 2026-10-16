@@ -8,17 +8,17 @@ import {
   submitPreferences,
   type ActionResult,
 } from "../preferences/actions";
-import { DARK_GREEN, TEAL, TEXT_SECONDARY, BORDER } from "./colors";
+import { INK, ACCENT, TEXT_SECONDARY, BORDER } from "./colors";
 import type { PreferenceStudentStatus } from "@/lib/preference-cycle";
 
 type ShortlistItem = { id: string; clinicalSiteId: string; siteName: string; location: string | null; rank: number };
 type AvailableSite = { id: string; name: string; location: string | null };
 
 const STATUS_PILL: Record<PreferenceStudentStatus, { bg: string; color: string; label: string }> = {
-  NO_CYCLE: { bg: "#EFEBE0", color: TEXT_SECONDARY, label: "No cycle" },
+  NO_CYCLE: { bg: "#F1F0F8", color: TEXT_SECONDARY, label: "No cycle" },
   DRAFT: { bg: "#FDF1DC", color: "#92620A", label: "Draft" },
   SUBMITTED: { bg: "#E4F3EA", color: "#1F6B3D", label: "Submitted" },
-  LOCKED: { bg: "#EFEBE0", color: TEXT_SECONDARY, label: "Locked" },
+  LOCKED: { bg: "#F1F0F8", color: TEXT_SECONDARY, label: "Locked" },
 };
 
 export function RotationPreferencesSection({
@@ -62,13 +62,13 @@ export function RotationPreferencesSection({
     <section className="rounded-2xl bg-white p-6" style={{ border: `1px solid ${BORDER}` }}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         {showHeading && (
-          <h2 className="text-base font-bold" style={{ color: DARK_GREEN }}>
+          <h2 className="text-base font-bold" style={{ color: INK }}>
             Rotation Preferences
           </h2>
         )}
         <span
           className="rounded-full px-3 py-1 text-xs font-semibold"
-          style={{ background: deadlineLabel && status === "DRAFT" ? "#E4EFEC" : pill.bg, color: deadlineLabel && status === "DRAFT" ? TEAL : pill.color }}
+          style={{ background: deadlineLabel && status === "DRAFT" ? "#EFECFF" : pill.bg, color: deadlineLabel && status === "DRAFT" ? ACCENT : pill.color }}
         >
           {deadlineLabel && status === "DRAFT" ? `Due ${deadlineLabel}` : pill.label}
         </span>
@@ -107,12 +107,12 @@ export function RotationPreferencesSection({
                     >
                       <span
                         className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
-                        style={{ backgroundColor: DARK_GREEN }}
+                        style={{ backgroundColor: INK }}
                       >
                         {i + 1}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold" style={{ color: "#1E2A27" }}>{item.siteName}</p>
+                        <p className="truncate text-sm font-semibold" style={{ color: "#17153B" }}>{item.siteName}</p>
                         {item.location && <p className="truncate text-xs" style={{ color: TEXT_SECONDARY }}>{item.location}</p>}
                       </div>
                       {canEdit && (
@@ -154,8 +154,8 @@ export function RotationPreferencesSection({
                 </ul>
               )}
 
-              <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full" style={{ background: "#E9E4D8" }}>
-                <div className="h-full rounded-full" style={{ width: `${percent}%`, background: TEAL }} />
+              <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full" style={{ background: "#E8E6F4" }}>
+                <div className="h-full rounded-full" style={{ width: `${percent}%`, background: ACCENT }} />
               </div>
               <p className="mt-1.5 text-xs" style={{ color: TEXT_SECONDARY }}>
                 {shortlist.length} of {maxSelections} sites selected
@@ -167,7 +167,7 @@ export function RotationPreferencesSection({
                   disabled={isPending || !canSubmit}
                   onClick={() => cycleId && run(() => submitPreferences(cycleId))}
                   className="mt-4 rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
-                  style={{ backgroundColor: TEAL }}
+                  style={{ backgroundColor: ACCENT }}
                 >
                   Submit preferences
                 </button>
@@ -195,7 +195,7 @@ export function RotationPreferencesSection({
                         style={{ border: `1px solid ${BORDER}` }}
                       >
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold" style={{ color: "#1E2A27" }}>{site.name}</p>
+                          <p className="truncate text-sm font-semibold" style={{ color: "#17153B" }}>{site.name}</p>
                           {site.location && <p className="truncate text-xs" style={{ color: TEXT_SECONDARY }}>{site.location}</p>}
                         </div>
                         <button
@@ -203,7 +203,7 @@ export function RotationPreferencesSection({
                           disabled={isPending || shortlist.length >= maxSelections}
                           onClick={() => cycleId && run(() => addPreference(cycleId, site.id, undefined, new FormData()))}
                           className="shrink-0 rounded-md px-2.5 py-1 text-xs font-semibold disabled:opacity-30"
-                          style={{ border: `1px solid ${BORDER}`, color: DARK_GREEN }}
+                          style={{ border: `1px solid ${BORDER}`, color: INK }}
                         >
                           + Add
                         </button>

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/badge";
 import { getEffectiveDocStatus, DOC_STATUS_LABELS, DOC_STATUS_BADGE_CLASSES } from "@/lib/compliance-status";
 import { UploadForm } from "./upload-form";
-import { DARK_GREEN, TEXT_SECONDARY, BORDER } from "../dashboard-sections/colors";
+import { INK, TEXT_SECONDARY, BORDER } from "../dashboard-sections/colors";
 
 export default async function StudentCompliancePage() {
   const session = await requireRole("STUDENT");
@@ -24,7 +24,7 @@ export default async function StudentCompliancePage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-bold" style={{ color: DARK_GREEN }}>Required Documents</h1>
+        <h1 className="text-xl font-bold" style={{ color: INK }}>Required Documents</h1>
         <p className="mt-1 text-sm" style={{ color: TEXT_SECONDARY }}>
           Upload and track the compliance documents your program requires.
         </p>
@@ -39,7 +39,7 @@ export default async function StudentCompliancePage() {
             return (
               <div key={type.id} className="rounded-xl bg-white p-4" style={{ border: `1px solid ${BORDER}` }}>
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium" style={{ color: "#1E2A27" }}>{type.name}</p>
+                  <p className="text-sm font-medium" style={{ color: "#17153B" }}>{type.name}</p>
                   <Badge label={DOC_STATUS_LABELS[status]} className={DOC_STATUS_BADGE_CLASSES[status]} />
                 </div>
                 {doc && (

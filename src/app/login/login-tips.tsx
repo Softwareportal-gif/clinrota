@@ -79,7 +79,7 @@ export function LoginTips() {
             <span
               key={tip}
               className="h-1.5 w-1.5 rounded-full transition-colors duration-300"
-              style={{ backgroundColor: i === activeIndex ? "#E8734A" : "rgba(10,63,56,0.2)" }}
+              style={{ backgroundColor: i === activeIndex ? "#D63A74" : "rgba(10,63,56,0.2)" }}
             />
           ))}
         </div>

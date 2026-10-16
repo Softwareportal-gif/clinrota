@@ -2,52 +2,58 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #17153b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-manrope);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Praxxt "Bright" brand, applied app-wide by retuning the palettes the
+   dashboards already use: every `blue-*` utility becomes brand violet and
+   every `gray-*` a lavender-tinted neutral, so coordinator, supervisor and
+   admin pages pick up the brand without per-page rewrites. Status hues
+   (green/amber/red) are deliberately left as Tailwind's defaults. */
+@theme {
+  --color-blue-50: #f3f1ff;
+  --color-blue-100: #e9e5ff;
+  --color-blue-200: #d4ccfe;
+  --color-blue-300: #b5a6fc;
+  --color-blue-400: #8e78f8;
+  --color-blue-500: #6f55f4;
+  --color-blue-600: #5a3bf0;
+  --color-blue-700: #4a2dd6;
+  --color-blue-800: #3d27ae;
+  --color-blue-900: #33248a;
+  --color-blue-950: #1f1659;
+
+  --color-gray-50: #f8f7fc;
+  --color-gray-100: #f1f0f8;
+  --color-gray-200: #e4e2ef;
+  --color-gray-300: #cfcce0;
+  --color-gray-400: #9e9bb5;
+  --color-gray-500: #6e6b87;
+  --color-gray-600: #534f6e;
+  --color-gray-700: #3e3a5a;
+  --color-gray-800: #2a2747;
+  --color-gray-900: #17153b;
+  --color-gray-950: #0e0c26;
 }
 
+/* The pages are designed light-only; following the OS dark preference only
+   darkened the page background behind white cards. */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Seamless-loop marquee for the landing page's "Trusted by..." partner
-   strip (src/app/landing-page.tsx) — the track renders its content twice
-   back to back and slides exactly one copy's width (-50%) before looping,
-   so there's no visible seam regardless of how many partners are in it. */
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-/* Fade-in for each rotating line in the login page's tips strip
-   (src/app/login/login-tips.tsx) — re-triggers because the element is
-   re-keyed on every rotation, not because the animation loops itself. */
-@keyframes loginTipFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* One brand-coloured keyboard focus indicator everywhere, instead of each
+   browser's default (amber in some). */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid #5a3bf0;
+  outline-offset: 2px;
 }

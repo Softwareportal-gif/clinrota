@@ -8,9 +8,9 @@ import { LoginTips } from "./login-tips";
 // kept as local constants here rather than a shared module since neither
 // page currently imports from the other and a two-file palette isn't
 // worth a shared config yet.
-const DEEP_TEAL = "#0A3F38";
-const CORAL = "#E8734A";
-const CREAM = "#F3EFE7";
+const INK = "#17153B";
+const HIGHLIGHT = "#D63A74";
+const CANVAS = "#F8F7FF";
 
 export default async function LoginPage({
   searchParams,
@@ -26,7 +26,7 @@ export default async function LoginPage({
           just without the illustration and its extra scroll height. */}
       <div
         className="flex flex-col justify-between px-8 py-10 sm:px-12 lg:py-14"
-        style={{ background: `linear-gradient(to bottom, ${CREAM}, #FFFFFF)` }}
+        style={{ background: `linear-gradient(to bottom, ${CANVAS}, #FFFFFF)` }}
       >
         <div>
           <Link
@@ -37,12 +37,12 @@ export default async function LoginPage({
             <Wordmark size={26} />
           </Link>
 
-          <p className="mt-10 text-sm font-bold uppercase tracking-widest" style={{ color: CORAL }}>
+          <p className="mt-10 text-sm font-bold uppercase tracking-widest" style={{ color: HIGHLIGHT }}>
             For clinical training programs
           </p>
           <h1
             className="mt-3 text-3xl font-extrabold leading-[1.1] tracking-tight sm:text-4xl"
-            style={{ color: DEEP_TEAL }}
+            style={{ color: INK }}
           >
             Every Rotation.
             <br />
@@ -78,13 +78,13 @@ export default async function LoginPage({
             </p>
             <p>
               Representing a school or hospital?{" "}
-              <Link href="/#contact" className="font-semibold underline" style={{ color: CORAL }}>
+              <Link href="/#contact" className="font-semibold underline" style={{ color: HIGHLIGHT }}>
                 Request a demo →
               </Link>
             </p>
             <p>
               Trouble signing in?{" "}
-              <Link href="/help#login-access" className="font-semibold underline" style={{ color: DEEP_TEAL }}>
+              <Link href="/help#login-access" className="font-semibold underline" style={{ color: INK }}>
                 Visit our help page
               </Link>
             </p>

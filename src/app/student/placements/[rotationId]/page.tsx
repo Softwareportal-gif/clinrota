@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/require-role";
 import { getStudentProfileByUserId } from "@/lib/student";
 import { getPlacementSummaries } from "@/lib/placement-summary";
-import { DARK_GREEN, TEAL, TEXT_SECONDARY, BORDER, STATUS_GREEN, STATUS_AMBER } from "../../dashboard-sections/colors";
+import { INK, ACCENT, TEXT_SECONDARY, BORDER, STATUS_GREEN, STATUS_AMBER } from "../../dashboard-sections/colors";
 
 function fmtDate(d: Date) {
   return new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
@@ -26,10 +26,10 @@ export default async function PlacementDetailPage({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link href="/student/placements" className="text-xs font-semibold" style={{ color: TEAL }}>
+        <Link href="/student/placements" className="text-xs font-semibold" style={{ color: ACCENT }}>
           ← Back to placements
         </Link>
-        <h1 className="mt-2 text-xl font-bold" style={{ color: DARK_GREEN }}>
+        <h1 className="mt-2 text-xl font-bold" style={{ color: INK }}>
           {placement.siteName}
           {placement.departmentName ? ` — ${placement.departmentName}` : ""}
         </h1>
@@ -40,7 +40,7 @@ export default async function PlacementDetailPage({
 
       <section className="rounded-2xl bg-white p-6" style={{ border: `1px solid ${BORDER}` }}>
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold" style={{ color: DARK_GREEN }}>To-do list</h2>
+          <h2 className="text-base font-bold" style={{ color: INK }}>To-do list</h2>
           <span className="text-sm font-semibold" style={{ color: TEXT_SECONDARY }}>
             {doneCount} of {placement.checklist.length} done
           </span>
@@ -59,7 +59,7 @@ export default async function PlacementDetailPage({
                   style={{ background: item.done ? STATUS_GREEN : STATUS_AMBER }}
                   aria-hidden="true"
                 />
-                <span className="text-sm" style={{ color: "#1E2A27", fontWeight: item.done ? 400 : 600 }}>
+                <span className="text-sm" style={{ color: "#17153B", fontWeight: item.done ? 400 : 600 }}>
                   {item.label}
                 </span>
                 <span className="text-xs" style={{ color: item.done ? STATUS_GREEN : STATUS_AMBER }}>
@@ -67,7 +67,7 @@ export default async function PlacementDetailPage({
                 </span>
               </div>
               {!item.done && (
-                <Link href={item.actionHref} className="shrink-0 text-xs font-semibold" style={{ color: TEAL }}>
+                <Link href={item.actionHref} className="shrink-0 text-xs font-semibold" style={{ color: ACCENT }}>
                   {item.actionLabel}
                 </Link>
               )}

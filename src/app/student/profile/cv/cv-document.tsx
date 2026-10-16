@@ -2,13 +2,13 @@ import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { ENTRUSTMENT_LEVEL_VALUE } from "@/lib/entrustment";
 import { CV_LEVEL_LABELS, type StudentCvData } from "@/lib/student-cv";
 
-const DARK = "#0A3F38";
-const TEAL = "#0E6F63";
-const TEAL_SOFT = "#A7D3CA";
-const CREAM = "#F3EFE7";
-const TEXT = "#1E2A27";
-const MUTED = "#5B6B67";
-const RULE = "#E4DDD0";
+const DARK = "#17153B";
+const ACCENT = "#5A3BF0";
+const ACCENT_SOFT = "#C8BFFF";
+const CANVAS = "#F8F7FF";
+const TEXT = "#17153B";
+const MUTED = "#5E5C7A";
+const RULE = "#ECEBF5";
 
 const PAGE_X = 44;
 const PAGE_TOP = 40;
@@ -36,20 +36,20 @@ const styles = StyleSheet.create({
     backgroundColor: DARK,
   },
   name: { fontSize: 26, lineHeight: 1.15, fontFamily: "Helvetica-Bold", color: "#FFFFFF", letterSpacing: 0.3 },
-  headline: { fontSize: 11, color: TEAL_SOFT, marginTop: 4 },
+  headline: { fontSize: 11, color: ACCENT_SOFT, marginTop: 4 },
   contactRow: { flexDirection: "row", flexWrap: "wrap", marginTop: 12 },
-  contactItem: { fontSize: 9, color: "#E6F1EE", marginRight: 18 },
-  contactLabel: { fontFamily: "Helvetica-Bold", color: TEAL_SOFT },
+  contactItem: { fontSize: 9, color: "#EFECFF", marginRight: 18 },
+  contactLabel: { fontFamily: "Helvetica-Bold", color: ACCENT_SOFT },
 
   stats: { flexDirection: "row", marginTop: 18 },
-  stat: { flex: 1, backgroundColor: CREAM, borderRadius: 4, paddingVertical: 9, paddingHorizontal: 10, marginRight: 8 },
+  stat: { flex: 1, backgroundColor: CANVAS, borderRadius: 4, paddingVertical: 9, paddingHorizontal: 10, marginRight: 8 },
   statLast: { marginRight: 0 },
   statValue: { fontSize: 16, lineHeight: 1.1, fontFamily: "Helvetica-Bold", color: DARK },
   statLabel: { fontSize: 7.5, color: MUTED, marginTop: 2, textTransform: "uppercase", letterSpacing: 0.6 },
 
   section: { marginTop: 20 },
   sectionHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
-  sectionAccent: { width: 14, height: 2.5, backgroundColor: TEAL, marginRight: 7 },
+  sectionAccent: { width: 14, height: 2.5, backgroundColor: ACCENT, marginRight: 7 },
   sectionTitle: { fontSize: 9.5, fontFamily: "Helvetica-Bold", color: DARK, textTransform: "uppercase", letterSpacing: 1.2 },
   sectionRule: { flex: 1, height: 0.75, backgroundColor: RULE, marginLeft: 8 },
 
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   chip: {
     fontSize: 8.5,
     color: DARK,
-    backgroundColor: CREAM,
+    backgroundColor: CANVAS,
     borderRadius: 9,
     paddingVertical: 2.5,
     paddingHorizontal: 8,
@@ -75,19 +75,19 @@ const styles = StyleSheet.create({
   // Timeline: a dot per placement on a continuous left rule.
   timelineItem: { flexDirection: "row" },
   rail: { width: 16, alignItems: "center" },
-  dot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: TEAL, marginTop: 3.5 },
-  dotCurrent: { backgroundColor: "#FFFFFF", borderWidth: 2, borderColor: TEAL },
+  dot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: ACCENT, marginTop: 3.5 },
+  dotCurrent: { backgroundColor: "#FFFFFF", borderWidth: 2, borderColor: ACCENT },
   line: { width: 1, flexGrow: 1, backgroundColor: RULE, marginTop: 2 },
   timelineBody: { flex: 1, paddingBottom: 12, paddingLeft: 4 },
   placementTop: { flexDirection: "row", justifyContent: "space-between" },
   placementTitle: { fontFamily: "Helvetica-Bold", fontSize: 10.5, flex: 1, paddingRight: 10 },
-  dates: { fontSize: 8.5, color: TEAL, fontFamily: "Helvetica-Bold" },
+  dates: { fontSize: 8.5, color: ACCENT, fontFamily: "Helvetica-Bold" },
   badgeRow: { flexDirection: "row", flexWrap: "wrap", marginTop: 4 },
   badge: {
     fontSize: 8,
-    color: TEAL,
+    color: ACCENT,
     borderWidth: 0.75,
-    borderColor: TEAL_SOFT,
+    borderColor: ACCENT_SOFT,
     borderRadius: 3,
     paddingVertical: 1.5,
     paddingHorizontal: 5,
@@ -95,14 +95,14 @@ const styles = StyleSheet.create({
   },
 
   skillHeader: { flexDirection: "row", paddingBottom: 4, borderBottomWidth: 0.75, borderBottomColor: RULE },
-  skillRow: { flexDirection: "row", alignItems: "center", paddingVertical: 5, borderBottomWidth: 0.5, borderBottomColor: "#EFEAE0" },
+  skillRow: { flexDirection: "row", alignItems: "center", paddingVertical: 5, borderBottomWidth: 0.5, borderBottomColor: "#F1F0F8" },
   skillName: { flex: 3.2, paddingRight: 8 },
   skillCases: { width: 38, textAlign: "center" },
   skillLevel: { flex: 2.4, flexDirection: "row", alignItems: "center" },
   th: { fontSize: 7.5, color: MUTED, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 0.6 },
   meter: { flexDirection: "row", marginRight: 7 },
-  pip: { width: 6, height: 6, borderRadius: 3, marginRight: 2.5, backgroundColor: "#E2DCCF" },
-  pipOn: { backgroundColor: TEAL },
+  pip: { width: 6, height: 6, borderRadius: 3, marginRight: 2.5, backgroundColor: "#E2E0F0" },
+  pipOn: { backgroundColor: ACCENT },
   levelText: { fontSize: 8.5, color: MUTED },
 
   // Separate absolutely-positioned pieces: a fixed flex-row View holding a

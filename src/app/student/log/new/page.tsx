@@ -3,7 +3,7 @@ import { getStudentProfileByUserId } from "@/lib/student";
 import { prisma } from "@/lib/prisma";
 import { NewCaseFlow } from "./new-case-flow";
 import { parseExtraLogFields } from "@/lib/discipline-template";
-import { DARK_GREEN, TEXT_SECONDARY } from "../../dashboard-sections/colors";
+import { INK, TEXT_SECONDARY } from "../../dashboard-sections/colors";
 
 export default async function NewLogEntryPage() {
   const session = await requireRole("STUDENT");
@@ -53,7 +53,7 @@ export default async function NewLogEntryPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-bold" style={{ color: DARK_GREEN }}>Log a case</h1>
+        <h1 className="text-xl font-bold" style={{ color: INK }}>Log a case</h1>
       </div>
       {rotations.length === 0 ? (
         <p className="text-sm" style={{ color: TEXT_SECONDARY }}>

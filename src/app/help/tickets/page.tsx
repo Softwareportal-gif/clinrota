@@ -6,7 +6,7 @@ import { Wordmark } from "@/components/wordmark";
 import { Badge } from "@/components/badge";
 import { TicketForm } from "./ticket-form";
 
-const DEEP_TEAL = "#0A3F38";
+const INK = "#17153B";
 
 const STATUS_LABELS = { OPEN: "Open", RESOLVED: "Resolved" } as const;
 const STATUS_CLASSES = {
@@ -34,7 +34,7 @@ export default async function TicketsPage({
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="px-6 py-4" style={{ backgroundColor: DEEP_TEAL }}>
+      <header className="px-6 py-4" style={{ backgroundColor: INK }}>
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <Link
             href="/"
@@ -50,7 +50,7 @@ export default async function TicketsPage({
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: DEEP_TEAL }}>
+        <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: INK }}>
           Create a ticket
         </h1>
         <p className="mt-2 text-base text-gray-600">

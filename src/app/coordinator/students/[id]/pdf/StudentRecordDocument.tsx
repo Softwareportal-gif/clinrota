@@ -6,21 +6,21 @@ import { STATUS_LABELS } from "@/lib/log-entry-constants";
 import type { LogEntryStatus } from "@/generated/prisma/client";
 
 const styles = StyleSheet.create({
-  page: { padding: 36, fontSize: 10, fontFamily: "Helvetica", color: "#1f2937" },
+  page: { padding: 36, fontSize: 10, fontFamily: "Helvetica", color: "#2A2747" },
   h1: { fontSize: 16, fontWeight: 700, marginBottom: 2 },
-  subtitle: { fontSize: 9, color: "#6b7280", marginBottom: 16 },
-  h2: { fontSize: 11, fontWeight: 700, marginTop: 16, marginBottom: 6, borderBottom: "1pt solid #e5e7eb", paddingBottom: 3 },
+  subtitle: { fontSize: 9, color: "#6E6B87", marginBottom: 16 },
+  h2: { fontSize: 11, fontWeight: 700, marginTop: 16, marginBottom: 6, borderBottom: "1pt solid #E4E2EF", paddingBottom: 3 },
   infoGrid: { flexDirection: "row", flexWrap: "wrap", marginBottom: 4 },
   infoItem: { width: "50%", marginBottom: 4 },
-  infoLabel: { fontSize: 8, color: "#9ca3af" },
+  infoLabel: { fontSize: 8, color: "#9E9BB5" },
   infoValue: { fontSize: 10 },
   table: { display: "flex", width: "auto" },
-  tableRow: { flexDirection: "row", borderBottom: "0.5pt solid #e5e7eb", paddingVertical: 4 },
-  tableHeaderRow: { flexDirection: "row", borderBottom: "1pt solid #9ca3af", paddingVertical: 4, fontWeight: 700 },
+  tableRow: { flexDirection: "row", borderBottom: "0.5pt solid #E4E2EF", paddingVertical: 4 },
+  tableHeaderRow: { flexDirection: "row", borderBottom: "1pt solid #9E9BB5", paddingVertical: 4, fontWeight: 700 },
   cell: { flex: 1, paddingRight: 4 },
-  small: { fontSize: 8, color: "#6b7280" },
-  card: { marginBottom: 8, padding: 8, border: "0.5pt solid #e5e7eb" },
-  emptyNote: { fontSize: 9, color: "#9ca3af", fontStyle: "italic" },
+  small: { fontSize: 8, color: "#6E6B87" },
+  card: { marginBottom: 8, padding: 8, border: "0.5pt solid #E4E2EF" },
+  emptyNote: { fontSize: 9, color: "#9E9BB5", fontStyle: "italic" },
 });
 
 function fmtDate(d: Date) {

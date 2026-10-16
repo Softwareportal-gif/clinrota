@@ -11,4 +11,5 @@ export const manrope = localFont({
     { path: "./manrope/manrope-latin-800-normal.woff2", weight: "800", style: "normal" },
   ],
   display: "swap",
+  variable: "--font-manrope",
 });

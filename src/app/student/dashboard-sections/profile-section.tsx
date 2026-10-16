@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { DARK_GREEN, TEAL, CORAL, TEXT_SECONDARY, BORDER } from "./colors";
+import { INK, ACCENT, HIGHLIGHT, TEXT_SECONDARY, BORDER } from "./colors";
 
 export function ProfileSection({
   name,
@@ -26,12 +26,12 @@ export function ProfileSection({
       <div className="flex items-center gap-4">
         <div
           className="flex h-13 w-13 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white"
-          style={{ backgroundColor: CORAL, width: 52, height: 52 }}
+          style={{ backgroundColor: HIGHLIGHT, width: 52, height: 52 }}
         >
           {initial}
         </div>
         <div>
-          <p className="text-sm font-bold" style={{ color: "#1E2A27" }}>{name}</p>
+          <p className="text-sm font-bold" style={{ color: "#17153B" }}>{name}</p>
           <p className="text-xs" style={{ color: TEXT_SECONDARY }}>
             {cohortLabel ? `${cohortLabel} · ${programName}` : programName}
           </p>
@@ -41,18 +41,18 @@ export function ProfileSection({
       <div className="flex-1">
         <div className="flex items-center justify-between text-xs" style={{ color: TEXT_SECONDARY }}>
           <span>Profile completeness</span>
-          <span className="font-semibold" style={{ color: DARK_GREEN }}>{percent}%</span>
+          <span className="font-semibold" style={{ color: INK }}>{percent}%</span>
         </div>
-        <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full" style={{ background: "#E9E4D8" }}>
-          <div className="h-full rounded-full" style={{ width: `${percent}%`, background: TEAL }} />
+        <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full" style={{ background: "#E8E6F4" }}>
+          <div className="h-full rounded-full" style={{ width: `${percent}%`, background: ACCENT }} />
         </div>
       </div>
 
       <div className="flex shrink-0 flex-col items-start gap-1 sm:items-end">
-        <Link href="/student/profile" className="text-sm font-semibold" style={{ color: TEAL }}>
+        <Link href="/student/profile" className="text-sm font-semibold" style={{ color: ACCENT }}>
           Finish your profile →
         </Link>
-        <a href="/student/profile/cv" download className="text-sm font-semibold" style={{ color: TEAL }}>
+        <a href="/student/profile/cv" download className="text-sm font-semibold" style={{ color: ACCENT }}>
           Download my CV ↓
         </a>
       </div>
