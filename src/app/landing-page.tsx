@@ -1,469 +1,459 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Sora } from "next/font/google";
-import { Logo } from "@/components/logo";
-import { SoapNoteIcon, OfflineSyncIcon, SignOffIcon, ComplianceIcon } from "@/components/how-it-works-icons";
-import { NurseIcon, MidwiferyIcon, MedicineIcon, PharmacyIcon, PhysiotherapyIcon } from "@/components/who-its-for-icons";
+import { manrope } from "@/fonts/manrope";
+import { Wordmark } from "@/components/wordmark";
 import { LinkedInIcon, FacebookIcon, InstagramIcon, YouTubeIcon } from "@/components/social-icons";
 import { ContactForm } from "./contact-form";
 
-const sora = Sora({ subsets: ["latin"], weight: ["600", "800"] });
-
-// Deep teal is the same brand family as the logo's original teal
-// (#0E6F63), just darker/richer — used for the nav bar, footer, and every
-// heading. Coral is the one bold accent, used sparingly: the primary CTA
-// and small decorative accents (underline bars, active pills) only —
-// never a large fill or a second background color.
-const DEEP_TEAL = "#0A3F38";
-const CORAL = "#E8734A";
-const CREAM = "#F3EFE7";
-const INK = "#10201C";
-// A desaturated step toward grey from DEEP_TEAL — used only for
-// not-yet-onboarded discipline cards, kept in the teal family (not plain
-// grey) so it still reads as "planned", not "broken" or off-brand.
-const MUTED_TEAL = "#7E948E";
-// Footer-only darker steps down from DEEP_TEAL — no existing Tailwind/CSS
-// theme tokens for these (checked src/app/globals.css and found none), so
-// they're plain hex like the rest of this page's palette constants.
-const FOOTER_DARK = "#06231E";
-const FOOTER_MID = "#123B33";
+const INK = "#17153B";
+const BODY = "#4A4867";
+const MUTED = "#6B6987";
+const VIOLET = "#5A3BF0";
+const BLUE = "#2563EB";
+const LINE = "#ECEBF5";
+const SOFT = "#F8F7FF";
+const BRAND_GRADIENT = `linear-gradient(90deg, ${VIOLET}, ${BLUE})`;
+const TEXT_GRADIENT = `linear-gradient(90deg, ${VIOLET}, ${BLUE} 55%, #0E9FB3)`;
+const HERO_BLEND =
+  "radial-gradient(ellipse at 12% 18%, rgba(90,59,240,.20), transparent 46%), radial-gradient(ellipse at 88% 12%, rgba(18,181,201,.22), transparent 44%), radial-gradient(ellipse at 72% 92%, rgba(255,92,138,.14), transparent 48%), #F8F7FF";
 
 const CONTACT_EMAIL = "hello@praxxt.com";
-const PILOT_INSTITUTION = "St. John of God College of Health";
 
-// Data, not hardcoded JSX — adding a second/third real confirmed partner
-// later is just appending a row here and dropping in a logo file at
-// public/images/partners/. Rendered as a looping marquee (see the
-// "Trusted by..." section below) regardless of length, so a lone entry
-// today just means the same one name repeats as it loops — never padded
-// with anything fake to look fuller than it is.
-const PARTNERS: { name: string; location: string | null; logoSrc: string | null }[] = [
-  { name: PILOT_INSTITUTION, location: "Ghana", logoSrc: "/images/partners/st-john-of-god-logo.webp" },
+// Real, confirmed pilot partners only — append a row (and its logo under
+// public/images/partners/) as each new partner signs on; never pad this.
+const PARTNERS: { name: string; logoSrc: string }[] = [
+  { name: "St. John of God College of Health", logoSrc: "/images/partners/st-john-of-god-logo.webp" },
 ];
 
-type Partner = { name: string; location: string | null; logoSrc: string | null };
+const MODULES = [
+  {
+    title: "Clinical Logbook",
+    body: "Structured SOAP case entries mapped to your competency framework, with entrustment levels rated by supervisors.",
+    gradient: "linear-gradient(135deg, #5A3BF0, #8B6BFF)",
+    linkColor: VIOLET,
+    icon: <path d="M5 5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2zM9 8h6M9 12h6M9 16h3" />,
+  },
+  {
+    title: "Rotations & Placements",
+    body: "Assign rotations, collect student site preferences, and track supervised hours at every clinical site.",
+    gradient: "linear-gradient(135deg, #2563EB, #4FA3FF)",
+    linkColor: BLUE,
+    icon: (
+      <>
+        <path d="M12 21s-7-4.5-7-10a7 7 0 0 1 14 0c0 5.5-7 10-7 10z" />
+        <circle cx="12" cy="11" r="2.4" />
+      </>
+    ),
+  },
+  {
+    title: "Compliance & Records",
+    body: "Verify required documents before placements start, and give every student a supervisor-verified CV.",
+    gradient: "linear-gradient(135deg, #0E9FB3, #3FD0C9)",
+    linkColor: "#0B7F8F",
+    icon: <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6zM9 12l2 2 4-4" />,
+  },
+];
 
-function PartnerCard({ partner }: { partner: Partner }) {
+const DISCIPLINES = [
+  { name: "Nursing", available: true },
+  { name: "Midwifery", available: true },
+  { name: "Medicine", available: false },
+  { name: "Physiotherapy", available: false },
+  { name: "Pharmacy", available: false },
+  { name: "Physician Associate", available: false },
+];
+
+const REASONS = [
+  {
+    title: "Offline-first on the ward",
+    body: "Students log cases with no signal; records sync automatically when they reconnect.",
+    bar: `linear-gradient(90deg, ${VIOLET}, ${BLUE})`,
+  },
+  {
+    title: "Verified at every step",
+    body: "Cases, hours and documents count only once a supervisor or coordinator signs off.",
+    bar: `linear-gradient(90deg, ${BLUE}, #12B5C9)`,
+  },
+  {
+    title: "Competency-based by design",
+    body: "Live coverage shows exactly which competencies each student and cohort still needs.",
+    bar: "linear-gradient(90deg, #12B5C9, #3FD0C9)",
+  },
+  {
+    title: "Hands-on onboarding",
+    body: "We set up your cohorts, sites and competency framework with your team.",
+    bar: `linear-gradient(90deg, #FF5C8A, ${VIOLET})`,
+  },
+];
+
+const SECURITY = [
+  { title: "Role-based access", body: "Students, supervisors and coordinators see only what their role allows." },
+  { title: "Private document storage", body: "Compliance files are never public and open only to authorised users." },
+  { title: "Full audit trail", body: "Every review, sign-off and change is recorded with who and when." },
+  { title: "Encrypted in transit", body: "All traffic runs over HTTPS, on every device." },
+];
+
+const SOCIALS = [
+  // TODO: replace each href="#" with the real profile URL once the account exists
+  { label: "LinkedIn", Icon: LinkedInIcon, href: "#" },
+  { label: "Facebook", Icon: FacebookIcon, href: "#" },
+  { label: "Instagram", Icon: InstagramIcon, href: "#" },
+  { label: "YouTube", Icon: YouTubeIcon, href: "#" },
+];
+
+function Eyebrow({ children, color = VIOLET }: { children: React.ReactNode; color?: string }) {
+  return (
+    <p className="text-xs font-extrabold uppercase tracking-[0.14em]" style={{ color }}>
+      {children}
+    </p>
+  );
+}
+
+function DashboardPreview() {
+  const rows = [
+    { name: "Maya Thompson", placement: "St. Mary's · Medicine", hours: 48, status: "On track", ok: true },
+    { name: "Luis Romero", placement: "Northside · Maternity", hours: 32, status: "Needs documents", ok: false },
+  ];
   return (
     <div
-      className="flex max-w-xl shrink-0 items-start gap-4 rounded-2xl border bg-white p-6 text-left shadow-sm"
-      style={{ borderColor: "rgba(10,63,56,0.15)" }}
+      className="mx-auto mt-12 hidden w-full max-w-5xl rounded-t-3xl bg-white px-3.5 pt-3.5 text-left sm:block"
+      style={{ boxShadow: "0 30px 70px rgba(37,32,110,.16)" }}
+      aria-hidden="true"
     >
-      <div
-        className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl"
-        style={{ backgroundColor: "rgba(10,63,56,0.08)" }}
-      >
-        {partner.logoSrc ? (
-          <Image
-            src={partner.logoSrc}
-            alt={`${partner.name} crest`}
-            width={40}
-            height={40}
-            className="h-10 w-10 object-contain"
-          />
-        ) : (
-          // Fallback for any future partner added before their logo file
-          // is ready — see the PARTNERS array above.
-          <InstitutionPlaceholderIcon className="h-8 w-8" />
-        )}
+      <div className="flex gap-1.5 px-1.5 pb-3.5 pt-1">
+        <span className="h-2.5 w-2.5 rounded-full bg-[#FF6B6B]" />
+        <span className="h-2.5 w-2.5 rounded-full bg-[#FFC34D]" />
+        <span className="h-2.5 w-2.5 rounded-full bg-[#38D39F]" />
       </div>
-      <div>
-        <p className="text-base font-bold whitespace-nowrap" style={{ color: DEEP_TEAL }}>
-          {partner.name}
-        </p>
-        {partner.location && <p className="mt-0.5 text-sm text-gray-500">{partner.location}</p>}
-        <p className="mt-2 max-w-xs text-sm leading-relaxed text-gray-600">
-          Among the first health training colleges piloting Praxxt in Ghana.
-        </p>
+      <div className="flex gap-3.5 pb-0">
+        <div className="hidden w-48 shrink-0 flex-col gap-1 rounded-2xl p-3 text-sm font-semibold md:flex" style={{ backgroundColor: "#F7F6FC" }}>
+          <span className="px-2.5 pb-2 text-[11px] font-extrabold uppercase tracking-widest" style={{ color: MUTED }}>
+            Coordinator
+          </span>
+          <span className="rounded-lg px-2.5 py-2" style={{ background: "linear-gradient(90deg, rgba(90,59,240,.12), rgba(37,99,235,.10))", color: "#4A3BB5" }}>
+            Cohort overview
+          </span>
+          {["Rotations", "Competencies", "Compliance"].map((item) => (
+            <span key={item} className="px-2.5 py-2" style={{ color: BODY }}>
+              {item}
+            </span>
+          ))}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-3 pb-4">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-lg font-extrabold">BSc Nursing · Year 3</span>
+            <span className="text-xs" style={{ color: MUTED }}>
+              Illustrative sample data
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-2xl p-4 text-white" style={{ background: `linear-gradient(135deg, ${VIOLET}, ${BLUE})` }}>
+              <div className="text-xs opacity-90">Competency coverage</div>
+              <div className="mt-1 text-3xl font-extrabold">72%</div>
+            </div>
+            <div className="rounded-2xl p-4" style={{ backgroundColor: "#F7F6FC" }}>
+              <div className="text-xs" style={{ color: MUTED }}>Awaiting sign-off</div>
+              <div className="mt-1 text-3xl font-extrabold">14</div>
+            </div>
+            <div className="rounded-2xl p-4" style={{ backgroundColor: "#F7F6FC" }}>
+              <div className="text-xs" style={{ color: MUTED }}>Approved hours</div>
+              <div className="mt-1 text-3xl font-extrabold">1,284</div>
+            </div>
+          </div>
+          <div className="rounded-2xl border px-4" style={{ borderColor: LINE }}>
+            <div className="grid grid-cols-[2fr_2fr_1fr_1.3fr] border-b py-2.5 text-[11px] font-extrabold uppercase tracking-wider" style={{ borderColor: LINE, color: MUTED }}>
+              <span>Student</span>
+              <span>Placement</span>
+              <span>Hours</span>
+              <span>Status</span>
+            </div>
+            {rows.map((r, i) => (
+              <div
+                key={r.name}
+                className={`grid grid-cols-[2fr_2fr_1fr_1.3fr] items-center py-2.5 text-sm ${i < rows.length - 1 ? "border-b" : ""}`}
+                style={{ borderColor: "#F1F0F8" }}
+              >
+                <span className="font-semibold">{r.name}</span>
+                <span style={{ color: BODY }}>{r.placement}</span>
+                <span>{r.hours}</span>
+                <span
+                  className="justify-self-start rounded-full px-2.5 py-1 text-xs font-bold"
+                  style={r.ok ? { color: "#0E7A55", backgroundColor: "#E5F7EF" } : { color: "#9A5A00", backgroundColor: "#FFF2DC" }}
+                >
+                  {r.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-// Placeholder mark for a partner with no logo file yet — a plain
-// building/institution outline, not a stand-in for any specific crest.
-function InstitutionPlaceholderIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-      <path d="M24,6 L42,16 V20 H6 V16 Z" fill="none" stroke={DEEP_TEAL} strokeWidth="3" strokeLinejoin="round" />
-      <rect x="9" y="20" width="30" height="20" fill="none" stroke={DEEP_TEAL} strokeWidth="3" />
-      <line x1="6" y1="40" x2="42" y2="40" stroke={DEEP_TEAL} strokeWidth="3" strokeLinecap="round" />
-      <line x1="17" y1="24" x2="17" y2="36" stroke={DEEP_TEAL} strokeWidth="3" strokeLinecap="round" />
-      <line x1="24" y1="24" x2="24" y2="36" stroke={DEEP_TEAL} strokeWidth="3" strokeLinecap="round" />
-      <line x1="31" y1="24" x2="31" y2="36" stroke={DEEP_TEAL} strokeWidth="3" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-const HOW_IT_WORKS = [
-  {
-    title: "SOAP-format digital logbook",
-    body: "Students log every clinical case as a structured Subjective / Objective / Assessment / Plan entry — the same format they're already trained to think in, just digital instead of paper.",
-    Icon: SoapNoteIcon,
-  },
-  {
-    title: "Works with no signal",
-    body: "Offline-first for real clinical sites: a case entry, a timesheet, a supervisor sign-off all queue locally and sync automatically the moment connectivity comes back.",
-    Icon: OfflineSyncIcon,
-  },
-  {
-    title: "Supervisor sign-off & entrustment tracking",
-    body: "Supervisors review and sign off every case, rating the student's entrustment level — the record of how much supervision a student actually needed, not just that a case happened.",
-    Icon: SignOffIcon,
-  },
-  {
-    title: "Compliance, tracked automatically",
-    body: "BLS/CPR certification, immunization records, background checks — every required document, with expiry warnings before they lapse, not after.",
-    Icon: ComplianceIcon,
-  },
-];
-
-const WHO_ITS_FOR = [
-  { name: "Nursing", available: true, Icon: NurseIcon },
-  { name: "Midwifery", available: true, Icon: MidwiferyIcon },
-  { name: "Medicine", available: false, Icon: MedicineIcon },
-  { name: "Pharmacy", available: false, Icon: PharmacyIcon },
-  { name: "Physiotherapy", available: false, Icon: PhysiotherapyIcon },
-];
-
 export function LandingPage() {
   return (
-    <div className={sora.className} style={{ backgroundColor: "#FFFFFF", color: INK }}>
-      {/* Nav — full-width deep teal bar */}
-      <header className="sticky top-0 z-10" style={{ backgroundColor: DEEP_TEAL }}>
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link
-            href="/"
-            aria-label="Praxxt home"
-            className="flex w-fit items-center gap-2.5 transition hover:opacity-80"
-          >
-            <Logo size={32} />
-            <span className="text-lg font-extrabold tracking-tight text-white">Praxxt</span>
+    <div className={manrope.className} style={{ backgroundColor: "#FFFFFF", color: INK }}>
+      <div className="px-6 py-2.5 text-[13px] font-medium text-white" style={{ background: `linear-gradient(90deg, ${VIOLET}, ${BLUE} 55%, #0E8FA3)` }}>
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+          <p>
+            New: verified clinical CVs for every student.{" "}
+            <a href="#platform" className="font-bold underline">
+              See how it works
+            </a>
+          </p>
+          <div className="hidden items-center gap-6 sm:flex">
+            <a href="#contact" className="hover:opacity-80">Contact us</a>
+            <Link href="/help" className="hover:opacity-80">Support</Link>
+            <Link href="/login" className="font-bold hover:opacity-80">Log in</Link>
+          </div>
+        </div>
+      </div>
+
+      <header className="sticky top-0 z-20 border-b bg-white/95 backdrop-blur" style={{ borderColor: LINE }}>
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
+          <Link href="/" aria-label="Praxxt home" className="transition hover:opacity-80">
+            <Wordmark size={27} />
           </Link>
-          <nav className="hidden items-center gap-8 text-sm font-semibold text-white/80 sm:flex">
-            <a href="#how-it-works" className="hover:text-white">
-              How it works
-            </a>
-            <a href="#who-its-for" className="hover:text-white">
-              Who it&apos;s for
-            </a>
-            <a href="#contact" className="hover:text-white">
-              Contact
-            </a>
+          <nav className="hidden items-center gap-8 text-[15px] font-bold md:flex">
+            <a href="#platform" className="hover:text-[#5A3BF0]">Platform</a>
+            <a href="#disciplines" className="hover:text-[#5A3BF0]">Disciplines</a>
+            <a href="#security" className="hover:text-[#5A3BF0]">Security</a>
+            <Link href="/help" className="hover:text-[#5A3BF0]">Resources</Link>
           </nav>
           <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="rounded-lg border border-white/40 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              Login
+            <Link href="/login" className="hidden text-[15px] font-bold hover:text-[#5A3BF0] sm:inline">
+              Log in
             </Link>
-            <a
-              href="#contact"
-              className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
-              style={{ backgroundColor: CORAL }}
-            >
-              Request a Demo
+            <a href="#contact" className="rounded-full px-5 py-3 text-[15px] font-bold text-white transition hover:opacity-90" style={{ background: BRAND_GRADIENT }}>
+              Book a demo
             </a>
           </div>
         </div>
       </header>
 
-      {/* Hero — cream-to-white gradient, two-column with photo on the right */}
-      <section style={{ background: `linear-gradient(to right, ${CREAM}, #FFFFFF)` }}>
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-16 sm:py-24 lg:grid-cols-2 lg:gap-10">
-          <div className="text-center lg:text-left">
-            <p
-              className="text-sm font-bold uppercase tracking-widest"
-              style={{ color: CORAL }}
+      <section className="px-6 pt-16 sm:pt-24" style={{ background: HERO_BLEND }}>
+        <div className="mx-auto flex max-w-6xl flex-col items-center text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border bg-white px-4 py-1.5 text-[13px] font-bold" style={{ borderColor: "#E2DEFB", color: "#4A3BB5" }}>
+            <span className="h-2 w-2 rounded-full" style={{ background: "linear-gradient(135deg, #5A3BF0, #12B5C9)" }} />
+            Clinical education management platform
+          </span>
+          <h1 className="mt-6 max-w-4xl text-4xl font-extrabold leading-[1.05] tracking-[-0.035em] sm:text-6xl lg:text-7xl">
+            Every placement, every competency,{" "}
+            <span style={{ background: TEXT_GRADIENT, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
+              one connected record.
+            </span>
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed sm:text-xl" style={{ color: BODY }}>
+            Praxxt brings students, clinical supervisors and program coordinators onto one platform for
+            logbooks, placements, sign-offs and compliance.
+          </p>
+          <div className="mt-9 flex flex-col gap-3 pb-16 sm:flex-row sm:pb-0">
+            <a
+              href="#contact"
+              className="rounded-full px-7 py-4 text-base font-bold text-white transition hover:opacity-90"
+              style={{ background: BRAND_GRADIENT, boxShadow: "0 10px 24px rgba(90,59,240,.28)" }}
             >
-              For clinical training programs
-            </p>
-            <h1
-              className="mt-3 text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-6xl"
-              style={{ color: DEEP_TEAL }}
-            >
-              FROM PAPER LOGBOOKS
-              <br />
-              TO CLINICAL COMPETENCE
-            </h1>
-            <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-gray-600 lg:mx-0">
-              Across Ghana&apos;s nursing, midwifery, medical, physiotherapy, and pharmacy programs,
-              clinical students still track their entire rotation — cases, hours, supervisor
-              sign-offs — on paper. Praxxt replaces the logbook, not the training.
-            </p>
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-4 lg:justify-start">
-              <a
-                href="#contact"
-                className="rounded-lg px-7 py-3.5 text-base font-semibold text-white shadow-sm transition hover:opacity-90"
-                style={{ backgroundColor: CORAL }}
-              >
-                Request a Demo
-              </a>
-              <a
-                href="#how-it-works"
-                className="text-base font-semibold hover:opacity-70"
-                style={{ color: DEEP_TEAL }}
-              >
-                See how it works →
-              </a>
-            </div>
+              Book a demo →
+            </a>
+            <a href="#platform" className="rounded-full border bg-white px-7 py-4 text-base font-bold transition hover:border-[#5A3BF0]" style={{ borderColor: "#DCD8F5" }}>
+              Explore the platform
+            </a>
           </div>
-
-          <div className="relative aspect-[4/5] w-full max-w-md overflow-hidden rounded-2xl lg:mx-0 lg:justify-self-end">
-            {/*
-              The container is capped at max-w-md (28rem/448px) from the lg
-              breakpoint up, not actually 50% of the viewport — sizes says
-              448px there (not 50vw) so the browser doesn't over-fetch on
-              wide screens. priority + blur placeholder because this is the
-              page's LCP element; a bare "loading" gap here would be the
-              first thing a visitor on slow hospital wifi sees.
-            */}
-            <Image
-              src="/images/hero.jpg"
-              alt="A group of clinical students in white coats and scrubs, stethoscopes around their necks, walking together and laughing down a hospital corridor"
-              fill
-              sizes="(min-width: 1024px) 448px, 100vw"
-              className="object-cover"
-              priority
-              placeholder="blur"
-              blurDataURL="data:image/jpeg;base64,/9j/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAALABADASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABQEC/8QAIBAAAgEEAQUAAAAAAAAAAAAAAQIDABESIQQFI0GBwv/EABUBAQEAAAAAAAAAAAAAAAAAAAEC/8QAGBEAAwEBAAAAAAAAAAAAAAAAAAERAiH/2gAMAwEAAhEDEQA/AGJJmLFVS5Qhb5Der1I5TLBKpS2SE3uD4ojkSuvKNmI7nya10t2MmJOsTr1UPKlFb7D/2Q=="
-            />
-            {/* Soft fade from the hero's cream backdrop into the photo's left edge */}
-            <div
-              className="pointer-events-none absolute inset-y-0 left-0 w-1/4"
-              style={{ background: `linear-gradient(to right, ${CREAM}, transparent)` }}
-              aria-hidden="true"
-            />
-          </div>
+          <DashboardPreview />
         </div>
       </section>
 
-      {/* How it works */}
-      <section id="how-it-works" className="px-6 py-20">
-        <div className="mx-auto max-w-6xl">
-          <h2
-            className="text-center text-sm font-extrabold uppercase tracking-widest"
-            style={{ color: DEEP_TEAL }}
-          >
-            How it works
-          </h2>
-          <p
-            className="mx-auto mt-3 max-w-xl text-center text-2xl font-extrabold sm:text-3xl"
-            style={{ color: DEEP_TEAL }}
-          >
-            Everything a paper logbook does — plus everything it can&apos;t.
+      <section className="border-b px-6 py-10" style={{ borderColor: LINE }}>
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 sm:flex-row sm:gap-10">
+          <p className="whitespace-nowrap text-base font-bold" style={{ color: BODY }}>
+            Piloting with
           </p>
-          <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {HOW_IT_WORKS.map((item) => (
-              <div key={item.title}>
-                <item.Icon className="h-10 w-10" />
-                <div
-                  className="mb-4 mt-4 h-1.5 w-10 rounded-full"
-                  style={{ backgroundColor: CORAL }}
-                  aria-hidden="true"
-                />
-                <h3 className="text-lg font-bold" style={{ color: DEEP_TEAL }}>
-                  {item.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-gray-600">{item.body}</p>
+          <div className="flex flex-wrap items-center justify-center gap-8">
+            {PARTNERS.map((p) => (
+              <div key={p.name} className="flex items-center gap-3">
+                <Image src={p.logoSrc} alt={`${p.name} crest`} width={44} height={44} className="h-11 w-11 object-contain" />
+                <span className="text-base font-bold">{p.name}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Who it's for */}
-      <section id="who-its-for" className="px-6 py-20">
-        <div className="mx-auto max-w-4xl">
-          <h2
-            className="text-sm font-extrabold uppercase tracking-widest"
-            style={{ color: DEEP_TEAL }}
-          >
-            Who it&apos;s for
-          </h2>
-          <p
-            className="mt-3 max-w-md text-2xl font-extrabold leading-tight sm:text-3xl"
-            style={{ color: DEEP_TEAL }}
-          >
-            Built for Every
-            <br />
-            Clinical Discipline
-          </p>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-gray-600">
-            Praxxt supports nursing and midwifery training today, with medicine, pharmacy, and
-            physiotherapy coming as the pilot expands.
-          </p>
-
-          <div className="mt-10 flex flex-wrap gap-4">
-            {WHO_ITS_FOR.map((p) => {
-              const color = p.available ? DEEP_TEAL : MUTED_TEAL;
-              return (
-                <div
-                  key={p.name}
-                  className="flex w-full items-center gap-3 rounded-2xl border bg-white px-5 py-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md sm:w-auto"
-                  style={{ borderColor: "rgba(10,63,56,0.15)" }}
-                >
-                  <p.Icon className="h-6 w-6 shrink-0" color={color} />
-                  <span className="text-base font-semibold whitespace-nowrap" style={{ color }}>
-                    {p.name}
-                    {!p.available && (
-                      <span className="ml-1.5 text-xs font-medium italic" style={{ color: MUTED_TEAL }}>
-                        · coming as we onboard
-                      </span>
-                    )}
-                  </span>
-                </div>
-              );
-            })}
-
-            <div
-              className="flex w-full items-center justify-center rounded-2xl border bg-white px-6 py-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md sm:w-auto sm:justify-start sm:rounded-full"
-              style={{ borderColor: "rgba(232,115,74,0.5)" }}
-            >
-              <span className="text-base font-semibold italic whitespace-nowrap" style={{ color: CORAL }}>
-                And more coming soon
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* "Trusted by..." — one real partner today, shown as a looping
-          marquee so the strip is already shaped like a real "trusted by"
-          row the moment a second/third confirmed partner is appended to
-          PARTNERS above. The single card repeating as it loops is
-          expected and honest — it's the same one name, not implying more
-          partners than exist. See the @keyframes marquee rule in
-          src/app/globals.css for the loop mechanics. */}
-      <section className="px-6 py-20">
-        <div className="mx-auto max-w-4xl text-center">
-          <p
-            className="text-sm font-bold uppercase tracking-widest"
-            style={{ color: CORAL }}
-          >
-            Trusted by Leading Academic Institutions, Programs, and Sites
-          </p>
-
-          <div className="mt-8 flex overflow-hidden motion-reduce:justify-center">
-            {/*
-              Two structurally-identical groups, each with its own
-              trailing spacer (pr-5, matching gap-5) rather than one flat
-              list with a shared gap between them — that's what makes the
-              two groups exactly equal width, so translateX(-50%) on the
-              track lands precisely on the second group's start with no
-              seam. (A flat `[...arr, ...arr]` list with a single shared
-              gap is off by half a gap-width at the loop point.)
-            */}
-            <div className="flex w-max shrink-0 [animation:marquee_18s_linear_infinite] hover:[animation-play-state:paused] motion-reduce:animate-none">
-              <div className="flex shrink-0 gap-5 pr-5">
-                {PARTNERS.map((partner) => (
-                  <PartnerCard key={partner.name} partner={partner} />
-                ))}
-              </div>
-              {/* Duplicate group — aria-hidden (a screen reader shouldn't
-                  hear the same partner announced twice) and dropped
-                  entirely under prefers-reduced-motion, leaving a single
-                  static, centered set of card(s) for anyone who's asked
-                  not to see motion. */}
-              <div className="flex shrink-0 gap-5 pr-5 motion-reduce:hidden" aria-hidden="true">
-                {PARTNERS.map((partner) => (
-                  <PartnerCard key={partner.name} partner={partner} />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact */}
-      <section id="contact" className="px-6 py-20">
-        <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2">
-          <div>
-            <h2
-              className="text-sm font-extrabold uppercase tracking-widest"
-              style={{ color: DEEP_TEAL }}
-            >
-              Talk to us
+      <section id="platform" className="scroll-mt-24 px-6 py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
+            <Eyebrow>The Praxxt platform</Eyebrow>
+            <h2 className="text-3xl font-extrabold leading-tight tracking-[-0.03em] sm:text-5xl">
+              One platform for the whole clinical training journey
             </h2>
-            <p className="mt-3 text-2xl font-extrabold sm:text-3xl" style={{ color: DEEP_TEAL }}>
-              We onboard institutions directly.
+            <p className="text-lg leading-relaxed" style={{ color: BODY }}>
+              Three connected modules replace the paper logbook, the placement spreadsheet and the compliance folder.
             </p>
-            <p className="mt-4 max-w-md text-base leading-relaxed text-gray-600">
-              There&apos;s no self-serve sign-up — we work with each program&apos;s coordinators
-              to set up their competencies, rotations, and compliance requirements from day one.
-              Tell us about your program and we&apos;ll take it from there.
+          </div>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {MODULES.map((m) => (
+              <div key={m.title} className="flex flex-col gap-4 rounded-3xl border p-8" style={{ borderColor: LINE, boxShadow: "0 12px 30px rgba(37,32,110,.06)" }}>
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: m.gradient }}>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    {m.icon}
+                  </svg>
+                </span>
+                <h3 className="text-2xl font-extrabold tracking-[-0.02em]">{m.title}</h3>
+                <p className="leading-relaxed" style={{ color: BODY }}>{m.body}</p>
+                <a href="#contact" className="mt-auto text-[15px] font-bold" style={{ color: m.linkColor }}>
+                  See it in a demo →
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="disciplines"
+        className="scroll-mt-24 px-6 py-20"
+        style={{ background: "radial-gradient(ellipse at 90% 0%, rgba(18,181,201,.14), transparent 50%), radial-gradient(ellipse at 0% 100%, rgba(90,59,240,.12), transparent 50%), #F8F7FF" }}
+      >
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+            <div className="flex flex-col gap-3">
+              <Eyebrow>Disciplines</Eyebrow>
+              <h2 className="text-3xl font-extrabold leading-tight tracking-[-0.03em] sm:text-[42px]">
+                Purpose-built for the health professions
+              </h2>
+            </div>
+            <p className="max-w-md leading-relaxed" style={{ color: BODY }}>
+              Each discipline gets its own competency framework, logbook fields and evaluation rubric.
             </p>
-            <p className="mt-6 text-sm text-gray-500">
+          </div>
+          <div className="mt-9 flex flex-wrap gap-3.5">
+            {DISCIPLINES.map((d) => (
+              <span
+                key={d.name}
+                className="flex items-center gap-2.5 rounded-full bg-white px-6 py-3.5 text-[17px] font-bold"
+                style={{ boxShadow: "0 2px 6px rgba(37,32,110,.07)", color: d.available ? INK : BODY }}
+              >
+                {d.available && <span className="h-2.5 w-2.5 rounded-full" style={{ background: "linear-gradient(135deg, #5A3BF0, #12B5C9)" }} />}
+                {d.name}
+                {!d.available && (
+                  <span className="rounded-full px-2.5 py-0.5 text-xs font-extrabold" style={{ color: "#4A3BB5", backgroundColor: "#EFECFF" }}>
+                    Coming soon
+                  </span>
+                )}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex max-w-3xl flex-col gap-3.5">
+            <Eyebrow>Why Praxxt</Eyebrow>
+            <h2 className="text-3xl font-extrabold leading-tight tracking-[-0.03em] sm:text-5xl">
+              Built for how clinical training actually happens
+            </h2>
+          </div>
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {REASONS.map((r) => (
+              <div key={r.title} className="flex flex-col gap-3 rounded-3xl p-7" style={{ backgroundColor: SOFT }}>
+                <span className="h-1.5 w-9 rounded-full" style={{ background: r.bar }} aria-hidden="true" />
+                <h3 className="text-lg font-extrabold">{r.title}</h3>
+                <p className="leading-relaxed" style={{ color: BODY }}>{r.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="security" className="scroll-mt-24 px-6">
+        <div
+          className="mx-auto grid max-w-6xl items-center gap-10 rounded-[30px] px-8 py-14 text-white sm:px-14 lg:grid-cols-[5fr_7fr] lg:gap-14"
+          style={{ background: "radial-gradient(ellipse at 100% 0%, rgba(18,181,201,.35), transparent 55%), radial-gradient(ellipse at 0% 100%, rgba(255,92,138,.22), transparent 55%), linear-gradient(135deg, #2A1C8F, #1E3FAE)" }}
+        >
+          <div className="flex flex-col gap-4">
+            <Eyebrow color="#A9F0EA">Security &amp; privacy</Eyebrow>
+            <h2 className="text-3xl font-extrabold leading-tight tracking-[-0.03em] sm:text-[42px]">
+              Student records deserve serious protection
+            </h2>
+            <p className="text-lg leading-relaxed text-[#DCE2FF]">Built from day one to keep health and training records private.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {SECURITY.map((s) => (
+              <div key={s.title} className="flex flex-col gap-2 rounded-2xl border border-white/20 bg-white/10 p-6">
+                <h3 className="text-[17px] font-extrabold">{s.title}</h3>
+                <p className="text-[15px] leading-relaxed text-[#DCE2FF]">{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" className="scroll-mt-24 px-6 py-20 sm:py-24">
+        <div
+          className="mx-auto grid max-w-6xl gap-10 rounded-[30px] px-8 py-12 sm:px-14 lg:grid-cols-2 lg:gap-14"
+          style={{ background: "radial-gradient(ellipse at 15% 20%, rgba(90,59,240,.22), transparent 50%), radial-gradient(ellipse at 85% 80%, rgba(18,181,201,.24), transparent 50%), #F8F7FF" }}
+        >
+          <div className="flex flex-col gap-4">
+            <Eyebrow>Book a demo</Eyebrow>
+            <h2 className="text-3xl font-extrabold leading-tight tracking-[-0.03em] sm:text-[44px]">
+              See Praxxt with your own program
+            </h2>
+            <p className="text-lg leading-relaxed" style={{ color: BODY }}>
+              We onboard each program directly: your competencies, rotations and compliance requirements, set up
+              with your coordinators. Tell us about your program and we&apos;ll take it from there.
+            </p>
+            <p className="text-[15px]" style={{ color: BODY }}>
               Prefer email?{" "}
-              <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold underline" style={{ color: CORAL }}>
+              <a href={`mailto:${CONTACT_EMAIL}`} className="font-bold underline" style={{ color: VIOLET }}>
                 {CONTACT_EMAIL}
               </a>
             </p>
           </div>
-          <ContactForm />
+          <div className="rounded-3xl bg-white p-6 sm:p-8" style={{ boxShadow: "0 12px 30px rgba(37,32,110,.08)" }}>
+            <ContactForm />
+          </div>
         </div>
       </section>
 
-      {/* Footer — thin coral accent edge, then two dark-teal bands */}
-      <footer>
-        <div
-          aria-hidden="true"
-          style={{ height: "3px", background: `linear-gradient(to right, ${CORAL}, #F5B896)` }}
-        />
-
-        {/* Top band: social row (left), logo (right). The pilot-partner
-            mention lives in the "Trusted by..." section now, not here
-            too — removed per explicit request to avoid saying it twice. */}
-        <div className="px-6 py-10" style={{ backgroundColor: FOOTER_DARK }}>
-          <div className="mx-auto flex max-w-5xl flex-col-reverse items-center gap-8 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex flex-col items-center gap-4 sm:items-start">
-              <div className="flex items-center gap-3">
-                {[
-                  // TODO: replace href="#" with the real LinkedIn URL once the account exists
-                  { label: "LinkedIn", Icon: LinkedInIcon, href: "#" },
-                  // TODO: replace href="#" with the real Facebook URL once the account exists
-                  { label: "Facebook", Icon: FacebookIcon, href: "#" },
-                  // TODO: replace href="#" with the real Instagram URL once the account exists
-                  { label: "Instagram", Icon: InstagramIcon, href: "#" },
-                  // TODO: replace href="#" with the real YouTube URL once the account exists
-                  { label: "YouTube", Icon: YouTubeIcon, href: "#" },
-                ].map(({ label, Icon, href }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    aria-label={label}
-                    className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-white/20"
-                    style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                  >
-                    <Icon className="h-4 w-4" color="#F3EFE7" />
+      <footer className="px-6 pb-9 pt-16 text-[#C9C7E3]" style={{ backgroundColor: INK }}>
+        <div className="mx-auto flex max-w-6xl flex-col gap-12">
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
+            <div className="flex flex-col gap-4">
+              <Link href="/" aria-label="Praxxt home" className="w-fit transition hover:opacity-80">
+                <Wordmark size={28} tone="onDark" />
+              </Link>
+              <p className="max-w-xs leading-relaxed">The connected record for clinical education.</p>
+              <div className="flex gap-3">
+                {SOCIALS.map(({ label, Icon, href }) => (
+                  <a key={label} href={href} aria-label={label} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20">
+                    <Icon className="h-4 w-4" color="#FFFFFF" />
                   </a>
                 ))}
               </div>
             </div>
-
-            <Link
-              href="/"
-              aria-label="Praxxt home"
-              className="flex w-fit items-center gap-2.5 transition hover:opacity-80"
-            >
-              <Logo size={32} />
-              <span className="text-lg font-extrabold tracking-tight text-white">Praxxt</span>
-            </Link>
+            <div className="flex flex-col gap-3 text-[15px]">
+              <p className="text-xs font-extrabold uppercase tracking-widest text-white">Platform</p>
+              <a href="#platform" className="hover:text-white">Modules</a>
+              <a href="#disciplines" className="hover:text-white">Disciplines</a>
+              <a href="#security" className="hover:text-white">Security</a>
+            </div>
+            <div className="flex flex-col gap-3 text-[15px]">
+              <p className="text-xs font-extrabold uppercase tracking-widest text-white">Resources</p>
+              <Link href="/help" className="hover:text-white">Help center</Link>
+              <Link href="/help/training-videos" className="hover:text-white">Training videos</Link>
+              <Link href="/login" className="hover:text-white">Log in</Link>
+            </div>
+            <div className="flex flex-col gap-3 text-[15px]">
+              <p className="text-xs font-extrabold uppercase tracking-widest text-white">Company</p>
+              <a href="#contact" className="hover:text-white">Book a demo</a>
+              <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-white">Contact</a>
+            </div>
           </div>
-        </div>
-
-        {/* Bottom band: contact (left), copyright (right) — no legal/policy
-            links since none of those pages exist yet. */}
-        <div className="px-6 py-5" style={{ backgroundColor: FOOTER_MID }}>
-          <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 text-sm text-white/60 sm:flex-row sm:justify-between">
-            <p>
-              Questions?{" "}
-              <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold text-white/80 hover:text-white">
-                {CONTACT_EMAIL}
-              </a>
-            </p>
-            <p>© {new Date().getFullYear()} Praxxt</p>
+          <div className="flex flex-col gap-2 border-t pt-6 text-sm sm:flex-row sm:justify-between" style={{ borderColor: "#2B2860" }}>
+            <p>© {new Date().getFullYear()} Praxxt. All rights reserved.</p>
+            <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-white">{CONTACT_EMAIL}</a>
           </div>
         </div>
       </footer>

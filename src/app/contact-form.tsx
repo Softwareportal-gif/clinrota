@@ -11,11 +11,11 @@ export function ContactForm() {
 
   if (state?.ok) {
     return (
-      <div className="rounded-xl border border-[#0A3F38]/15 bg-[#0A3F38]/[0.04] p-6 text-center">
-        <p className="text-lg font-semibold" style={{ color: "#0A3F38" }}>
+      <div className="rounded-xl border border-[#DCD8F5] bg-[#F8F7FF] p-6 text-center">
+        <p className="text-lg font-semibold" style={{ color: "#17153B" }}>
           Thanks — we&apos;ll be in touch.
         </p>
-        <p className="mt-1 text-sm text-[#10201C]/70">
+        <p className="mt-1 text-sm text-[#4A4867]">
           We usually reply within a day or two.
         </p>
       </div>
@@ -26,7 +26,7 @@ export function ContactForm() {
     <form action={formAction} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="name" className="block text-sm font-semibold text-[#10201C]">
+          <label htmlFor="name" className="block text-sm font-semibold text-[#17153B]">
             Name
           </label>
           <input
@@ -34,11 +34,11 @@ export function ContactForm() {
             name="name"
             type="text"
             required
-            className="mt-1 block w-full rounded-lg border border-[#0A3F38]/15 bg-white px-3 py-2.5 text-[#10201C] focus:border-[#E8734A] focus:outline-none"
+            className="mt-1 block w-full rounded-lg border border-[#DCD8F5] bg-white px-3 py-2.5 text-[#17153B] focus:border-[#5A3BF0] focus:outline-none"
           />
         </div>
         <div>
-          <label htmlFor="email" className="block text-sm font-semibold text-[#10201C]">
+          <label htmlFor="email" className="block text-sm font-semibold text-[#17153B]">
             Email
           </label>
           <input
@@ -46,23 +46,23 @@ export function ContactForm() {
             name="email"
             type="email"
             required
-            className="mt-1 block w-full rounded-lg border border-[#0A3F38]/15 bg-white px-3 py-2.5 text-[#10201C] focus:border-[#E8734A] focus:outline-none"
+            className="mt-1 block w-full rounded-lg border border-[#DCD8F5] bg-white px-3 py-2.5 text-[#17153B] focus:border-[#5A3BF0] focus:outline-none"
           />
         </div>
       </div>
       <div>
-        <label htmlFor="institution" className="block text-sm font-semibold text-[#10201C]">
+        <label htmlFor="institution" className="block text-sm font-semibold text-[#17153B]">
           Institution (optional)
         </label>
         <input
           id="institution"
           name="institution"
           type="text"
-          className="mt-1 block w-full rounded-lg border border-[#0A3F38]/15 bg-white px-3 py-2.5 text-[#10201C] focus:border-[#E8734A] focus:outline-none"
+          className="mt-1 block w-full rounded-lg border border-[#DCD8F5] bg-white px-3 py-2.5 text-[#17153B] focus:border-[#5A3BF0] focus:outline-none"
         />
       </div>
       <div>
-        <label htmlFor="message" className="block text-sm font-semibold text-[#10201C]">
+        <label htmlFor="message" className="block text-sm font-semibold text-[#17153B]">
           What would you like to know?
         </label>
         <textarea
@@ -70,7 +70,7 @@ export function ContactForm() {
           name="message"
           rows={4}
           required
-          className="mt-1 block w-full rounded-lg border border-[#0A3F38]/15 bg-white px-3 py-2.5 text-[#10201C] focus:border-[#E8734A] focus:outline-none"
+          className="mt-1 block w-full rounded-lg border border-[#DCD8F5] bg-white px-3 py-2.5 text-[#17153B] focus:border-[#5A3BF0] focus:outline-none"
         />
       </div>
 
@@ -79,7 +79,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-lg bg-[#E8734A] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#D4653D] disabled:opacity-60"
+        className="rounded-full bg-gradient-to-r from-[#5A3BF0] to-[#2563EB] px-7 py-3.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-60"
       >
         {isPending ? "Sending…" : "Send message"}
       </button>

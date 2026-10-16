@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { ChatBubbleIcon, CloseIcon, SendIcon } from "./icons";
 
-const DEEP_TEAL = "#0A3F38";
-const CORAL = "#E8734A";
+const INK = "#17153B";
+const ACCENT = "#5A3BF0";
 
 // Conversation state lives in memory for this page session only — no
 // persistence to the database or browser storage. (A future enhancement
@@ -107,12 +107,12 @@ export function AssistantWidget() {
         <div className="fixed bottom-24 right-6 z-50 flex h-[520px] w-[360px] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
           <div
             className="flex items-center justify-between px-4 py-3"
-            style={{ backgroundColor: DEEP_TEAL }}
+            style={{ backgroundColor: INK }}
           >
             <div className="flex items-center gap-2.5">
               <span
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-                style={{ backgroundColor: CORAL }}
+                style={{ backgroundColor: ACCENT }}
               >
                 B
               </span>
@@ -144,7 +144,7 @@ export function AssistantWidget() {
                     ? "ml-auto rounded-br-sm text-white"
                     : "rounded-tl-sm bg-gray-100 text-gray-700"
                 }`}
-                style={message.role === "user" ? { backgroundColor: CORAL } : undefined}
+                style={message.role === "user" ? { backgroundColor: ACCENT } : undefined}
               >
                 {message.content || (isStreaming && i === messages.length - 1 ? "…" : "")}
               </div>
@@ -157,7 +157,7 @@ export function AssistantWidget() {
                   <Link
                     href={`/help/tickets?subject=${encodeURIComponent(ticketPrefill.subject)}&description=${encodeURIComponent(ticketPrefill.description)}`}
                     className="inline-block rounded-md px-3 py-1.5 text-xs font-semibold text-white"
-                    style={{ backgroundColor: DEEP_TEAL }}
+                    style={{ backgroundColor: INK }}
                   >
                     Create a ticket
                   </Link>
@@ -192,14 +192,14 @@ export function AssistantWidget() {
               maxLength={MAX_MESSAGE_LENGTH}
               placeholder="Ask a question..."
               disabled={isStreaming}
-              className="flex-1 rounded-full border border-gray-300 px-3 py-2 text-sm focus:border-[#0A3F38] focus:outline-none disabled:opacity-60"
+              className="flex-1 rounded-full border border-gray-300 px-3 py-2 text-sm focus:border-[#5A3BF0] focus:outline-none disabled:opacity-60"
             />
             <button
               type="submit"
               disabled={isStreaming || !input.trim()}
               aria-label="Send message"
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white disabled:opacity-40"
-              style={{ backgroundColor: CORAL }}
+              style={{ backgroundColor: ACCENT }}
             >
               <SendIcon className="h-4 w-4" />
             </button>
@@ -212,7 +212,7 @@ export function AssistantWidget() {
         onClick={() => setIsOpen((v) => !v)}
         aria-label={isOpen ? "Close Beatrice chat" : "Open Beatrice chat"}
         className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition hover:opacity-90"
-        style={{ backgroundColor: CORAL }}
+        style={{ backgroundColor: ACCENT }}
       >
         {isOpen ? <CloseIcon className="h-6 w-6" /> : <ChatBubbleIcon className="h-6 w-6" />}
       </button>

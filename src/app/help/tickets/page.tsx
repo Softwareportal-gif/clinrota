@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { Logo } from "@/components/logo";
+import { Wordmark } from "@/components/wordmark";
 import { Badge } from "@/components/badge";
 import { TicketForm } from "./ticket-form";
 
@@ -41,8 +41,7 @@ export default async function TicketsPage({
             aria-label="Praxxt home"
             className="flex w-fit items-center gap-2.5 transition hover:opacity-80"
           >
-            <Logo size={28} />
-            <span className="text-base font-extrabold tracking-tight text-white">Praxxt</span>
+            <Wordmark size={24} tone="onDark" />
           </Link>
           <Link href="/help" className="text-sm font-semibold text-white/80 hover:text-white">
             ← Back to help

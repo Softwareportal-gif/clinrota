@@ -2,8 +2,9 @@ import { requireRole } from "@/lib/require-role";
 import { getStudentProfileByUserId } from "@/lib/student";
 import { SyncStatusIndicator } from "@/components/sync-status-indicator";
 import { LogoutButton } from "@/components/logout-button";
+import { Wordmark } from "@/components/wordmark";
 import { StudentSidebarNav } from "./sidebar-nav";
-import { CORAL, CREAM, DARK_GREEN, TEAL } from "./dashboard-sections/colors";
+import { CORAL, CREAM, DARK_GREEN } from "./dashboard-sections/colors";
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
   const session = await requireRole("STUDENT");
@@ -33,26 +34,10 @@ export default async function StudentLayout({ children }: { children: React.Reac
           gap: 4,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 10px 26px 10px" }}>
-          <div
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: 9,
-              background: TEAL,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flex: "0 0 34px",
-            }}
-          >
-            <span style={{ color: "#FFFFFF", fontWeight: 700, fontSize: 16 }}>P</span>
-          </div>
-          <div>
-            <div style={{ color: "#FFFFFF", fontWeight: 700, fontSize: 16, lineHeight: 1.1 }}>Praxxt</div>
-            <div style={{ color: "#9FC3BB", fontSize: 11, letterSpacing: "0.03em", textTransform: "uppercase" }}>
-              Student Portal
-            </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "4px 10px 26px 10px" }}>
+          <Wordmark size={24} tone="onDark" />
+          <div style={{ color: "#9FC3BB", fontSize: 11, letterSpacing: "0.03em", textTransform: "uppercase" }}>
+            Student Portal
           </div>
         </div>
 

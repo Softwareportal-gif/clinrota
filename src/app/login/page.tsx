@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Logo } from "@/components/logo";
+import { Wordmark } from "@/components/wordmark";
 import { LoginIllustration } from "@/components/login-illustration";
 import { LoginForm } from "./login-form";
 import { LoginTips } from "./login-tips";
@@ -34,10 +34,7 @@ export default async function LoginPage({
             aria-label="Praxxt home"
             className="flex w-fit items-center gap-2.5 transition hover:opacity-80"
           >
-            <Logo size={32} />
-            <span className="text-lg font-extrabold tracking-tight" style={{ color: DEEP_TEAL }}>
-              Praxxt
-            </span>
+            <Wordmark size={26} />
           </Link>
 
           <p className="mt-10 text-sm font-bold uppercase tracking-widest" style={{ color: CORAL }}>

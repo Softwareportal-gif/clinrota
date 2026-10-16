@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
-import { Logo } from "@/components/logo";
+import { Wordmark } from "@/components/wordmark";
 import { LOGIN_ACCESS_FAQ } from "@/lib/faq";
 import { PlayIcon, TicketIcon } from "./help-icons";
 
@@ -76,8 +76,7 @@ export default async function HelpPage() {
             aria-label="Praxxt home"
             className="flex w-fit items-center gap-2.5 transition hover:opacity-80"
           >
-            <Logo size={28} />
-            <span className="text-base font-extrabold tracking-tight text-white">Praxxt</span>
+            <Wordmark size={24} tone="onDark" />
           </Link>
           <Link href="/login" className="text-sm font-semibold text-white/80 hover:text-white">
             ← Back to login
