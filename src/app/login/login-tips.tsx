@@ -26,7 +26,7 @@ function getReducedMotionServerSnapshot() {
 export const loginTips: string[] = [
   "Tip: Fill out your SOAP entry right after your shift, while the details are still fresh.",
   "Reminder: An entry only counts toward your rotation once your supervisor attests it.",
-  "ClinRota works offline — entries and sign-offs sync automatically once you're back online.",
+  "Praxxt works offline — entries and sign-offs sync automatically once you're back online.",
 ];
 
 const ROTATE_MS = 6000;

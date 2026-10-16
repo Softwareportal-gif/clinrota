@@ -1,4 +1,4 @@
-// ClinRota's mark: a teal circle with a white checkmark whose upstroke
+// Praxxt's mark: a teal circle with a white checkmark whose upstroke
 // carries a single heartbeat/EKG blip — "verified" and "clinical" in one
 // shape. Kept as a plain inline SVG component (not a raster asset) so it
 // scales cleanly from a 16px favicon-equivalent up to a large hero mark.

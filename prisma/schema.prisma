@@ -1,4 +1,4 @@
-// ClinRota — Digital Clinical Preceptorship & Logbook System
+// Praxxt — Digital Clinical Preceptorship & Logbook System
 // See prisma7.config.ts for how the CLI loads DATABASE_URL for this schema.
 
 generator client {

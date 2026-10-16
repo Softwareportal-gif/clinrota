@@ -81,8 +81,8 @@ export async function POST(req: NextRequest) {
         console.error("[assistant] Failed to get a reply:", err);
         const message =
           err instanceof Error && err.message === "ANTHROPIC_NOT_CONFIGURED"
-            ? "Beatrice isn't set up yet — contact your system administrator, or email hello@clinrota.com."
-            : "Something went wrong on my end. Please try again, or email hello@clinrota.com.";
+            ? "Beatrice isn't set up yet — contact your system administrator, or email hello@praxxt.com."
+            : "Something went wrong on my end. Please try again, or email hello@praxxt.com.";
         controller.enqueue(encoder.encode(message));
       } finally {
         controller.close();

@@ -31,12 +31,12 @@ export default async function LoginPage({
         <div>
           <Link
             href="/"
-            aria-label="ClinRota home"
+            aria-label="Praxxt home"
             className="flex w-fit items-center gap-2.5 transition hover:opacity-80"
           >
             <Logo size={32} />
             <span className="text-lg font-extrabold tracking-tight" style={{ color: DEEP_TEAL }}>
-              ClinRota
+              Praxxt
             </span>
           </Link>
 
@@ -76,7 +76,7 @@ export default async function LoginPage({
 
           <div className="mt-8 space-y-3 border-t border-gray-100 pt-6 text-sm text-gray-500">
             <p>
-              New here? Ask your program coordinator to add you — ClinRota accounts are set up by
+              New here? Ask your program coordinator to add you — Praxxt accounts are set up by
               your program, not self-registered.
             </p>
             <p>

@@ -1,4 +1,4 @@
-# ClinRota
+# Praxxt
 
 Digital clinical preceptorship & logbook system replacing the paper logbook workflow used by
 clinical training programs (nursing, midwifery, medicine, allied health, etc.) in Ghana.
@@ -49,7 +49,7 @@ Copy `.env.example` to `.env` and set `DATABASE_URL`. Three options:
   Docker under the hood). Run:
 
   ```bash
-  npx prisma dev -d -n clinrota
+  npx prisma dev -d -n praxxt
   ```
 
   This prints a `postgres://...` connection string — copy it into `DATABASE_URL` in `.env`.
@@ -71,10 +71,10 @@ sharing the password `Password123!`:
 
 | Role | Email |
 |---|---|
-| Super Admin | `superadmin@clinrota.demo` |
-| Coordinator | `coordinator@clinrota.demo` (BSc Nursing), `coordinator2@clinrota.demo` (Diploma in Midwifery) |
-| Supervisor | `supervisor1@clinrota.demo`, `supervisor2@clinrota.demo` |
-| Student | `student1@clinrota.demo`, `student2@clinrota.demo` |
+| Super Admin | `superadmin@praxxt.demo` |
+| Coordinator | `coordinator@praxxt.demo` (BSc Nursing), `coordinator2@praxxt.demo` (Diploma in Midwifery) |
+| Supervisor | `supervisor1@praxxt.demo`, `supervisor2@praxxt.demo` |
+| Student | `student1@praxxt.demo`, `student2@praxxt.demo` |
 
 It also seeds two Programs (BSc Nursing, Diploma in Midwifery), competencies, a clinical site
 with departments and capacity windows, two active rotations, sample SOAP log entries in several

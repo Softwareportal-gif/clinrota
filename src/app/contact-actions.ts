@@ -5,7 +5,7 @@ import { sendEmail } from "@/lib/email";
 // Placeholder — the user has said they'll swap this for a real address.
 // Deliberately not gated behind auth: this is the one public, unauthenticated
 // server action in the app, reachable from the marketing page anyone can visit.
-const CONTACT_EMAIL = "hello@clinrota.com";
+const CONTACT_EMAIL = "hello@praxxt.com";
 
 export type ContactFormState = { ok: true } | { ok: false; error: string } | undefined;
 

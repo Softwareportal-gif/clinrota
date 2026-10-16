@@ -43,10 +43,10 @@ export default async function StudentLayout({ children }: { children: React.Reac
               flex: "0 0 34px",
             }}
           >
-            <span style={{ color: "#FFFFFF", fontWeight: 700, fontSize: 16 }}>CR</span>
+            <span style={{ color: "#FFFFFF", fontWeight: 700, fontSize: 16 }}>P</span>
           </div>
           <div>
-            <div style={{ color: "#FFFFFF", fontWeight: 700, fontSize: 16, lineHeight: 1.1 }}>ClinRota</div>
+            <div style={{ color: "#FFFFFF", fontWeight: 700, fontSize: 16, lineHeight: 1.1 }}>Praxxt</div>
             <div style={{ color: "#9FC3BB", fontSize: 11, letterSpacing: "0.03em", textTransform: "uppercase" }}>
               Student Portal
             </div>

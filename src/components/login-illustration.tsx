@@ -1,6 +1,6 @@
 // Original illustration for the login page's brand panel — a supervisor
 // (white coat, stethoscope) reviewing a student's (coral scrubs) tablet,
-// which shows a checkmark badge. Depicts ClinRota's actual supervisor-
+// which shows a checkmark badge. Depicts Praxxt's actual supervisor-
 // review workflow rather than a generic stock scene. Not a copy of any
 // third-party illustration; built from scratch for this component.
 export function LoginIllustration({ className }: { className?: string }) {

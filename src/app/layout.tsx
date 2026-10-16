@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ClinRota",
+  title: "Praxxt",
   description: "Digital clinical preceptorship & logbook system",
   manifest: "/manifest.json",
   icons: {
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#2563eb",
+  themeColor: "#0A3F38",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

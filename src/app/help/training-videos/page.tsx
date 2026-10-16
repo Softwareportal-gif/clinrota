@@ -52,11 +52,11 @@ export default function TrainingVideosPage() {
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <Link
             href="/"
-            aria-label="ClinRota home"
+            aria-label="Praxxt home"
             className="flex w-fit items-center gap-2.5 transition hover:opacity-80"
           >
             <Logo size={28} />
-            <span className="text-base font-extrabold tracking-tight text-white">ClinRota</span>
+            <span className="text-base font-extrabold tracking-tight text-white">Praxxt</span>
           </Link>
           <Link href="/help" className="text-sm font-semibold text-white/80 hover:text-white">
             ← Back to help
@@ -69,7 +69,7 @@ export default function TrainingVideosPage() {
           Training videos
         </h1>
         <p className="mt-2 text-base text-gray-600">
-          Short walkthroughs of ClinRota&apos;s main workflows, organized by role.
+          Short walkthroughs of Praxxt&apos;s main workflows, organized by role.
         </p>
 
         <div className="mt-10 space-y-12">

@@ -4,7 +4,7 @@ export default function CheckEmailPage() {
       <h1 className="text-2xl font-semibold text-gray-900">Check your email</h1>
       <p className="max-w-sm text-sm text-gray-500">
         We sent you a sign-in link. Open it on this device to finish signing in to
-        ClinRota.
+        Praxxt.
       </p>
     </main>
   );

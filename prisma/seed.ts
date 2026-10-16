@@ -217,7 +217,7 @@ async function main() {
       institutionId: institution.id,
       role: Role.SUPER_ADMIN,
       name: "System Administrator",
-      email: "superadmin@clinrota.demo",
+      email: "superadmin@praxxt.demo",
       passwordHash,
       emailVerified: new Date(),
     },
@@ -228,7 +228,7 @@ async function main() {
       institutionId: institution.id,
       role: Role.COORDINATOR,
       name: "Dr. Kofi Mensah",
-      email: "coordinator@clinrota.demo",
+      email: "coordinator@praxxt.demo",
       passwordHash,
       emailVerified: new Date(),
       coordinatorProfile: {
@@ -242,7 +242,7 @@ async function main() {
       institutionId: institution.id,
       role: Role.COORDINATOR,
       name: "Ms. Adjoa Darko",
-      email: "coordinator2@clinrota.demo",
+      email: "coordinator2@praxxt.demo",
       passwordHash,
       emailVerified: new Date(),
       coordinatorProfile: {
@@ -256,7 +256,7 @@ async function main() {
       institutionId: institution.id,
       role: Role.SUPERVISOR,
       name: "Mrs. Efua Asante",
-      email: "supervisor1@clinrota.demo",
+      email: "supervisor1@praxxt.demo",
       passwordHash,
       emailVerified: new Date(),
       supervisorProfile: {
@@ -271,7 +271,7 @@ async function main() {
       institutionId: institution.id,
       role: Role.SUPERVISOR,
       name: "Mr. Yaw Boateng",
-      email: "supervisor2@clinrota.demo",
+      email: "supervisor2@praxxt.demo",
       passwordHash,
       emailVerified: new Date(),
       supervisorProfile: {
@@ -286,7 +286,7 @@ async function main() {
       institutionId: institution.id,
       role: Role.STUDENT,
       name: "Ama Serwaa",
-      email: "student1@clinrota.demo",
+      email: "student1@praxxt.demo",
       passwordHash,
       emailVerified: new Date(),
       studentProfile: {
@@ -306,7 +306,7 @@ async function main() {
       institutionId: institution.id,
       role: Role.STUDENT,
       name: "Kwabena Owusu",
-      email: "student2@clinrota.demo",
+      email: "student2@praxxt.demo",
       passwordHash,
       emailVerified: new Date(),
       studentProfile: {
@@ -640,7 +640,7 @@ async function main() {
       institutionId: institution.id,
       role: Role.SUPERVISOR,
       name: "Mrs. Grace Amponsah",
-      email: "wardsupervisor1@clinrota.demo",
+      email: "wardsupervisor1@praxxt.demo",
       passwordHash,
       emailVerified: new Date(),
       supervisorProfile: {
@@ -655,7 +655,7 @@ async function main() {
       institutionId: institution.id,
       role: Role.SUPERVISOR,
       name: "Mr. Isaac Nkrumah",
-      email: "wardsupervisor2@clinrota.demo",
+      email: "wardsupervisor2@praxxt.demo",
       passwordHash,
       emailVerified: new Date(),
       supervisorProfile: {
@@ -677,7 +677,7 @@ async function main() {
       institutionId: institution.id,
       role: Role.STUDENT,
       name: "Efua Boateng",
-      email: "student3@clinrota.demo",
+      email: "student3@praxxt.demo",
       passwordHash,
       emailVerified: new Date(),
       studentProfile: {

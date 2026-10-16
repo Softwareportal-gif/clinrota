@@ -40,7 +40,7 @@ export async function sendInvitations(userIds: string[]): Promise<SendInvitation
   for (const user of users) {
     const result = await sendEmail({
       to: user.email,
-      subject: "You've been added to ClinRota",
+      subject: "You've been added to Praxxt",
       html: studentInviteEmailHtml({
         studentName: user.name,
         programName: coordinatorProfile.program.name,

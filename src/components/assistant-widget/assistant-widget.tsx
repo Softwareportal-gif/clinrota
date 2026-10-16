@@ -18,7 +18,7 @@ type Message = { role: "user" | "assistant"; content: string };
 const MAX_MESSAGE_LENGTH = 1000;
 
 function suggestsTicket(text: string): boolean {
-  return /\bticket\b/i.test(text) || text.toLowerCase().includes("hello@clinrota.com");
+  return /\bticket\b/i.test(text) || text.toLowerCase().includes("hello@praxxt.com");
 }
 
 function buildTicketPrefill(messages: Message[]): { subject: string; description: string } {
@@ -131,7 +131,7 @@ export function AssistantWidget() {
           <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
             {messages.length === 0 && (
               <div className="rounded-2xl rounded-tl-sm bg-gray-100 px-3 py-2 text-sm text-gray-700">
-                Hi, I&apos;m Beatrice — ask me anything about using ClinRota: getting access,
+                Hi, I&apos;m Beatrice — ask me anything about using Praxxt: getting access,
                 signing in, or how a feature works.
               </div>
             )}
@@ -170,10 +170,10 @@ export function AssistantWidget() {
                       Sign in to create a ticket
                     </Link>
                     <a
-                      href="mailto:hello@clinrota.com"
+                      href="mailto:hello@praxxt.com"
                       className="inline-block rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700"
                     >
-                      Email hello@clinrota.com
+                      Email hello@praxxt.com
                     </a>
                   </div>
                 )}

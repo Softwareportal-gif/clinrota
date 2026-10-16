@@ -7,7 +7,7 @@ import { sendEmail, supportTicketEmailHtml } from "@/lib/email";
 
 export type CreateTicketState = { error?: string; ok?: true } | undefined;
 
-const ADMIN_EMAIL = "hello@clinrota.com";
+const ADMIN_EMAIL = "hello@praxxt.com";
 
 // Open to every signed-in role (student, supervisor, coordinator, super
 // admin) — support requests aren't scoped to one section of the app.

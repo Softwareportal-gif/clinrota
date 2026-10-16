@@ -111,7 +111,7 @@ export async function inviteWardSupervisor(
   const loginUrl = `${appBaseUrl()}/login`;
   const result = await sendEmail({
     to: user.email,
-    subject: "You've been added to ClinRota",
+    subject: "You've been added to Praxxt",
     html: supervisorInviteEmailHtml({
       supervisorName: user.name,
       institutionName: site.name,

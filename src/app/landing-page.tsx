@@ -28,7 +28,7 @@ const MUTED_TEAL = "#7E948E";
 const FOOTER_DARK = "#06231E";
 const FOOTER_MID = "#123B33";
 
-const CONTACT_EMAIL = "hello@clinrota.com";
+const CONTACT_EMAIL = "hello@praxxt.com";
 const PILOT_INSTITUTION = "St. John of God College of Health";
 
 // Data, not hardcoded JSX — adding a second/third real confirmed partner
@@ -73,7 +73,7 @@ function PartnerCard({ partner }: { partner: Partner }) {
         </p>
         {partner.location && <p className="mt-0.5 text-sm text-gray-500">{partner.location}</p>}
         <p className="mt-2 max-w-xs text-sm leading-relaxed text-gray-600">
-          Among the first health training colleges piloting ClinRota in Ghana.
+          Among the first health training colleges piloting Praxxt in Ghana.
         </p>
       </div>
     </div>
@@ -134,11 +134,11 @@ export function LandingPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link
             href="/"
-            aria-label="ClinRota home"
+            aria-label="Praxxt home"
             className="flex w-fit items-center gap-2.5 transition hover:opacity-80"
           >
             <Logo size={32} />
-            <span className="text-lg font-extrabold tracking-tight text-white">ClinRota</span>
+            <span className="text-lg font-extrabold tracking-tight text-white">Praxxt</span>
           </Link>
           <nav className="hidden items-center gap-8 text-sm font-semibold text-white/80 sm:flex">
             <a href="#how-it-works" className="hover:text-white">
@@ -190,7 +190,7 @@ export function LandingPage() {
             <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-gray-600 lg:mx-0">
               Across Ghana&apos;s nursing, midwifery, medical, physiotherapy, and pharmacy programs,
               clinical students still track their entire rotation — cases, hours, supervisor
-              sign-offs — on paper. ClinRota replaces the logbook, not the training.
+              sign-offs — on paper. Praxxt replaces the logbook, not the training.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-4 lg:justify-start">
               <a
@@ -291,7 +291,7 @@ export function LandingPage() {
             Clinical Discipline
           </p>
           <p className="mt-4 max-w-xl text-base leading-relaxed text-gray-600">
-            ClinRota supports nursing and midwifery training today, with medicine, pharmacy, and
+            Praxxt supports nursing and midwifery training today, with medicine, pharmacy, and
             physiotherapy coming as the pilot expands.
           </p>
 
@@ -444,11 +444,11 @@ export function LandingPage() {
 
             <Link
               href="/"
-              aria-label="ClinRota home"
+              aria-label="Praxxt home"
               className="flex w-fit items-center gap-2.5 transition hover:opacity-80"
             >
               <Logo size={32} />
-              <span className="text-lg font-extrabold tracking-tight text-white">ClinRota</span>
+              <span className="text-lg font-extrabold tracking-tight text-white">Praxxt</span>
             </Link>
           </div>
         </div>
@@ -463,7 +463,7 @@ export function LandingPage() {
                 {CONTACT_EMAIL}
               </a>
             </p>
-            <p>© {new Date().getFullYear()} ClinRota</p>
+            <p>© {new Date().getFullYear()} Praxxt</p>
           </div>
         </div>
       </footer>

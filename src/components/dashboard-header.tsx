@@ -17,7 +17,7 @@ export function DashboardHeader({
     <header className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-white px-6 py-4">
       <div>
         <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-          ClinRota
+          Praxxt
         </p>
         <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
       </div>

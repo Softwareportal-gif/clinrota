@@ -12,11 +12,11 @@ const CORAL = "#E8734A";
 
 // Same address used everywhere else on the site (landing page contact
 // section, login page footer link) — deliberately the one real address.
-const CONTACT_EMAIL = "hello@clinrota.com";
+const CONTACT_EMAIL = "hello@praxxt.com";
 
 // Exxat's "Quick Links" panel scoped down to what's actually real here —
 // just these two. Do not add Community/Certification/etc. entries; that
-// infrastructure doesn't exist for ClinRota.
+// infrastructure doesn't exist for Praxxt.
 function QuickLinksPanel({ isSignedIn }: { isSignedIn: boolean }) {
   return (
     <div className="space-y-3 lg:sticky lg:top-8">
@@ -73,11 +73,11 @@ export default async function HelpPage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <Link
             href="/"
-            aria-label="ClinRota home"
+            aria-label="Praxxt home"
             className="flex w-fit items-center gap-2.5 transition hover:opacity-80"
           >
             <Logo size={28} />
-            <span className="text-base font-extrabold tracking-tight text-white">ClinRota</span>
+            <span className="text-base font-extrabold tracking-tight text-white">Praxxt</span>
           </Link>
           <Link href="/login" className="text-sm font-semibold text-white/80 hover:text-white">
             ← Back to login

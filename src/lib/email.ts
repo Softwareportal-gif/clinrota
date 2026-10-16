@@ -36,7 +36,7 @@ export async function sendEmail({
     // batch down with it.
     const resend = new Resend(process.env.RESEND_API_KEY);
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM ?? "ClinRota <onboarding@resend.dev>",
+      from: process.env.EMAIL_FROM ?? "Praxxt <onboarding@resend.dev>",
       to,
       subject,
       html,
@@ -114,10 +114,10 @@ export function supervisorInviteEmailHtml({
 }): string {
   return `
     <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-      <h2>You've been added to ClinRota</h2>
+      <h2>You've been added to Praxxt</h2>
       <p>Hi ${supervisorName},</p>
       <p>
-        ${institutionName} has set up your ClinRota supervisor account so you can review
+        ${institutionName} has set up your Praxxt supervisor account so you can review
         and sign off on students' clinical case entries.
       </p>
       <p>
@@ -140,10 +140,10 @@ export function studentInviteEmailHtml({
 }): string {
   return `
     <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-      <h2>You've been added to ClinRota</h2>
+      <h2>You've been added to Praxxt</h2>
       <p>Hi ${studentName},</p>
       <p>
-        Your clinical program (${programName}) has set up your ClinRota account so you can
+        Your clinical program (${programName}) has set up your Praxxt account so you can
         start logging clinical cases and tracking your rotations.
       </p>
       <p>
