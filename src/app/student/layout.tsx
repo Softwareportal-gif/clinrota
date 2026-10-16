@@ -21,7 +21,10 @@ export default async function StudentLayout({ children }: { children: React.Reac
         style={{
           width: 232,
           flex: "0 0 232px",
-          minHeight: "100vh",
+          position: "sticky",
+          top: 0,
+          height: "100vh",
+          overflowY: "auto",
           boxSizing: "border-box",
           background: DARK_GREEN,
           padding: "28px 18px",

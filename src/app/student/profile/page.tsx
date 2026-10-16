@@ -1,6 +1,6 @@
 import { requireRole } from "@/lib/require-role";
 import { getStudentProfileByUserId } from "@/lib/student";
-import { DARK_GREEN, TEXT_SECONDARY, BORDER } from "../dashboard-sections/colors";
+import { DARK_GREEN, TEAL, TEXT_SECONDARY, BORDER } from "../dashboard-sections/colors";
 import { ProfileEditForm } from "./profile-edit-form";
 
 export default async function StudentProfilePage() {
@@ -35,6 +35,30 @@ export default async function StudentProfilePage() {
             <dd className="truncate" style={{ color: "#1E2A27" }}>{session.user.email}</dd>
           </div>
         </dl>
+      </section>
+
+      <section
+        id="cv"
+        className="flex flex-col gap-4 rounded-2xl bg-white p-6 sm:flex-row sm:items-center sm:justify-between"
+        style={{ border: `1px solid ${BORDER}` }}
+      >
+        <div>
+          <h2 className="text-base font-bold" style={{ color: DARK_GREEN }}>Your CV</h2>
+          <p className="mt-1 max-w-xl text-sm" style={{ color: TEXT_SECONDARY }}>
+            A ready-to-send PDF built from your profile, placements, approved hours and the clinical skills
+            your supervisors have signed off. Add a personal statement and areas of interest below to make
+            it stronger.
+          </p>
+        </div>
+        {/* Plain link, not next/link: it's a file download, not a page navigation. */}
+        <a
+          href="/student/profile/cv"
+          download
+          className="shrink-0 rounded-md px-4 py-2.5 text-center text-sm font-semibold text-white"
+          style={{ backgroundColor: TEAL }}
+        >
+          Download CV (PDF)
+        </a>
       </section>
 
       <section className="rounded-2xl bg-white p-6" style={{ border: `1px solid ${BORDER}` }}>

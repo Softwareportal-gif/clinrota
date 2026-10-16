@@ -48,9 +48,14 @@ export function ProfileSection({
         </div>
       </div>
 
-      <Link href="/student/profile" className="shrink-0 text-sm font-semibold" style={{ color: TEAL }}>
-        Finish your profile →
-      </Link>
+      <div className="flex shrink-0 flex-col items-start gap-1 sm:items-end">
+        <Link href="/student/profile" className="text-sm font-semibold" style={{ color: TEAL }}>
+          Finish your profile →
+        </Link>
+        <a href="/student/profile/cv" download className="text-sm font-semibold" style={{ color: TEAL }}>
+          Download my CV ↓
+        </a>
+      </div>
     </section>
   );
 }
