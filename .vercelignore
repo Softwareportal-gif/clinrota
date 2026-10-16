@@ -1,0 +1,10 @@
+# `vercel deploy` from a local checkout uploads this folder directly, and
+# without this file it included the local .env — whose NEXTAUTH_URL
+# (localhost) and dev keys then overrode the production settings.
+.env*
+!.env.example
+uploads
+public/uploads
+.next
+node_modules
+.claude
