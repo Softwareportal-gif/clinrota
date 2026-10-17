@@ -21,9 +21,12 @@ const CONTACT_EMAIL = "hello@praxxt.com";
 
 // Real, confirmed pilot partners only — append a row (and its logo under
 // public/images/partners/) as each new partner signs on; never pad this.
-const PARTNERS: { name: string; logoSrc: string }[] = [
-  { name: "St. John of God College of Health", logoSrc: "/images/partners/st-john-of-god-logo.webp" },
+// `show: false` keeps a partner off the site until the agreement is
+// confirmed with them; the "Piloting with" strip disappears when none show.
+const PARTNERS: { name: string; logoSrc: string; show: boolean }[] = [
+  { name: "St. John of God College of Health", logoSrc: "/images/partners/st-john-of-god-logo.webp", show: false },
 ];
+const SHOWN_PARTNERS = PARTNERS.filter((p) => p.show);
 
 const MODULES = [
   {
@@ -268,21 +271,23 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="border-b px-6 py-10" style={{ borderColor: LINE }}>
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 sm:flex-row sm:gap-10">
-          <p className="whitespace-nowrap text-base font-bold" style={{ color: BODY }}>
-            Piloting with
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-8">
-            {PARTNERS.map((p) => (
-              <div key={p.name} className="flex items-center gap-3">
-                <Image src={p.logoSrc} alt={`${p.name} crest`} width={44} height={44} className="h-11 w-11 object-contain" />
-                <span className="text-base font-bold">{p.name}</span>
-              </div>
-            ))}
+      {SHOWN_PARTNERS.length > 0 && (
+        <section className="border-b px-6 py-10" style={{ borderColor: LINE }}>
+          <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 sm:flex-row sm:gap-10">
+            <p className="whitespace-nowrap text-base font-bold" style={{ color: BODY }}>
+              Piloting with
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-8">
+              {SHOWN_PARTNERS.map((p) => (
+                <div key={p.name} className="flex items-center gap-3">
+                  <Image src={p.logoSrc} alt={`${p.name} crest`} width={44} height={44} className="h-11 w-11 object-contain" />
+                  <span className="text-base font-bold">{p.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section id="platform" className="scroll-mt-24 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-6xl">
