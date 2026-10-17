@@ -56,3 +56,6 @@ next-env.d.ts
 /public/sw.js
 
 .vercel
+
+# Brainstorming mockups (local only, never published)
+.superpowers/
