@@ -4,6 +4,7 @@ import { Wordmark } from "@/components/wordmark";
 import { BackLink } from "@/components/back-link";
 import { ROLE_HOME } from "@/lib/role-routes";
 import { LOGIN_ACCESS_FAQ } from "@/lib/faq";
+import { USING_PRAXXT_SECTIONS } from "@/lib/help-content";
 import { PlayIcon, TicketIcon } from "./help-icons";
 
 // Same palette as the landing page / login page — kept as local constants
@@ -99,7 +100,7 @@ export default async function HelpPage() {
               Help &amp; troubleshooting
             </h1>
             <p className="mt-2 text-base text-gray-600">
-              Answers to the most common sign-in questions.
+              Answers to common questions about signing in and using Praxxt.
             </p>
 
             <section id="login-access" className="mt-10 scroll-mt-6">
@@ -115,6 +116,22 @@ export default async function HelpPage() {
                 ))}
               </dl>
             </section>
+
+            {USING_PRAXXT_SECTIONS.map((section) => (
+              <section key={section.id} id={section.id} className="mt-14 scroll-mt-6">
+                <h2 className="text-sm font-extrabold uppercase tracking-widest" style={{ color: HIGHLIGHT }}>
+                  {section.title}
+                </h2>
+                <dl className="mt-6 space-y-8">
+                  {section.items.map((item) => (
+                    <div key={item.question}>
+                      <dt className="text-lg font-bold text-gray-900">{item.question}</dt>
+                      <dd className="mt-2 text-base leading-relaxed text-gray-600">{item.answer}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            ))}
 
             <section className="mt-14 border-t border-gray-100 pt-10">
               <h2 className="text-sm font-extrabold uppercase tracking-widest" style={{ color: HIGHLIGHT }}>

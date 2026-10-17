@@ -1,5 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { PRODUCT_DESCRIPTION, LOGIN_ACCESS_FAQ } from "@/lib/faq";
+import { USING_PRAXXT_SECTIONS } from "@/lib/help-content";
+import { faqReply } from "@/lib/faq-assistant";
 
 // "Haiku-tier" per the explicit request — this widget answers short FAQ-
 // grounded questions, not anything that benefits from a larger model.
@@ -24,9 +26,10 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 function buildSystemPrompt(role: string | undefined): string {
-  const faqText = LOGIN_ACCESS_FAQ.map((item) => `Q: ${item.question}\nA: ${item.answer}`).join(
-    "\n\n"
-  );
+  // The same help content the no-AI mode answers from.
+  const faqText = [...LOGIN_ACCESS_FAQ, ...USING_PRAXXT_SECTIONS.flatMap((s) => s.items)]
+    .map((item) => `Q: ${item.question}\nA: ${item.answer}`)
+    .join("\n\n");
 
   const roleContext = role
     ? `The visitor is currently signed in as ${ROLE_LABELS[role] ?? role}. You may tailor answers to that role (e.g. a coordinator asking about invites can get the coordinator-specific steps), but don't assume every visitor is signed in.`
@@ -39,7 +42,7 @@ ${PRODUCT_DESCRIPTION}
 
 ${roleContext}
 
-FREQUENTLY ASKED QUESTIONS (use these as your primary source for login/account questions — answer from this content, don't guess):
+FREQUENTLY ASKED QUESTIONS (use these as your primary source — answer from this content, don't guess):
 ${faqText}
 
 STRICT RULES — follow these exactly:
@@ -53,14 +56,37 @@ export async function* streamAssistantReply(
   history: ChatMessage[],
   role: string | undefined
 ): AsyncGenerator<string> {
+  const lastQuestion = [...history].reverse().find((m) => m.role === "user")?.content ?? "";
+
+  // Without an API key Beatrice answers from the written help content
+  // (src/lib/faq-assistant.ts) — free, and she still works.
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    // Same lazy, friendly-error-at-point-of-use pattern as sendEmail's
-    // missing RESEND_API_KEY handling in src/lib/email.ts — no startup
-    // schema/crash, just a clear message when the feature is actually used.
-    throw new Error("ANTHROPIC_NOT_CONFIGURED");
+    yield faqReply(lastQuestion, role);
+    return;
   }
 
+  // If the AI request fails before any text has streamed (e.g. credit used
+  // up, service unavailable), fall back to the help content rather than an
+  // error. A failure mid-answer still reaches the route's error handler.
+  let started = false;
+  try {
+    for await (const chunk of streamClaudeReply(apiKey, history, role)) {
+      started = true;
+      yield chunk;
+    }
+  } catch (err) {
+    if (started) throw err;
+    console.error("[assistant] Claude request failed; answering from help content:", err);
+    yield faqReply(lastQuestion, role);
+  }
+}
+
+async function* streamClaudeReply(
+  apiKey: string,
+  history: ChatMessage[],
+  role: string | undefined
+): AsyncGenerator<string> {
   const client = new Anthropic({ apiKey });
   const trimmedHistory = history.slice(-MAX_HISTORY_MESSAGES);
 

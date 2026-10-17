@@ -12,6 +12,8 @@ const NAV_ITEMS: PortalNavItem[] = [
   { href: "/student/placements", label: "My Placements", icon: "pin" },
   { href: "/student/compliance", label: "Required Documents", icon: "file" },
   { href: "/student/log/new", label: "Clinical Log", icon: "clipboard" },
+  { href: "/student/logbook", label: "My Logbook", icon: "list" },
+  { href: "/student/timesheets", label: "Timesheets", icon: "clock" },
   { href: "/student/messages", label: "Messages", icon: "messages" },
 ];
 

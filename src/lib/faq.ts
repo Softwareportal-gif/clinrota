@@ -1,10 +1,22 @@
-// Shared FAQ content — the single source of truth for both the /help page
-// (src/app/help/page.tsx) and Beatrice's system prompt (src/lib/assistant.ts).
-// Edit here only; both places import this so they can't drift apart.
+// Shared FAQ content — the single source of truth for the /help page
+// (src/app/help/page.tsx), Beatrice's system prompt (src/lib/assistant.ts)
+// and her no-AI mode (src/lib/faq-assistant.ts), which answers by matching
+// a question against these entries. Edit here only so they can't drift.
 
-export type FaqItem = { question: string; answer: string };
+export type FaqItem = {
+  question: string;
+  answer: string;
+  // Extra words people use for this topic, to help the no-AI matcher.
+  keywords?: string[];
+};
 
 export const LOGIN_ACCESS_FAQ: FaqItem[] = [
+  {
+    question: "How do I sign in?",
+    answer:
+      'Go to praxxt.com and choose Log in. Enter your email and password, or — if you don\'t have a password — type your email under "Email me a sign-in link" and open the link we send you. Your coordinator creates your account first; there\'s no public sign-up.',
+    keywords: ["signin", "login", "access", "account", "enter", "open", "start"],
+  },
   {
     question: "I haven't received my invitation email",
     answer:
