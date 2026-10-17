@@ -18,7 +18,12 @@ function wardReviewBackloggedBefore(): Date {
   return new Date(Date.now() - WARD_REVIEW_BACKLOG_THRESHOLD_MS);
 }
 
-export default async function CoordinatorDashboard() {
+export default async function CoordinatorDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ assigned?: string }>;
+}) {
+  const assigned = Number((await searchParams).assigned) || 0;
   const session = await requireRole("COORDINATOR");
   const coordinatorProfile = await getCoordinatorProfileByUserId(session.user.id);
 
@@ -103,13 +108,19 @@ export default async function CoordinatorDashboard() {
     <main className="min-h-screen bg-gray-50">
       <DashboardHeader title="Coordinator dashboard" />
       <div className="mx-auto max-w-4xl space-y-6 px-6 py-8">
+        {assigned > 0 && (
+          <p className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
+            Rotation assigned to {assigned} student{assigned === 1 ? "" : "s"}.
+          </p>
+        )}
+
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-gray-500">Program: {coordinatorProfile.program.name}</p>
           <Link
             href="/coordinator/rotations/new"
             className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white"
           >
-            + Assign rotation
+            + Assign rotations
           </Link>
         </div>
 

@@ -5,9 +5,14 @@ import { buildCsv } from "@/lib/csv";
 export async function GET() {
   await requireRole("COORDINATOR");
 
+  // One file can hold every level; studentId is optional.
   const csv = buildCsv(
-    ["firstName", "lastName", "email", "cohort"],
-    [["Ama", "Serwaa", "ama.serwaa@example.com", "Level 300"]]
+    ["firstName", "lastName", "email", "studentId", "level"],
+    [
+      ["Ama", "Serwaa", "ama.serwaa@example.com", "PT/2026/001", "Level 100"],
+      ["Kofi", "Mensah", "kofi.mensah@example.com", "PT/2025/014", "Level 200"],
+      ["Esi", "Ofori", "esi.ofori@example.com", "", "Level 300"],
+    ]
   );
 
   return new NextResponse(csv, {

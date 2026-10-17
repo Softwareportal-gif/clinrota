@@ -6,8 +6,9 @@ import { PortalShell, type PortalNavItem } from "@/components/portal-shell/porta
 const NAV_ITEMS: PortalNavItem[] = [
   { href: "/coordinator", label: "Dashboard", icon: "home", exact: true },
   { href: "/coordinator/students", label: "Students", icon: "users" },
+  { href: "/coordinator/cohorts", label: "Cohorts", icon: "layers" },
   { href: "/coordinator/messages", label: "Messages", icon: "messages" },
-  { href: "/coordinator/rotations/new", label: "Assign rotation", icon: "calendar" },
+  { href: "/coordinator/rotations/new", label: "Assign rotations", icon: "calendar" },
   { href: "/coordinator/competencies", label: "Competencies", icon: "target" },
   { href: "/coordinator/compliance", label: "Compliance", icon: "shield" },
   { href: "/coordinator/document-types", label: "Required documents", icon: "file" },

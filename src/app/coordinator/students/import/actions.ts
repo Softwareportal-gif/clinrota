@@ -5,12 +5,28 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/require-role";
 import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
+import { revalidatePath } from "next/cache";
 import { validateStudentRows, type RawStudentRow, type StudentRowResult } from "@/lib/student-import";
+import { createCohorts, type CohortDetails } from "@/lib/cohorts";
 
 export async function validateImportRows(rows: RawStudentRow[]): Promise<StudentRowResult[]> {
   const session = await requireRole("COORDINATOR");
   const coordinatorProfile = await getCoordinatorProfileByUserId(session.user.id);
   return validateStudentRows(rows, coordinatorProfile.programId);
+}
+
+// Creates the levels an uploaded file mentions that the program doesn't
+// have yet, so their rows can then be imported.
+export async function createImportCohorts(
+  names: string[],
+  details: CohortDetails
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const session = await requireRole("COORDINATOR");
+  const coordinatorProfile = await getCoordinatorProfileByUserId(session.user.id);
+  const result = await createCohorts(coordinatorProfile.programId, names, details);
+  if (!result.ok) return result;
+  revalidatePath("/coordinator/cohorts");
+  return { ok: true };
 }
 
 export type ConfirmImportResult =
@@ -59,10 +75,10 @@ export async function confirmImport(
           status: "IMPORTED",
           studentProfile: {
             create: {
-              // The CSV template has no ID-number column — auto-generated
-              // as a clearly-marked placeholder the coordinator can
-              // replace with the real institutional ID later.
-              studentIdNumber: `IMPORT-${randomUUID().slice(0, 8).toUpperCase()}`,
+              // The school's own ID when the file has one; otherwise a
+              // clearly-marked placeholder the coordinator can replace
+              // with the real institutional ID later.
+              studentIdNumber: row.data.studentId || `IMPORT-${randomUUID().slice(0, 8).toUpperCase()}`,
               programId: coordinatorProfile.programId,
               cohortId: row.cohortId,
             },
