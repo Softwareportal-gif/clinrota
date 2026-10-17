@@ -3,8 +3,11 @@
 # (localhost) and dev keys then overrode the production settings.
 .env*
 !.env.example
-uploads
-public/uploads
-.next
-node_modules
-.claude
+# Leading "/" = only the top-level folders of locally saved files. A bare
+# "uploads" also matched src/app/uploads (the route that serves files),
+# so it was never deployed.
+/uploads
+/public/uploads
+/.next
+/node_modules
+/.claude
