@@ -449,7 +449,10 @@ export function LandingPage() {
             </div>
           </div>
           <div className="flex flex-col gap-2 border-t pt-6 text-sm sm:flex-row sm:justify-between" style={{ borderColor: "#2B2860" }}>
-            <p>© {new Date().getFullYear()} Praxxt. All rights reserved.</p>
+            <p>
+              © {new Date().getFullYear()} Praxxt, a product of{" "}
+              <span className="font-semibold text-white">Ikona Health and Research Consult</span>. All rights reserved.
+            </p>
             <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-white">{CONTACT_EMAIL}</a>
           </div>
         </div>
