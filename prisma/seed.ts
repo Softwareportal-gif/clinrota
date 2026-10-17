@@ -5,6 +5,7 @@ import { PrismaClient, Role } from "../src/generated/prisma/client";
 import bcrypt from "bcryptjs";
 import { LCJR_FLAT } from "../src/lib/lcjr";
 import { LCJR_TEMPLATE_ID } from "../src/lib/discipline-template";
+import { seedProfessionDemos } from "./seed-professions";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL,
@@ -16,12 +17,15 @@ const DEMO_PASSWORD = "Password123!";
 async function main() {
   // Deploy builds call this with SEED_ONLY_IF_EMPTY so demo data lands once
   // on a fresh database and every later build is a no-op.
+  // Profession demos are the exception: they check for themselves, so a
+  // database seeded before they existed still gets them.
+  const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
+
   if (process.env.SEED_ONLY_IF_EMPTY === "true" && (await prisma.user.count()) > 0) {
-    console.log("Database already has users; skipping demo seed.");
+    console.log("Database already has users; skipping the main demo seed.");
+    await seedProfessionDemos(prisma, passwordHash);
     return;
   }
-
-  const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
 
   // ── Institution ────────────────────────────────────────────────────────
   const institution = await prisma.institution.create({
@@ -704,6 +708,8 @@ async function main() {
       status: "ACTIVE",
     },
   });
+
+  await seedProfessionDemos(prisma, passwordHash);
 
   console.log("\nSeed complete.\n");
   console.log("Demo accounts (all use the same password):");

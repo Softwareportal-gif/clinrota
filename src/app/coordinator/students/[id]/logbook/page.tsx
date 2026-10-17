@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireRole } from "@/lib/require-role";
 import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
 import { prisma } from "@/lib/prisma";
+import { answeredExtraFields } from "@/lib/discipline-template";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { StatusBadge } from "@/components/status-badge";
 import { ENTRUSTMENT_LEVEL_LABELS } from "@/lib/entrustment";
@@ -20,7 +21,10 @@ export default async function StudentLogbookPage({ params }: { params: Promise<{
 
   const entries = await prisma.logEntry.findMany({
     where: { studentId: id },
-    include: { rotation: { include: { clinicalSite: true } }, review: true },
+    include: {
+      rotation: { include: { clinicalSite: true, program: { include: { disciplineTemplate: true } } } },
+      review: true,
+    },
     orderBy: { occurredAt: "desc" },
   });
 
@@ -64,6 +68,14 @@ export default async function StudentLogbookPage({ params }: { params: Promise<{
                     <dt className="text-xs font-medium text-gray-400">Plan</dt>
                     <dd className="whitespace-pre-wrap text-gray-700">{entry.plan}</dd>
                   </div>
+                  {answeredExtraFields(entry.rotation.program.disciplineTemplate.extraLogFields, entry.extraFields).map(
+                    (f) => (
+                      <div key={f.key}>
+                        <dt className="text-xs font-medium text-gray-400">{f.label}</dt>
+                        <dd className="whitespace-pre-wrap text-gray-700">{f.value}</dd>
+                      </div>
+                    )
+                  )}
                 </dl>
 
                 {entry.review && (

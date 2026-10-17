@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/require-role";
 import { prisma } from "@/lib/prisma";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { getInstitutionIdForUser } from "@/lib/admin";
+import { AddCoordinatorForm } from "./add-coordinator-form";
 
 export default async function SuperAdminDashboard() {
   const session = await requireRole("SUPER_ADMIN");
@@ -10,7 +11,13 @@ export default async function SuperAdminDashboard() {
 
   const programs = await prisma.program.findMany({
     where: { institutionId },
-    include: { disciplineTemplate: true },
+    include: {
+      disciplineTemplate: true,
+      coordinatorProfiles: {
+        include: { user: { select: { name: true, email: true } } },
+        orderBy: { user: { name: "asc" } },
+      },
+    },
     orderBy: { name: "asc" },
   });
 
@@ -46,6 +53,14 @@ export default async function SuperAdminDashboard() {
                   <p className="text-xs text-gray-500">
                     Discipline template: {p.disciplineTemplate.name}
                   </p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {p.coordinatorProfiles.length === 0
+                      ? "No coordinator yet — add one so they can enrol students."
+                      : `Coordinator${p.coordinatorProfiles.length > 1 ? "s" : ""}: ${p.coordinatorProfiles
+                          .map((c) => `${c.user.name} (${c.user.email})`)
+                          .join(", ")}`}
+                  </p>
+                  <AddCoordinatorForm programId={p.id} />
                 </li>
               ))}
             </ul>

@@ -51,6 +51,20 @@ export function parseExtraLogFields(extraLogFields: unknown): ExtraLogField[] {
   return (extraLogFields as ExtraLogField[]) ?? [];
 }
 
+// A log entry's answers to its program's extra fields, labelled and in the
+// template's order, for read-only views. Unanswered fields are left out;
+// answers to fields a template no longer defines aren't shown.
+export function answeredExtraFields(
+  extraLogFields: unknown,
+  extraFields: unknown
+): { key: string; label: string; value: string }[] {
+  const values = (extraFields ?? {}) as Record<string, unknown>;
+  return parseExtraLogFields(extraLogFields).flatMap((f) => {
+    const value = values[f.key];
+    return typeof value === "string" && value.trim() ? [{ key: f.key, label: f.label, value }] : [];
+  });
+}
+
 // Flattened list of every sub-dimension with its parent dimension attached
 // — the template-driven replacement for lib/lcjr.ts's old fixed LCJR_FLAT.
 export function flattenRubric(

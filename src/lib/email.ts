@@ -129,6 +129,32 @@ export function supervisorInviteEmailHtml({
   `;
 }
 
+export function coordinatorInviteEmailHtml({
+  coordinatorName,
+  programName,
+  loginUrl,
+}: {
+  coordinatorName: string;
+  programName: string;
+  loginUrl: string;
+}): string {
+  return `
+    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+      <h2>You've been added to Praxxt</h2>
+      <p>Hi ${coordinatorName},</p>
+      <p>
+        You've been made a coordinator of ${programName} on Praxxt, so you can add its
+        students and supervisors and manage their placements.
+      </p>
+      <p>
+        To sign in, go to <a href="${loginUrl}">${loginUrl}</a> and use
+        "Email me a sign-in link" with this same email address — no password needed.
+      </p>
+      <p>See you there.</p>
+    </div>
+  `;
+}
+
 export function studentInviteEmailHtml({
   studentName,
   programName,

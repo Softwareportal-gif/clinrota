@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireRole } from "@/lib/require-role";
 import { getStudentProfileByUserId } from "@/lib/student";
 import { prisma } from "@/lib/prisma";
+import { answeredExtraFields } from "@/lib/discipline-template";
 import { StatusBadge } from "@/components/status-badge";
 import { EDITABLE_STATUSES } from "@/lib/log-entry-constants";
 import { ENTRUSTMENT_LEVEL_LABELS } from "@/lib/entrustment";
@@ -21,7 +22,7 @@ export default async function LogEntryDetailPage({
     include: {
       competencies: { include: { competency: true } },
       review: true,
-      rotation: { include: { clinicalSite: true } },
+      rotation: { include: { clinicalSite: true, program: { include: { disciplineTemplate: true } } } },
     },
   });
   if (!entry || entry.studentId !== studentProfile.id) notFound();
@@ -101,6 +102,12 @@ export default async function LogEntryDetailPage({
             <dt className="font-medium text-gray-700">Plan</dt>
             <dd className="whitespace-pre-wrap text-gray-600">{entry.plan || "—"}</dd>
           </div>
+          {answeredExtraFields(entry.rotation.program.disciplineTemplate.extraLogFields, entry.extraFields).map((f) => (
+            <div key={f.key}>
+              <dt className="font-medium text-gray-700">{f.label}</dt>
+              <dd className="whitespace-pre-wrap text-gray-600">{f.value}</dd>
+            </div>
+          ))}
         </dl>
 
         <div className="flex items-center gap-4">
