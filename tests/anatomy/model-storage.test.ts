@@ -46,12 +46,12 @@ describe("modelResponseFor without R2", () => {
     vi.stubEnv("ANATOMY_BUILD_DIR", dir);
   }
 
-  it("serves the local build with a versioned, private cache header", async () => {
+  it("serves the local build, revalidated each time", async () => {
     localBuild();
     const res = await modelResponseFor("v1/catalogue.json");
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toBe("application/json");
-    expect(res.headers.get("Cache-Control")).toBe("private, max-age=31536000, immutable");
+    expect(res.headers.get("Cache-Control")).toBe("private, no-cache");
     expect(await res.text()).toBe('{"version":"v1"}');
   });
 

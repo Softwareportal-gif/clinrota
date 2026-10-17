@@ -5,7 +5,7 @@
 // With R2 configured (R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY,
 // R2_BUCKET) the route answers with a short-lived signed link to the private
 // bucket. Without it (local development) the file is read from the build
-// output, ANATOMY_BUILD_DIR (default ./anatomy-build).
+// output, ANATOMY_BUILD_DIR (default ./anatomy-build), uncached.
 import { readFile } from "fs/promises";
 import path from "path";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
@@ -14,6 +14,8 @@ import { LODS, SYSTEMS } from "./catalogue";
 
 export const SIGNED_URL_SECONDS = 600;
 export const IMMUTABLE_CACHE = "private, max-age=31536000, immutable";
+// The local build is rebuilt in place while developing, so always revalidate.
+const LOCAL_CACHE = "private, no-cache";
 
 const VERSION = /^v\d+$/;
 const SLUG = /^[a-z0-9-]+$/;
@@ -77,7 +79,7 @@ export async function modelResponseFor(key: string): Promise<Response> {
     return new Response(new Uint8Array(body), {
       headers: {
         "Content-Type": contentTypeFor(key),
-        "Cache-Control": IMMUTABLE_CACHE,
+        "Cache-Control": LOCAL_CACHE,
         "X-Content-Type-Options": "nosniff",
       },
     });

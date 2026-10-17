@@ -19,6 +19,9 @@ const FOV = 50;
 const ANIMATION_MS = 600;
 const TAP_SLOP_PX = 6;
 const HIGHLIGHT = "#5A3BF0";
+// Small structures are framed with some of their surroundings, so the camera
+// never zooms in so far that you lose your bearings.
+const MIN_FRAME_M = 0.3;
 
 // Detail ranks: a structure shows the highest-ranked copy that has loaded.
 const RANK = { overview: 0, low: 1, medium: 2 } as const;
@@ -42,6 +45,16 @@ function makeMaterials() {
   return { base, selected };
 }
 
+function atLeast(bbox: Bbox, size: number): Bbox {
+  const out = [...bbox] as Bbox;
+  for (let k = 0; k < 3; k++) {
+    const grow = Math.max(0, size - (bbox[k + 3] - bbox[k])) / 2;
+    out[k] -= grow;
+    out[k + 3] += grow;
+  }
+  return out;
+}
+
 function unionBbox(structures: Structure[]): Bbox {
   const box: Bbox = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
   for (const { bbox } of structures) {
@@ -58,6 +71,17 @@ function structureObjects(root: THREE.Object3D, known: Map<string, Structure>) {
   const found = new Map<string, THREE.Object3D>();
   root.traverse((object) => {
     if (known.has(object.name) && !found.has(object.name)) found.set(object.name, object);
+  });
+  // Hidden until applyVisibility colours them, so nothing flashes in the
+  // loader's default grey; meshes outside any known structure stay hidden.
+  const structures = new Set(found.values());
+  root.traverse((object) => {
+    if (structures.has(object)) object.visible = false;
+    else if (object instanceof THREE.Mesh) {
+      let owned = false;
+      for (let p = object.parent; p && !owned; p = p.parent) owned = structures.has(p);
+      if (!owned) object.visible = false;
+    }
   });
   return found;
 }
@@ -318,7 +342,7 @@ function CameraRig({
   const flyTo = useCallback(
     (bbox: Bbox, keepAngle: boolean, instant: boolean) => {
       const perspective = camera as THREE.PerspectiveCamera;
-      const framing = framingFor(bbox, perspective.fov, size.width / Math.max(size.height, 1));
+      const framing = framingFor(atLeast(bbox, MIN_FRAME_M), perspective.fov, size.width / Math.max(size.height, 1));
       const toTarget = new THREE.Vector3(...framing.target);
       let toPos = new THREE.Vector3(...framing.position);
       const current = controls.current?.target ?? new THREE.Vector3();

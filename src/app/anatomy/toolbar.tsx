@@ -36,7 +36,7 @@ export function Toolbar({
     <div
       role="toolbar"
       aria-label="Explorer tools"
-      className="pointer-events-auto flex max-w-full items-stretch gap-0.5 rounded-2xl bg-white p-1 shadow-lg"
+      className="pointer-events-auto flex w-full max-w-md items-stretch gap-0.5 rounded-2xl bg-white p-1 shadow-lg"
       style={{ border: `1px solid ${BORDER}` }}
     >
       {tools.map(({ label, icon: Icon, onClick, disabled, pressed }) => (
@@ -46,7 +46,7 @@ export function Toolbar({
           onClick={onClick}
           disabled={disabled}
           aria-pressed={pressed}
-          className="flex min-w-14 cursor-pointer flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[11px] font-medium disabled:cursor-default disabled:opacity-40"
+          className="flex min-w-0 flex-1 cursor-pointer flex-col items-center gap-0.5 whitespace-nowrap rounded-xl px-1 py-1.5 text-[11px] font-medium disabled:cursor-default disabled:opacity-40"
           style={{ color: pressed ? ACCENT : INK, backgroundColor: pressed ? "#F1EEFF" : undefined }}
         >
           <Icon size={18} aria-hidden />

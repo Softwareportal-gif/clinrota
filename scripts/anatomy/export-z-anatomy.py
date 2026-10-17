@@ -55,6 +55,56 @@ VISCERAL_RULES = [
 
 SKIP_SUFFIXES = {"g", "j", "i"}  # heading labels and bony-landmark overlays
 
+# Everyday names for search ("breastbone" finds the sternum). Z-Anatomy has
+# none, so they're added here by pattern on the structure's name.
+SYNONYM_RULES = [
+    (r"\bsternum\b", ["Breastbone"]),
+    (r"\bclavicle\b", ["Collarbone"]),
+    (r"\bscapula\b", ["Shoulder blade"]),
+    (r"\bpatella\b", ["Kneecap"]),
+    (r"\bfemur\b", ["Thigh bone"]),
+    (r"\btibia\b", ["Shin bone"]),
+    (r"\bfibula\b", ["Calf bone"]),
+    (r"\bhumerus\b", ["Upper arm bone"]),
+    (r"\b(radius|ulna)\b", ["Forearm bone"]),
+    (r"\bmandible\b", ["Jawbone", "Lower jaw"]),
+    (r"\bmaxilla\b", ["Upper jaw"]),
+    (r"\bzygomatic bone\b", ["Cheekbone"]),
+    (r"\bcoccyx\b", ["Tailbone"]),
+    (r"\bcalcaneus\b", ["Heel bone"]),
+    (r"\bvertebra", ["Backbone", "Spine"]),
+    (r"\b(cranium|skull)\b", ["Skull"]),
+    (r"\bphalan", ["Finger or toe bone"]),
+    (r"\blarynx\b", ["Voice box"]),
+    (r"\btrachea\b", ["Windpipe"]),
+    (r"\b(oesophagus|esophagus)\b", ["Gullet", "Food pipe"]),
+    (r"\bpharynx\b", ["Throat"]),
+    (r"\btympanic membrane\b", ["Eardrum"]),
+    (r"\bauricle\b", ["Outer ear"]),
+    (r"\bcalcaneal tendon\b", ["Achilles tendon"]),
+    (r"\bgluteus maximus\b", ["Buttock muscle"]),
+    (r"\bbiceps brachii\b", ["Biceps"]),
+    (r"\btriceps brachii\b", ["Triceps"]),
+    (r"\b(rectus femoris|vastus)\b", ["Quadriceps", "Quads"]),
+    (r"\b(biceps femoris|semitendinosus|semimembranosus)\b", ["Hamstring"]),
+    (r"\bgastrocnemius\b", ["Calf muscle"]),
+    (r"\bpectoralis major\b", ["Chest muscle", "Pecs"]),
+    (r"\blatissimus dorsi\b", ["Lats"]),
+    (r"\bdeltoid\b", ["Shoulder muscle"]),
+    (r"\brectus abdominis\b", ["Abs", "Six-pack"]),
+    (r"\bhepar\b|\bliver\b", ["Liver"]),
+    (r"\bcerebrum\b", ["Brain"]),
+]
+
+
+def synonyms_for(name):
+    lowered = name.lower()
+    found = []
+    for pattern, names in SYNONYM_RULES:
+        if re.search(pattern, lowered):
+            found += [n for n in names if n.lower() not in lowered and n not in found]
+    return "|".join(found)
+
 
 def system_for(collection_name, object_name):
     title = re.sub(r"^\d+:\s*", "", collection_name)
@@ -191,7 +241,7 @@ def main():
                     "id": sid,
                     "name": display,
                     "latin": "",
-                    "synonyms": "",
+                    "synonyms": synonyms_for(display),
                     "system": system,
                     "region": region_for(centre),
                     "parent_id": "",

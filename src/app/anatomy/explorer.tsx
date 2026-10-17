@@ -167,7 +167,7 @@ function ExplorerView({ catalogue, modelBaseUrl }: { catalogue: Catalogue; model
           <Menu size={18} aria-hidden />
           <span className="hidden sm:inline">Systems</span>
         </button>
-        <div className="pointer-events-auto mx-auto flex w-full max-w-md">
+        <div className="pointer-events-auto mx-auto flex w-full min-w-0 max-w-md">
           <SearchBar catalogue={catalogue} query={query} onQueryChange={setQuery} onPick={pick} showResults={webgl} />
         </div>
       </div>

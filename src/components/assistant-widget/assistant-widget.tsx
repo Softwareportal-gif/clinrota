@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ChatBubbleIcon, CloseIcon, SendIcon } from "./icons";
 
@@ -37,6 +38,7 @@ export function AssistantWidget() {
   // (including the static landing/login pages) to render dynamically.
   const { data: session } = useSession();
   const isSignedIn = !!session?.user;
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -100,6 +102,9 @@ export function AssistantWidget() {
   const showTicketPrompt =
     !isStreaming && lastAssistantMessage && suggestsTicket(lastAssistantMessage.content);
   const ticketPrefill = showTicketPrompt ? buildTicketPrefill(messages) : null;
+
+  // The Body Explorer is full-screen, and the bubble would sit on its toolbar.
+  if (pathname?.startsWith("/anatomy")) return null;
 
   return (
     <>
