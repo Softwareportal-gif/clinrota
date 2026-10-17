@@ -75,3 +75,13 @@ body {
   opacity: 1;
   transform: none;
 }
+
+/* Tailwind v4 gives buttons the arrow cursor; anything you can click gets
+   the hand instead, site-wide. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+summary,
+label:has(> input[type="checkbox"]:not(:disabled)),
+label:has(> input[type="radio"]:not(:disabled)) {
+  cursor: pointer;
+}

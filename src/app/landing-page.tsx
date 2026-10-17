@@ -304,7 +304,7 @@ export function LandingPage() {
             {MODULES.map((m, i) => (
               <Reveal key={m.title} delay={i * 120} className="h-full">
               <div
-                className="group flex h-full flex-col gap-4 rounded-3xl border border-[#ECEBF5] bg-white p-8 shadow-[0_12px_30px_rgba(37,32,110,.06)] transition duration-300 hover:border-[#D7D1FB] hover:shadow-[0_24px_48px_rgba(37,32,110,.14)] active:shadow-[0_24px_48px_rgba(37,32,110,.14)] motion-safe:hover:-translate-y-1.5 motion-safe:active:scale-[.98]"
+                className="group flex h-full cursor-default flex-col gap-4 rounded-3xl border border-[#ECEBF5] bg-white p-8 shadow-[0_12px_30px_rgba(37,32,110,.06)] transition duration-300 hover:border-[#D7D1FB] hover:shadow-[0_24px_48px_rgba(37,32,110,.14)] active:shadow-[0_24px_48px_rgba(37,32,110,.14)] motion-safe:hover:-translate-y-1.5 motion-safe:active:scale-[.98]"
               >
                 <span
                   className="flex h-14 w-14 items-center justify-center rounded-2xl transition duration-300 motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110"
@@ -350,7 +350,7 @@ export function LandingPage() {
             {DISCIPLINES.map((name, i) => (
               <Reveal key={name} delay={i * 70}>
               <span
-                className="group flex items-center gap-2.5 rounded-full bg-white px-6 py-3.5 text-[17px] font-bold shadow-[0_2px_6px_rgba(37,32,110,.07)] ring-1 ring-transparent transition duration-300 hover:shadow-[0_10px_24px_rgba(90,59,240,.18)] hover:ring-[#5A3BF0]/30 active:ring-[#5A3BF0]/40 motion-safe:hover:-translate-y-1 motion-safe:active:scale-95"
+                className="group flex cursor-default items-center gap-2.5 rounded-full bg-white px-6 py-3.5 text-[17px] font-bold shadow-[0_2px_6px_rgba(37,32,110,.07)] ring-1 ring-transparent transition duration-300 hover:shadow-[0_10px_24px_rgba(90,59,240,.18)] hover:ring-[#5A3BF0]/30 active:ring-[#5A3BF0]/40 motion-safe:hover:-translate-y-1 motion-safe:active:scale-95"
                 style={{ color: INK }}
               >
                 <span
@@ -377,7 +377,7 @@ export function LandingPage() {
             {REASONS.map((r, i) => (
               <Reveal key={r.title} delay={i * 100} className="h-full">
               <div
-                className="group flex h-full flex-col gap-3 rounded-3xl bg-[#F8F7FF] p-7 ring-1 ring-transparent transition duration-300 hover:bg-white hover:shadow-[0_20px_40px_rgba(37,32,110,.12)] hover:ring-[#ECEBF5] active:bg-white active:ring-[#ECEBF5] motion-safe:hover:-translate-y-1.5 motion-safe:active:scale-[.98]"
+                className="group flex h-full cursor-default flex-col gap-3 rounded-3xl bg-[#F8F7FF] p-7 ring-1 ring-transparent transition duration-300 hover:bg-white hover:shadow-[0_20px_40px_rgba(37,32,110,.12)] hover:ring-[#ECEBF5] active:bg-white active:ring-[#ECEBF5] motion-safe:hover:-translate-y-1.5 motion-safe:active:scale-[.98]"
               >
                 <span
                   className="h-1.5 w-9 rounded-full transition-all duration-300 group-hover:w-16"
@@ -409,7 +409,7 @@ export function LandingPage() {
             {SECURITY.map((s, i) => (
               <Reveal key={s.title} delay={i * 100} className="h-full">
               <div
-                className="flex h-full flex-col gap-2 rounded-2xl border border-white/20 bg-white/10 p-6 transition duration-300 hover:border-white/40 hover:bg-white/[.16] active:bg-white/[.16] motion-safe:hover:-translate-y-1 motion-safe:active:scale-[.98]"
+                className="flex h-full cursor-default flex-col gap-2 rounded-2xl border border-white/20 bg-white/10 p-6 transition duration-300 hover:border-white/40 hover:bg-white/[.16] active:bg-white/[.16] motion-safe:hover:-translate-y-1 motion-safe:active:scale-[.98]"
               >
                 <h3 className="text-[17px] font-extrabold">{s.title}</h3>
                 <p className="text-[15px] leading-relaxed text-[#DCE2FF]">{s.body}</p>
