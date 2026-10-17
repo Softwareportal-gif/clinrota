@@ -12,7 +12,14 @@
 // shadow.
 import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
+import {
+  ContactShadows,
+  Environment,
+  Lightformer,
+  OrbitControls,
+  PerformanceMonitor,
+  useGLTF,
+} from "@react-three/drei";
 import { EffectComposer, N8AO } from "@react-three/postprocessing";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
@@ -21,6 +28,7 @@ import { framingFor } from "@/lib/anatomy/camera";
 import { OVERVIEW_SYSTEMS, type Bbox, type Catalogue, type Lod, type Structure } from "@/lib/anatomy/catalogue";
 import { currentDeviceHints, preferredLod } from "@/lib/anatomy/detail";
 import { visibleStructureIds, type ExplorerState } from "@/lib/anatomy/explorer-state";
+import { addTissueDetail, detailFor, mainAxis } from "./tissue-detail";
 
 const FOV = 40;
 const ANIMATION_MS = 600;
@@ -31,26 +39,73 @@ const HIGHLIGHT = "#5A3BF0";
 const MIN_FRAME_M = 0.3;
 
 // Detail ranks: a structure shows the highest-ranked copy that has loaded.
-const RANK: Record<"overview" | Lod, number> = { overview: 0, low: 1, medium: 2, high: 3 };
+const RANK: Record<"overview" | Lod, number> = {
+  overview: 0,
+  low: 1,
+  medium: 2,
+  high: 3,
+};
 
-type Quality = "high" | "standard";
+// What each tier draws. Devices start at the tier their detail level suggests
+// and step down if they can't keep a smooth frame rate.
+type Quality = "high" | "balanced" | "standard";
+const QUALITY = {
+  high: {
+    physical: true,
+    ao: true,
+    floorShadow: true,
+    twoOctaves: true,
+    dpr: [1, 2] as [number, number],
+  },
+  balanced: {
+    physical: false,
+    ao: true,
+    floorShadow: false,
+    twoOctaves: false,
+    dpr: [1, 1.5] as [number, number],
+  },
+  standard: {
+    physical: false,
+    ao: false,
+    floorShadow: false,
+    twoOctaves: false,
+    dpr: [1, 1] as [number, number],
+  },
+};
+const LOWER: Record<Quality, Quality> = {
+  high: "balanced",
+  balanced: "standard",
+  standard: "standard",
+};
 
-// One material per structure (its own shade), made on first use and reused.
+// One material per structure (its own shade and fibre direction), made on
+// first use and reused.
 class MaterialCache {
   private cache = new Map<string, THREE.Material>();
+  private axes = new Map<string, THREE.Vector3>();
   constructor(private quality: Quality) {}
 
-  get(structure: Structure, selected: boolean, xray: boolean): THREE.Material {
+  get(structure: Structure, selected: boolean, xray: boolean, object: THREE.Object3D): THREE.Material {
     const key = `${structure.id}|${selected}|${xray}`;
     let material = this.cache.get(key);
     if (!material) {
-      material = this.make(structure, selected, xray);
+      let axis = this.axes.get(structure.id);
+      if (!axis) {
+        axis = mainAxis(object);
+        this.axes.set(structure.id, axis);
+      }
+      material = this.make(structure, selected, xray, axis);
       this.cache.set(key, material);
     }
     return material;
   }
 
-  private make(structure: Structure, selected: boolean, xray: boolean): THREE.Material {
+  dispose() {
+    for (const material of this.cache.values()) material.dispose();
+    this.cache.clear();
+  }
+
+  private make(structure: Structure, selected: boolean, xray: boolean, axis: THREE.Vector3): THREE.Material {
     const { tissue, surface, lightnessOffset } = appearanceOf(structure);
     const color = new THREE.Color(surface.colour).offsetHSL(0, 0, lightnessOffset);
     const params = {
@@ -59,17 +114,20 @@ class MaterialCache {
       emissive: new THREE.Color(selected ? HIGHLIGHT : "#000000"),
       emissiveIntensity: selected ? 0.45 : 0,
     };
-    const material =
-      this.quality === "high"
-        ? new THREE.MeshPhysicalMaterial({
-            ...params,
-            clearcoat: surface.clearcoat,
-            clearcoatRoughness: 0.4,
-            sheen: surface.sheen,
-            sheenRoughness: 0.5,
-            sheenColor: new THREE.Color("#ffd9d0"),
-          })
-        : new THREE.MeshStandardMaterial({ ...params, roughness: Math.max(0.25, surface.roughness - surface.clearcoat * 0.2) });
+    const material = QUALITY[this.quality].physical
+      ? new THREE.MeshPhysicalMaterial({
+          ...params,
+          clearcoat: surface.clearcoat,
+          clearcoatRoughness: 0.4,
+          sheen: surface.sheen,
+          sheenRoughness: 0.5,
+          sheenColor: new THREE.Color("#ffd9d0"),
+        })
+      : new THREE.MeshStandardMaterial({
+          ...params,
+          roughness: Math.max(0.25, surface.roughness - surface.clearcoat * 0.2),
+        });
+    addTissueDetail(material, detailFor(tissue), axis, QUALITY[this.quality].twoOctaves);
     const opacity = tissue === "skin" && xray ? 0.2 : surface.opacity;
     if (opacity !== undefined) {
       material.transparent = true;
@@ -131,7 +189,7 @@ function applyVisibility(
   visible: Set<string>,
   state: ExplorerState,
   byId: Map<string, Structure>,
-  materials: MaterialCache
+  materials: MaterialCache,
 ) {
   const best = new Map<string, number>();
   for (const [url, objects] of registry.objects) {
@@ -143,7 +201,7 @@ function applyVisibility(
     for (const [id, object] of objects) {
       object.visible = visible.has(id) && best.get(id) === rank;
       if (!object.visible) continue;
-      const material = materials.get(byId.get(id)!, id === state.selectedId, state.xray);
+      const material = materials.get(byId.get(id)!, id === state.selectedId, state.xray, object);
       object.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.material = material;
@@ -165,11 +223,11 @@ type SceneProps = {
 
 export function BodyScene(props: SceneProps) {
   const [lod] = useState<Lod>(() => preferredLod(currentDeviceHints()));
-  const quality: Quality = lod === "high" ? "high" : "standard";
+  const [quality, setQuality] = useState<Quality>(lod === "high" ? "high" : lod === "medium" ? "balanced" : "standard");
   return (
     <Canvas
       frameloop="demand"
-      dpr={[1, 2]}
+      dpr={QUALITY[quality].dpr}
       camera={{ fov: FOV, near: 0.01, far: 50, position: [0, 1, 3] }}
       style={{ touchAction: "none" }}
       onCreated={({ gl }) => {
@@ -178,6 +236,7 @@ export function BodyScene(props: SceneProps) {
         gl.toneMappingExposure = 1.05;
       }}
     >
+      <PerformanceMonitor flipflops={2} onDecline={() => setQuality((q) => LOWER[q])} />
       <StudioLighting />
       <SceneContent {...props} lod={lod} quality={quality} />
     </Canvas>
@@ -215,6 +274,7 @@ function SceneContent({
   const byId = useMemo(() => new Map(catalogue.structures.map((s) => [s.id, s])), [catalogue]);
   const visible = useMemo(() => visibleStructureIds(catalogue, state), [catalogue, state]);
   const materials = useMemo(() => new MaterialCache(quality), [quality]);
+  useEffect(() => () => materials.dispose(), [materials]);
   const body = useMemo(() => unionBbox(catalogue.structures), [catalogue]);
   const registry = useRef<Registry>({ objects: new Map(), ranks: new Map() });
   const [loadedCount, setLoadedCount] = useState(0);
@@ -228,7 +288,11 @@ function SceneContent({
     const selected = state.selectedId ? byId.get(state.selectedId) : undefined;
     const urls: { chunkId: string; url: string; rank: number }[] = [];
     const add = (chunkId: string, level: Lod) =>
-      urls.push({ chunkId, url: `${modelBaseUrl}/chunks/${chunkId}/${level}.glb`, rank: RANK[level] });
+      urls.push({
+        chunkId,
+        url: `${modelBaseUrl}/chunks/${chunkId}/${level}.glb`,
+        rank: RANK[level],
+      });
     for (const chunk of catalogue.chunks) {
       if (!visibleChunks.has(chunk.id)) continue;
       // The overview already shows these systems roughly; others get a quick
@@ -268,23 +332,29 @@ function SceneContent({
           </Suspense>
         </ChunkBoundary>
       ))}
-      {quality === "high" && (
-        <>
-          {/* Re-baked whenever what's on screen changes, not every frame. */}
-          <ContactShadows
-            key={`${loadedCount}-${visible.size}`}
-            frames={1}
-            position={[0, body[1] - 0.002, 0]}
-            scale={2.4}
-            blur={2.5}
-            far={1.2}
-            opacity={0.35}
-            resolution={512}
+      {QUALITY[quality].floorShadow && (
+        /* Re-baked whenever what's on screen changes, not every frame. */
+        <ContactShadows
+          key={`${loadedCount}-${visible.size}`}
+          frames={1}
+          position={[0, body[1] - 0.002, 0]}
+          scale={2.4}
+          blur={2.5}
+          far={1.2}
+          opacity={0.35}
+          resolution={512}
+        />
+      )}
+      {QUALITY[quality].ao && (
+        <EffectComposer multisampling={quality === "high" ? 4 : 0}>
+          <N8AO
+            aoRadius={0.05}
+            distanceFalloff={0.6}
+            intensity={2.4}
+            quality={quality === "high" ? "medium" : "performance"}
+            halfRes={quality !== "high"}
           />
-          <EffectComposer multisampling={4}>
-            <N8AO aoRadius={0.06} distanceFalloff={0.6} intensity={2.2} quality="medium" halfRes />
-          </EffectComposer>
-        </>
+        </EffectComposer>
       )}
       <TapPicker registry={registry} visible={visible} onSelect={onSelect} />
       <CameraRig catalogue={catalogue} byId={byId} selectedId={state.selectedId} resetCount={state.resetCount} />
@@ -311,7 +381,12 @@ function Model({
   return <primitive object={scene} />;
 }
 
-type BoundaryProps = { url: string; chunkId: string; onLoadError: SceneProps["onLoadError"]; children: ReactNode };
+type BoundaryProps = {
+  url: string;
+  chunkId: string;
+  onLoadError: SceneProps["onLoadError"];
+  children: ReactNode;
+};
 
 // A chunk that fails to load is reported once, with a retry, and never takes
 // the rest of the scene down with it.
@@ -369,7 +444,7 @@ function TapPicker({
       const rect = el.getBoundingClientRect();
       const pointer = new THREE.Vector2(
         ((e.clientX - rect.left) / rect.width) * 2 - 1,
-        -((e.clientY - rect.top) / rect.height) * 2 + 1
+        -((e.clientY - rect.top) / rect.height) * 2 + 1,
       );
       raycaster.setFromCamera(pointer, camera);
       const candidates: { id: string; object: THREE.Object3D }[] = [];
@@ -454,7 +529,7 @@ function CameraRig({
       }
       invalidate();
     },
-    [camera, size, invalidate]
+    [camera, size, invalidate],
   );
 
   useEffect(() => {
@@ -484,5 +559,5 @@ function CameraRig({
     else flight.current = null;
   });
 
-  return <OrbitControls ref={controls} makeDefault enableDamping minDistance={0.05} maxDistance={8} />;
+  return <OrbitControls ref={controls} makeDefault enableDamping zoomToCursor minDistance={0.05} maxDistance={8} />;
 }

@@ -7,7 +7,7 @@ import { NodeIO, type Document } from "@gltf-transform/core";
 import { EXTMeshoptCompression, KHRMeshQuantization } from "@gltf-transform/extensions";
 import { MeshoptDecoder } from "meshoptimizer";
 import { LODS, parseCatalogue, type Catalogue } from "@/lib/anatomy/catalogue";
-import { buildAnatomy } from "@/lib/anatomy/pipeline";
+import { buildAnatomy, simplificationFor } from "@/lib/anatomy/pipeline";
 
 const FIXTURE = path.join(__dirname, "..", "fixtures", "anatomy-source");
 
@@ -105,5 +105,21 @@ describe("buildAnatomy", () => {
     await expect(buildAnatomy({ sourceDir: broken, outDir: path.join(tmp, "out2"), version: "v1" })).rejects.toThrow(
       "missing mesh: heart"
     );
+  });
+});
+
+describe("simplificationFor", () => {
+  it("keeps small organ systems whole at medium detail", () => {
+    expect(simplificationFor("respiratory", "medium")).toEqual({ ratio: 1, error: 0 });
+    expect(simplificationFor("respiratory", "low").ratio).toBeLessThan(1);
+  });
+
+  it("holds thin vessels and nerves to a tighter error than muscles", () => {
+    expect(simplificationFor("cardiovascular", "medium").error).toBeLessThan(simplificationFor("muscular", "medium").error);
+    expect(simplificationFor("nervous", "low").error).toBeLessThan(simplificationFor("muscular", "low").error);
+  });
+
+  it("never simplifies high detail", () => {
+    expect(simplificationFor("muscular", "high")).toEqual({ ratio: 1, error: 0 });
   });
 });

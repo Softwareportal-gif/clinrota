@@ -35,8 +35,8 @@ export type Surface = {
 };
 
 export const SURFACES: Record<Tissue, Surface> = {
-  bone: { colour: "#E8DDC6", roughness: 0.62, clearcoat: 0.1, sheen: 0, shadeRange: 0.05 },
-  cartilage: { colour: "#C8DBE4", roughness: 0.32, clearcoat: 0.5, sheen: 0, shadeRange: 0.03 },
+  bone: { colour: "#E6D7B9", roughness: 0.62, clearcoat: 0.1, sheen: 0, shadeRange: 0.05 },
+  cartilage: { colour: "#DCE5E2", roughness: 0.32, clearcoat: 0.5, sheen: 0, shadeRange: 0.03 },
   ligament: { colour: "#DAD7CB", roughness: 0.38, clearcoat: 0.4, sheen: 0, shadeRange: 0.03 },
   muscle: { colour: "#A9372F", roughness: 0.52, clearcoat: 0.12, sheen: 0.55, shadeRange: 0.07 },
   tendon: { colour: "#E9E5DA", roughness: 0.3, clearcoat: 0.45, sheen: 0, shadeRange: 0.03 },
@@ -48,7 +48,7 @@ export const SURFACES: Record<Tissue, Surface> = {
   neural: { colour: "#E3C2B8", roughness: 0.5, clearcoat: 0.2, sheen: 0.2, shadeRange: 0.04 },
   lymph: { colour: "#8CBF4E", roughness: 0.45, clearcoat: 0.3, sheen: 0, shadeRange: 0.03 },
   skin: { colour: "#E3BB9E", roughness: 0.6, clearcoat: 0.05, sheen: 0.3, shadeRange: 0.02 },
-  respiratory: { colour: "#E39AA2", roughness: 0.5, clearcoat: 0.3, sheen: 0.2, shadeRange: 0.04 },
+  respiratory: { colour: "#DE9C99", roughness: 0.5, clearcoat: 0.3, sheen: 0.2, shadeRange: 0.04 },
   digestive: { colour: "#D88B6B", roughness: 0.45, clearcoat: 0.35, sheen: 0.1, shadeRange: 0.05 },
   urinary: { colour: "#B65A4C", roughness: 0.45, clearcoat: 0.35, sheen: 0, shadeRange: 0.04 },
   reproductive: { colour: "#C97FA5", roughness: 0.45, clearcoat: 0.3, sheen: 0, shadeRange: 0.04 },

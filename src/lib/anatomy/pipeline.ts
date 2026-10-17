@@ -14,7 +14,7 @@ import { Document, Logger, NodeIO, type Primitive } from "@gltf-transform/core";
 import { EXTMeshoptCompression, KHRMeshQuantization } from "@gltf-transform/extensions";
 import { meshopt, simplify, transformMesh, weld } from "@gltf-transform/functions";
 import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from "meshoptimizer";
-import { LODS, OVERVIEW_SYSTEMS, type Bbox, type Catalogue, type Chunk, type Lod, type Structure } from "./catalogue";
+import { LODS, OVERVIEW_SYSTEMS, type AnatomySystem, type Bbox, type Catalogue, type Chunk, type Lod, type Structure } from "./catalogue";
 import { parseStructuresCsv, validateSource, type SourceRow } from "./source-format";
 
 // Share of vertices kept at each detail level, and the most each level may
@@ -24,6 +24,33 @@ import { parseStructuresCsv, validateSource, type SourceRow } from "./source-for
 export const SIMPLIFY_RATIO: Record<Lod, number> = { low: 0.1, medium: 0.35, high: 1 };
 export const SIMPLIFY_ERROR: Record<Lod, number> = { low: 0.01, medium: 0.003, high: 0 };
 export const OVERVIEW_RATIO = 0.05;
+
+// Small organ systems cost little even at full detail, so medium keeps them
+// whole: vessels and nerves lying on them then can't poke through a
+// simplified surface.
+const FULL_DETAIL_AT_MEDIUM = new Set<AnatomySystem>([
+  "respiratory",
+  "digestive",
+  "urinary",
+  "reproductive",
+  "endocrine",
+  "integumentary",
+  "lymphatic",
+]);
+// Vessels and nerves are thin tubes: an error cap relative to their length
+// would let them flatten into ribbons, so they get a much tighter one.
+const TUBE_SYSTEMS = new Set<AnatomySystem>(["cardiovascular", "nervous"]);
+const TUBE_ERROR: Record<Lod, number> = { low: 0.003, medium: 0.0006, high: 0 };
+// Bones are what vessels and organs lie against; keep their surface closer.
+const SKELETAL_MEDIUM = { ratio: 0.5, error: 0.0015 };
+
+export function simplificationFor(system: AnatomySystem, lod: Lod): { ratio: number; error: number } {
+  if (lod === "high") return { ratio: 1, error: 0 };
+  if (lod === "medium" && FULL_DETAIL_AT_MEDIUM.has(system)) return { ratio: 1, error: 0 };
+  if (lod === "medium" && system === "skeletal") return SKELETAL_MEDIUM;
+  if (TUBE_SYSTEMS.has(system)) return { ratio: SIMPLIFY_RATIO[lod], error: TUBE_ERROR[lod] };
+  return { ratio: SIMPLIFY_RATIO[lod], error: SIMPLIFY_ERROR[lod] };
+}
 export const OVERVIEW_ERROR = 0.02;
 
 type Geometry = { positions: Float32Array; normals: Float32Array | null; indices: Uint32Array };
@@ -165,7 +192,8 @@ export async function buildAnatomy(opts: { sourceDir: string; outDir: string; ve
   for (const [id, items] of [...byChunk].sort(([a], [b]) => a.localeCompare(b))) {
     const bytes = {} as Record<Lod, number>;
     for (const lod of LODS) {
-      bytes[lod] = await writeModel(io, items, SIMPLIFY_RATIO[lod], SIMPLIFY_ERROR[lod], path.join(modelDir, "chunks", id, `${lod}.glb`));
+      const { ratio, error } = simplificationFor(items[0].row.system, lod);
+      bytes[lod] = await writeModel(io, items, ratio, error, path.join(modelDir, "chunks", id, `${lod}.glb`));
     }
     chunks.push({ id, system: items[0].row.system, region: items[0].row.region, bytes });
   }

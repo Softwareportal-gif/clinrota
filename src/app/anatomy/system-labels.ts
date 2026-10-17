@@ -8,9 +8,9 @@ export const depthLabel = (depth: DepthLevel) => depth[0].toUpperCase() + depth.
 export const SYSTEM_COLOURS: Record<AnatomySystem, string> = {
   integumentary: "#E3BB9E",
   muscular: "#A9372F",
-  skeletal: "#E8DDC6",
+  skeletal: "#E6D7B9",
   cardiovascular: "#C7302A",
-  respiratory: "#E39AA2",
+  respiratory: "#DE9C99",
   nervous: "#EFC74A",
   digestive: "#D88B6B",
   urinary: "#B65A4C",
