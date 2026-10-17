@@ -106,7 +106,9 @@ export default async function EvaluateRotationPage({
                 <li key={subDimension} className="flex items-center justify-between text-sm">
                   <span className="text-gray-700">{label}</span>
                   <span className="font-medium text-gray-900">
-                    {existingLevels[subDimension]} / {maxLevel}
+                    {existingLevels[subDimension] !== undefined
+                      ? `${existingLevels[subDimension]} / ${maxLevel}`
+                      : (rubric.notAssessedLabel ?? "—")}
                   </span>
                 </li>
               ))}
@@ -122,6 +124,7 @@ export default async function EvaluateRotationPage({
             rotationId={rotationId}
             rubric={rubric}
             existingLevels={existingLevels}
+            hasSavedEvaluation={evaluation !== null}
             initialOverallComments={evaluation?.overallComments ?? ""}
             competencyContext={competencyContext}
           />

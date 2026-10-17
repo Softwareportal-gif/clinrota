@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { averageRatingPercent, parseRubric } from "@/lib/discipline-template";
+import { parseRubric, rubricPercent } from "@/lib/discipline-template";
 
 // ── Tunable constants ───────────────────────────────────────────────────
 // Logbook sub-component weights (must sum to 1.0). Only the top-level
@@ -77,7 +77,11 @@ export async function computeRotationScore(rotationId: string): Promise<ScoreRes
     return { scoreable: false, reason: "No finalized supervisor evaluation yet." };
   }
   const rubric = parseRubric(rotation.program.disciplineTemplate.rubric);
-  const supervisorScore = clamp(averageRatingPercent(evaluation.ratings, rubric.scaleLevels)!, 0, 100);
+  const supervisorPercent = rubricPercent(evaluation.ratings, rubric);
+  if (supervisorPercent === null) {
+    return { scoreable: false, reason: "The supervisor evaluation has no scored items rated." };
+  }
+  const supervisorScore = clamp(supervisorPercent, 0, 100);
 
   // ── Logbook: competency coverage ──────────────────────────────────
   const requiredCompetencyIds = rotation.program.requiredCompetencies.map((r) => r.competencyId);

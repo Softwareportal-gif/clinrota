@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { saveEvaluation } from "./actions";
-import type { RubricDefinition } from "@/lib/discipline-template";
+import { NOT_ASSESSED, type RubricDefinition } from "@/lib/discipline-template";
 
 type CompetencyContextRow = {
   id: string;
@@ -15,12 +15,16 @@ export function EvaluationForm({
   rotationId,
   rubric,
   existingLevels,
+  hasSavedEvaluation,
   initialOverallComments,
   competencyContext,
 }: {
   rotationId: string;
   rubric: RubricDefinition;
   existingLevels: Record<string, number>;
+  // A saved item with no rating was marked "not assessed" (the only way
+  // to save without one), so it reopens with that option selected.
+  hasSavedEvaluation: boolean;
   initialOverallComments: string;
   competencyContext: CompetencyContextRow[];
 }) {
@@ -52,13 +56,20 @@ export function EvaluationForm({
         </div>
       )}
 
+      {rubric.source && <p className="text-xs text-gray-500">Evaluation tool: {rubric.source}</p>}
+
       {rubric.dimensions.map((dim) => (
         <div key={dim.key} className="space-y-3">
           <h3 className="text-sm font-semibold text-gray-800">{dim.label}</h3>
           {dim.subDimensions.map((sub) => (
             <div key={sub.key} className="rounded-md border border-gray-200 bg-white p-3">
-              <p className="mb-2 text-sm font-medium text-gray-900">{sub.label}</p>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <p className="text-sm font-medium text-gray-900">{sub.label}</p>
+              {sub.description && <p className="mt-1 text-xs text-gray-500">{sub.description}</p>}
+              <div
+                className={`mt-2 grid grid-cols-1 gap-2 ${
+                  rubric.scaleLevels.length > 5 ? "sm:grid-cols-3" : "sm:grid-cols-2"
+                }`}
+              >
                 {rubric.scaleLevels.map((lvl) => (
                   <label
                     key={lvl.value}
@@ -80,6 +91,19 @@ export function EvaluationForm({
                     </span>
                   </label>
                 ))}
+                {rubric.notAssessedLabel && (
+                  <label className="flex items-start gap-2 rounded-md border border-gray-100 p-2 text-xs text-gray-500 hover:bg-gray-50">
+                    <input
+                      type="radio"
+                      name={`level_${sub.key}`}
+                      value={NOT_ASSESSED}
+                      required
+                      defaultChecked={hasSavedEvaluation && existingLevels[sub.key] === undefined}
+                      className="mt-0.5"
+                    />
+                    <span className="font-medium">{rubric.notAssessedLabel}</span>
+                  </label>
+                )}
               </div>
             </div>
           ))}

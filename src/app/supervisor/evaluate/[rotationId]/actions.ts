@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/require-role";
 import { getSupervisorProfileByUserId } from "@/lib/supervisor";
-import { flattenRubric, parseRubric } from "@/lib/discipline-template";
+import { flattenRubric, NOT_ASSESSED, parseRubric } from "@/lib/discipline-template";
 
 export type EvalState = { error?: string } | undefined;
 
@@ -40,8 +40,15 @@ export async function saveEvaluation(
   const maxLevel = Math.max(...validLevels);
 
   const ratings: { dimension: string; subDimension: string; level: number }[] = [];
+  // Items marked "not assessed" (only offered when the rubric allows it)
+  // store no rating, so they stay out of every average.
+  const notAssessed: string[] = [];
   for (const { dimension, subDimension, label } of flattenRubric(rubric)) {
     const raw = formData.get(`level_${subDimension}`);
+    if (raw === NOT_ASSESSED && rubric.notAssessedLabel) {
+      notAssessed.push(subDimension);
+      continue;
+    }
     const level = Number(raw);
     if (!raw || Number.isNaN(level) || level < minLevel || level > maxLevel) {
       return { error: `Select a level for "${label}".` };
@@ -52,6 +59,9 @@ export async function saveEvaluation(
   const overallComments = String(formData.get("overallComments") ?? "").trim();
   const intent = formData.get("intent");
   const status = intent === "final" ? "SUBMITTED" : "DRAFT";
+  if (status === "SUBMITTED" && ratings.length === 0) {
+    return { error: "Rate at least one item before marking the evaluation as final." };
+  }
 
   // One transaction so a mid-write failure (e.g. a dropped connection)
   // can't leave the evaluation marked final with incomplete ratings.
@@ -85,6 +95,11 @@ export async function saveEvaluation(
           level: r.level,
         },
         update: { level: r.level },
+      });
+    }
+    if (notAssessed.length > 0) {
+      await tx.lcjrRating.deleteMany({
+        where: { evaluationId: evaluation.id, subDimension: { in: notAssessed } },
       });
     }
   });

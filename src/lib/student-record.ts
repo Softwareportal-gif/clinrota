@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getStudentCoverage, type StudentCoverageSummary } from "@/lib/student-coverage";
 import { getRotationHours, type RotationHours } from "@/lib/rotation-hours";
-import { averageRatingPercent, parseRubric } from "@/lib/discipline-template";
+import { parseRubric, rubricPercent } from "@/lib/discipline-template";
 import { getEffectiveDocStatus, type EffectiveDocStatus } from "@/lib/compliance-status";
 import type { LogEntryStatus } from "@/generated/prisma/client";
 
@@ -86,9 +86,9 @@ export async function getStudentRecordData(studentId: string): Promise<StudentRe
     rotations.push({
       ...rotation,
       hours: await getRotationHours(rotation),
-      evaluationPercent: averageRatingPercent(
+      evaluationPercent: rubricPercent(
         rotation.competencyEvaluations.find((e) => e.status === "SUBMITTED")?.ratings ?? [],
-        rubric.scaleLevels
+        rubric
       ),
     });
   }

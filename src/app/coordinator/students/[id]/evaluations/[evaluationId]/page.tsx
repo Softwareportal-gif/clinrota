@@ -4,7 +4,7 @@ import { requireRole } from "@/lib/require-role";
 import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
 import { prisma } from "@/lib/prisma";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { averageRatingPercent, flattenRubric, parseRubric } from "@/lib/discipline-template";
+import { flattenRubric, parseRubric, rubricPercent } from "@/lib/discipline-template";
 
 export default async function EvaluationBreakdownPage({
   params,
@@ -37,7 +37,7 @@ export default async function EvaluationBreakdownPage({
   const levelBySubDimension: Record<string, number> = Object.fromEntries(
     evaluation.ratings.map((r) => [r.subDimension, r.level])
   );
-  const overallPercent = averageRatingPercent(evaluation.ratings, rubric.scaleLevels);
+  const overallPercent = rubricPercent(evaluation.ratings, rubric);
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -60,12 +60,15 @@ export default async function EvaluationBreakdownPage({
               <p className="text-sm font-semibold text-gray-900">{overallPercent.toFixed(1)}% overall</p>
             )}
           </div>
+          {rubric.source && <p className="mb-3 text-xs text-gray-500">Evaluation tool: {rubric.source}</p>}
           <ul className="space-y-2">
             {flattenRubric(rubric).map(({ subDimension, label }) => (
               <li key={subDimension} className="flex items-center justify-between text-sm">
                 <span className="text-gray-700">{label}</span>
                 <span className="font-medium text-gray-900">
-                  {levelBySubDimension[subDimension] ?? "—"} / {maxLevel}
+                  {levelBySubDimension[subDimension] !== undefined
+                    ? `${levelBySubDimension[subDimension]} / ${maxLevel}`
+                    : (rubric.notAssessedLabel ?? "—")}
                 </span>
               </li>
             ))}

@@ -13,18 +13,39 @@ export type SubDimensionDef = {
   // the evaluation form. Keyed by the scale level's numeric value (as a
   // string, since it round-trips through JSON).
   levelHints?: Record<string, string>;
+  // Optional guidance for the item as a whole (e.g. the observable
+  // evidence a published tool lists for it), shown under its label.
+  description?: string;
 };
 
 export type DimensionDef = {
   key: string;
   label: string;
   subDimensions: SubDimensionDef[];
+  // Relative weight of this dimension's average in the overall score, for
+  // tools that weight their sections (MTCCP: 60/40). When no dimension has
+  // a weight, the overall score is the plain average of every rating.
+  weight?: number;
+  // Recorded but not part of the overall score — for a tool's separate
+  // global judgement (e.g. AMSAT's global rating scale), which would
+  // otherwise double-count the items it summarises.
+  excludeFromScore?: boolean;
 };
 
 export type RubricDefinition = {
   scaleLevels: ScaleLevel[];
   dimensions: DimensionDef[];
+  // When set, a supervisor may mark an item with this label instead of a
+  // level (AMSAT's "Not assessed", Mini-CEX's "Not observed"); no rating is
+  // stored for it and it's left out of every average.
+  notAssessedLabel?: string;
+  // Attribution for a published instrument, shown wherever it's used —
+  // required by the Creative Commons licences several of them use.
+  source?: string;
 };
+
+// Form value for an item marked with the rubric's notAssessedLabel.
+export const NOT_ASSESSED = "NA";
 
 export type ExtraLogField = {
   key: string;
@@ -37,6 +58,8 @@ export type ExtraLogField = {
 // script share one source of truth for "which row is which."
 export const LCJR_TEMPLATE_ID = "00000000-0000-0000-0000-000000000001";
 export const FALLBACK_TEMPLATE_ID = "00000000-0000-0000-0000-000000000002";
+// Seeded by prisma/migrations/20261017020000_validated_evaluation_tools.
+export const AMSAT_TEMPLATE_ID = "00000000-0000-0000-0000-000000000007";
 
 // DisciplineTemplate.rubric/extraLogFields are stored as Prisma `Json`,
 // which types as `unknown` at the boundary — these just narrow that back
@@ -95,4 +118,40 @@ export function averageRatingPercent(
   if (ratings.length === 0) return null;
   const sum = ratings.reduce((total, r) => total + levelToPercent(r.level, scaleLevels), 0);
   return sum / ratings.length;
+}
+
+// An evaluation's overall 0-100 score under its rubric's own rules:
+// dimensions marked excludeFromScore are ignored, and when dimensions carry
+// weights the score is the weighted average of each dimension's average
+// (dimensions with nothing rated drop out and the rest are re-weighted).
+// Without weights this is exactly averageRatingPercent over the scored
+// ratings, so rubrics that predate weights score as they always did.
+export function rubricPercent(
+  ratings: { dimension: string; level: number }[],
+  rubric: RubricDefinition
+): number | null {
+  const scored = rubric.dimensions.filter((d) => !d.excludeFromScore);
+  const scoredKeys = new Set(scored.map((d) => d.key));
+  // Ratings under a dimension the rubric no longer defines still count, as
+  // they did before dimensions could be excluded.
+  const known = new Set(rubric.dimensions.map((d) => d.key));
+  const counted = ratings.filter((r) => scoredKeys.has(r.dimension) || !known.has(r.dimension));
+
+  if (!scored.some((d) => d.weight !== undefined)) {
+    return averageRatingPercent(counted, rubric.scaleLevels);
+  }
+
+  let weightedSum = 0;
+  let totalWeight = 0;
+  for (const d of scored) {
+    const avg = averageRatingPercent(
+      counted.filter((r) => r.dimension === d.key),
+      rubric.scaleLevels
+    );
+    if (avg === null) continue;
+    const weight = d.weight ?? 0;
+    weightedSum += avg * weight;
+    totalWeight += weight;
+  }
+  return totalWeight > 0 ? weightedSum / totalWeight : null;
 }

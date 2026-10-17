@@ -4,7 +4,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, Role } from "../src/generated/prisma/client";
 import bcrypt from "bcryptjs";
 import { LCJR_FLAT } from "../src/lib/lcjr";
-import { LCJR_TEMPLATE_ID } from "../src/lib/discipline-template";
+import { AMSAT_TEMPLATE_ID, LCJR_TEMPLATE_ID } from "../src/lib/discipline-template";
 import { seedProfessionDemos } from "./seed-professions";
 
 const adapter = new PrismaPg({
@@ -54,7 +54,7 @@ async function main() {
       degreeLevel: "Diploma",
       defaultMinCases: 20,
       defaultMinHours: 120,
-      disciplineTemplateId: LCJR_TEMPLATE_ID,
+      disciplineTemplateId: AMSAT_TEMPLATE_ID,
     },
   });
 
