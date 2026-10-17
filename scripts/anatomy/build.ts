@@ -14,7 +14,7 @@ async function main() {
   const { values } = parseArgs({
     options: { source: { type: "string" }, out: { type: "string" }, version: { type: "string" } },
   });
-  if (!values.source || !values.out || !values.version || !/^[a-z0-9.-]+$/.test(values.version)) {
+  if (!values.source || !values.out || !values.version || !/^v\d+$/.test(values.version)) {
     console.error("Usage: npm run anatomy:build -- --source <dir> --out <dir> --version <v1>");
     process.exit(2);
   }

@@ -13,11 +13,14 @@
     "postinstall": "prisma generate",
     "test": "vitest run",
     "anatomy:validate": "tsx scripts/anatomy/validate-source.ts",
-    "anatomy:build": "tsx scripts/anatomy/build.ts"
+    "anatomy:build": "tsx scripts/anatomy/build.ts",
+    "anatomy:upload": "tsx scripts/anatomy/upload.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
     "@auth/prisma-adapter": "^2.11.3",
+    "@aws-sdk/client-s3": "^3.1152.0",
+    "@aws-sdk/s3-request-presigner": "^3.1152.0",
     "@hookform/resolvers": "^5.9.1",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "7.10.1",
