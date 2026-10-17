@@ -1,6 +1,7 @@
 "use server";
 
-import { sendEmail } from "@/lib/email";
+import { escapeHtml, sendEmail } from "@/lib/email";
+import { consume, LIMITS, requestIp } from "@/lib/rate-limit";
 
 // Placeholder — the user has said they'll swap this for a real address.
 // Deliberately not gated behind auth: this is the one public, unauthenticated
@@ -26,17 +27,25 @@ export async function submitContactRequest(
   if (!EMAIL_RE.test(email)) {
     return { ok: false, error: "That email address doesn't look right." };
   }
+  if (name.length > 120 || email.length > 200 || institution.length > 200 || message.length > 5000) {
+    return { ok: false, error: "Please keep your message under 5,000 characters." };
+  }
+  // Public and unauthenticated, so capped per network address.
+  if (!(await consume(`contact:ip:${await requestIp()}`, LIMITS.contactForm))) {
+    return { ok: false, error: "Too many messages from your network. Please try again later, or email hello@praxxt.com." };
+  }
 
   const result = await sendEmail({
     to: CONTACT_EMAIL,
-    subject: `Demo request from ${name}${institution ? ` (${institution})` : ""}`,
+    // One line: a subject can't carry line breaks into the email headers.
+    subject: `Demo request from ${name}${institution ? ` (${institution})` : ""}`.replace(/[\r\n]+/g, " "),
     html: `
       <div style="font-family: sans-serif;">
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Institution:</strong> ${institution || "—"}</p>
+        <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+        <p><strong>Institution:</strong> ${escapeHtml(institution) || "—"}</p>
         <p><strong>Message:</strong></p>
-        <p>${message.replace(/\n/g, "<br>")}</p>
+        <p>${escapeHtml(message).replace(/\n/g, "<br>")}</p>
       </div>
     `,
   });

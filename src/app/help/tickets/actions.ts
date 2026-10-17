@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, supportTicketEmailHtml } from "@/lib/email";
+import { consume, LIMITS } from "@/lib/rate-limit";
 
 export type CreateTicketState = { error?: string; ok?: true } | undefined;
 
@@ -18,10 +19,15 @@ export async function createTicket(
   const session = await auth();
   if (!session?.user) return { error: "You need to sign in to create a ticket." };
 
-  const subject = formData.get("subject")?.toString().trim() ?? "";
+  const subject = (formData.get("subject")?.toString() ?? "").replace(/[\r\n]+/g, " ").trim();
   const description = formData.get("description")?.toString().trim() ?? "";
   if (!subject) return { error: "Enter a subject." };
   if (!description) return { error: "Describe what's going on." };
+  if (subject.length > 150) return { error: "Keep the subject under 150 characters." };
+  if (description.length > 5000) return { error: "Keep the description under 5,000 characters." };
+  if (!(await consume(`ticket:user:${session.user.id}`, LIMITS.supportTicket))) {
+    return { error: "You've created a lot of tickets recently. Please try again in an hour." };
+  }
 
   const user = await prisma.user.findUniqueOrThrow({ where: { id: session.user.id } });
 

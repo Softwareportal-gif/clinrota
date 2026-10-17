@@ -8,11 +8,12 @@ import { isCycleLocked } from "@/lib/preference-cycle";
 
 export type ActionResult = { error?: string; ok?: true };
 
-async function loadOpenCycleOrThrow(cycleId: string, studentId: string) {
+// A cycle belongs to one cohort; only that cohort's students may use it.
+async function loadOpenCycleOrThrow(cycleId: string, student: { id: string; cohortId: string | null }) {
   const cycle = await prisma.preferenceCycle.findUnique({ where: { id: cycleId } });
-  if (!cycle) throw new Error("That preference cycle was not found.");
+  if (!cycle || cycle.cohortId !== student.cohortId) throw new Error("That preference cycle was not found.");
   const submission = await prisma.preferenceSubmission.findUnique({
-    where: { cycleId_studentId: { cycleId, studentId } },
+    where: { cycleId_studentId: { cycleId, studentId: student.id } },
   });
   if (submission) throw new Error("You've already submitted your preferences for this cycle.");
   if (isCycleLocked(cycle)) throw new Error("This preference cycle is closed.");
@@ -29,12 +30,19 @@ export async function addPreference(
   const studentProfile = await getStudentProfileByUserId(session.user.id);
 
   try {
-    const cycle = await loadOpenCycleOrThrow(cycleId, studentProfile.id);
+    const cycle = await loadOpenCycleOrThrow(cycleId, studentProfile);
 
     const existing = await prisma.rotationPreference.findMany({
       where: { cycleId, studentId: studentProfile.id },
       orderBy: { rank: "desc" },
     });
+    // Only sites of the student's own institution can be shortlisted.
+    const site = await prisma.clinicalSite.findFirst({
+      where: { id: clinicalSiteId, institutionId: studentProfile.program.institutionId },
+      select: { id: true },
+    });
+    if (!site) return { error: "That site isn't available." };
+
     if (existing.some((p) => p.clinicalSiteId === clinicalSiteId)) {
       return { error: "That site is already on your list." };
     }
@@ -68,7 +76,7 @@ export async function removePreference(preferenceId: string): Promise<ActionResu
   }
 
   try {
-    await loadOpenCycleOrThrow(pref.cycleId, studentProfile.id);
+    await loadOpenCycleOrThrow(pref.cycleId, studentProfile);
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Something went wrong." };
   }
@@ -96,7 +104,7 @@ export async function movePreference(
   }
 
   try {
-    await loadOpenCycleOrThrow(pref.cycleId, studentProfile.id);
+    await loadOpenCycleOrThrow(pref.cycleId, studentProfile);
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Something went wrong." };
   }
@@ -126,7 +134,7 @@ export async function submitPreferences(cycleId: string): Promise<ActionResult> 
   const studentProfile = await getStudentProfileByUserId(session.user.id);
 
   const cycle = await prisma.preferenceCycle.findUnique({ where: { id: cycleId } });
-  if (!cycle) return { error: "That preference cycle was not found." };
+  if (!cycle || cycle.cohortId !== studentProfile.cohortId) return { error: "That preference cycle was not found." };
   if (isCycleLocked(cycle)) return { error: "This preference cycle is closed." };
 
   const count = await prisma.rotationPreference.count({

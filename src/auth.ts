@@ -4,6 +4,7 @@ import Resend from "next-auth/providers/resend";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { consume, ipFrom, isOverLimit, LIMITS, recordHit } from "@/lib/rate-limit";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -19,18 +20,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const email = credentials?.email;
         const password = credentials?.password;
         if (typeof email !== "string" || typeof password !== "string") {
           return null;
         }
 
+        // Password guessing: failed attempts are counted per account and
+        // per network address, and once either is over its limit every
+        // attempt fails — even a correct password — until the window
+        // passes. Checked here, not just in the login form, because this
+        // endpoint can be called directly.
+        const emailKey = `login:email:${email.trim().toLowerCase()}`;
+        const ipKey = `login:ip:${ipFrom(request?.headers?.get("x-forwarded-for"))}`;
+        if ((await isOverLimit(emailKey, LIMITS.loginEmail)) || (await isOverLimit(ipKey, LIMITS.loginIp))) {
+          return null;
+        }
+        const fail = async () => {
+          await recordHit(emailKey);
+          await recordHit(ipKey);
+          return null;
+        };
+
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user || !user.passwordHash || !user.isActive) return null;
+        if (!user || !user.passwordHash || !user.isActive) return fail();
 
         const passwordMatches = await bcrypt.compare(password, user.passwordHash);
-        if (!passwordMatches) return null;
+        if (!passwordMatches) return fail();
 
         return {
           id: user.id,
@@ -46,6 +63,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    // Called before a sign-in link is emailed: caps how many links one
+    // address can be sent, so the endpoint can't be used to flood an inbox.
+    async signIn({ user, email }) {
+      if (email?.verificationRequest) {
+        const address = user?.email ?? "";
+        if (address && !(await consume(`magic:email:${address.toLowerCase()}`, LIMITS.magicLinkEmail))) {
+          return false;
+        }
+      }
+      return true;
+    },
     jwt({ token, user }) {
       if (user?.id) {
         token.id = user.id;

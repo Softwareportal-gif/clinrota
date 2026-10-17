@@ -2,6 +2,10 @@
 
 import { AuthError } from "next-auth";
 import { signIn } from "@/auth";
+import { isOverLimit, LIMITS, requestIp } from "@/lib/rate-limit";
+
+const TOO_MANY_SIGN_INS =
+  'Too many sign-in attempts. Wait 15 minutes and try again, or use "Email me a sign-in link".';
 
 export type LoginState = { error?: string } | undefined;
 
@@ -26,6 +30,18 @@ export async function loginWithCredentials(
   formData: FormData
 ): Promise<LoginState> {
   const callbackUrl = sanitizeCallbackUrl(formData.get("callbackUrl"));
+
+  // The limit itself is enforced (and attempts counted) in the
+  // credentials provider in src/auth.ts; this only turns it into a clear
+  // message instead of "Incorrect email or password".
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (
+    (await isOverLimit(`login:email:${email}`, LIMITS.loginEmail)) ||
+    (await isOverLimit(`login:ip:${await requestIp()}`, LIMITS.loginIp))
+  ) {
+    return { error: TOO_MANY_SIGN_INS };
+  }
+
   try {
     await signIn("credentials", {
       email: formData.get("email"),
@@ -50,6 +66,9 @@ export async function loginWithMagicLink(
   }
 
   const callbackUrl = sanitizeCallbackUrl(formData.get("callbackUrl"));
+  if (await isOverLimit(`magic:email:${email.trim().toLowerCase()}`, LIMITS.magicLinkEmail)) {
+    return { error: "Too many sign-in links requested for this address. Try again in an hour." };
+  }
   try {
     await signIn("resend", { email, redirectTo: callbackUrl ?? "/" });
   } catch (error) {

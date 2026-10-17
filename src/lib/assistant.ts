@@ -14,27 +14,6 @@ const DECLINED_REPLY =
 export const MAX_MESSAGE_LENGTH = 1000;
 export const MAX_HISTORY_MESSAGES = 10;
 
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT_MAX_REQUESTS = 15;
-
-// In-memory, per-process — fine for a single-instance pilot deployment
-// (see the ticket/email patterns elsewhere in this codebase for the same
-// "don't over-engineer for pilot scale" call). Resets on server restart;
-// that's an acceptable tradeoff for a soft abuse guard, not a hard quota.
-const requestLog = new Map<string, number[]>();
-
-export function checkRateLimit(key: string): boolean {
-  const now = Date.now();
-  const recent = (requestLog.get(key) ?? []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-  if (recent.length >= RATE_LIMIT_MAX_REQUESTS) {
-    requestLog.set(key, recent);
-    return false;
-  }
-  recent.push(now);
-  requestLog.set(key, recent);
-  return true;
-}
-
 export type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const ROLE_LABELS: Record<string, string> = {

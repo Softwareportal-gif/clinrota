@@ -16,7 +16,23 @@ const withSerwist = withSerwistInit({
 // .../pdfkit/js/standard-fonts/Helvetica.cjs").
 const PDFKIT_FONTS = ["./node_modules/pdfkit/js/standard-fonts/**/*"];
 
+// Sent with every response. frame-ancestors / X-Frame-Options stop other
+// sites framing Praxxt (clickjacking); the rest are standard hardening. No
+// script-src policy yet — Next.js's inline scripts would need nonces first.
+const SECURITY_HEADERS = [
+  { key: "Content-Security-Policy", value: "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+];
+
 const nextConfig: NextConfig = {
+  async headers() {
+    return [{ source: "/:path*", headers: SECURITY_HEADERS }];
+  },
   outputFileTracingIncludes: {
     "/student/profile/cv": PDFKIT_FONTS,
     "/coordinator/students/*/pdf": PDFKIT_FONTS,

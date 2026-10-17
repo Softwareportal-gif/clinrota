@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { auth } from "@/auth";
+import { consume, ipFrom, LIMITS } from "@/lib/rate-limit";
 import {
-  checkRateLimit,
   streamAssistantReply,
   MAX_MESSAGE_LENGTH,
   MAX_HISTORY_MESSAGES,
@@ -14,14 +14,12 @@ import {
 export async function POST(req: NextRequest) {
   const session = await auth();
 
-  // Prefer the signed-in user's id (stable per person); anonymous
-  // visitors are keyed by IP, same rationale as any lightweight rate
-  // limiter for a single-instance pilot deployment.
-  const forwardedFor = req.headers.get("x-forwarded-for");
-  const ip = forwardedFor?.split(",")[0]?.trim() || "unknown";
-  const rateLimitKey = session?.user?.id ?? `ip:${ip}`;
+  // Prefer the signed-in user's id (stable per person); anonymous visitors
+  // are keyed by network address. Counted in the database so the limit
+  // holds across every server instance.
+  const rateLimitKey = `assistant:${session?.user?.id ?? `ip:${ipFrom(req.headers.get("x-forwarded-for"))}`}`;
 
-  if (!checkRateLimit(rateLimitKey)) {
+  if (!(await consume(rateLimitKey, LIMITS.assistant))) {
     return Response.json(
       { error: "You're sending messages too quickly. Please wait a few minutes and try again." },
       { status: 429 }

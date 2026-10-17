@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { ROLE_HOME } from "@/lib/role-routes";
 import { getMessagingContacts, pairKeyFor } from "@/lib/messaging";
 import { MAX_MESSAGE_LENGTH } from "@/lib/messaging-limits";
+import { consume, LIMITS } from "@/lib/rate-limit";
 
 async function requireMessagingUser() {
   const session = await auth();
@@ -56,6 +57,10 @@ export async function sendMessage(
   if (!body) return { ok: false, error: "Write a message first." };
   if (body.length > MAX_MESSAGE_LENGTH) {
     return { ok: false, error: `Messages can be up to ${MAX_MESSAGE_LENGTH} characters.` };
+  }
+
+  if (!(await consume(`message:user:${me.id}`, LIMITS.message))) {
+    return { ok: false, error: "You're sending messages very quickly. Wait a few minutes and try again." };
   }
 
   const now = new Date();

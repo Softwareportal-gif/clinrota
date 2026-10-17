@@ -1007,3 +1007,20 @@ model Message {
   @@index([conversationId, createdAt])
   @@index([senderId])
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Rate limiting
+// ─────────────────────────────────────────────────────────────────────────
+
+// One row per counted attempt (a failed sign-in, a contact-form message, a
+// Beatrice question…), keyed like "login:email:ama@example.com". Kept in
+// the database rather than memory so every server instance shares the
+// count; see src/lib/rate-limit.ts. Rows older than a day are pruned.
+model RateLimitHit {
+  id        String   @id @default(uuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+  @@index([createdAt])
+}

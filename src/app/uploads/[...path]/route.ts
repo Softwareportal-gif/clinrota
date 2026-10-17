@@ -18,16 +18,35 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pat
     return new Response("Not found", { status: 404 });
   }
 
-  // Compliance files are personal records (immunizations, background checks)
-  // — a student may only open their own.
-  if (session.user.role === "STUDENT") {
-    if (subdir !== "compliance") return new Response("Not found", { status: 404 });
-    const owned = await prisma.complianceDocument.findFirst({
-      where: { fileUrl: `/uploads/${subdir}/${filename}`, student: { userId: session.user.id } },
+  // Compliance files are personal records (immunizations, background
+  // checks): a student may open only their own, and a coordinator only those
+  // of students in their program. Site agreements (MOUs) are for
+  // coordinators of the site's institution. No other role views uploads.
+  const fileUrl = `/uploads/${subdir}/${filename}`;
+  let allowed = false;
+  if (session.user.role === "STUDENT" && subdir === "compliance") {
+    allowed = !!(await prisma.complianceDocument.findFirst({
+      where: { fileUrl, student: { userId: session.user.id } },
       select: { id: true },
+    }));
+  } else if (session.user.role === "COORDINATOR") {
+    const coordinator = await prisma.coordinatorProfile.findUnique({
+      where: { userId: session.user.id },
+      include: { program: { select: { institutionId: true } } },
     });
-    if (!owned) return new Response("Not found", { status: 404 });
+    if (coordinator && subdir === "compliance") {
+      allowed = !!(await prisma.complianceDocument.findFirst({
+        where: { fileUrl, student: { programId: coordinator.programId } },
+        select: { id: true },
+      }));
+    } else if (coordinator && subdir === "site-mou") {
+      allowed = !!(await prisma.clinicalSite.findFirst({
+        where: { mouDocumentUrl: fileUrl, institutionId: coordinator.program.institutionId },
+        select: { id: true },
+      }));
+    }
   }
+  if (!allowed) return new Response("Not found", { status: 404 });
 
   const body = await readUploadedFile(subdir as UploadSubdir, filename);
   if (!body) return new Response("Not found", { status: 404 });

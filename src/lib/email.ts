@@ -69,6 +69,18 @@ export async function sendEmail({
 // Ward supervisor's assignment notification — points at the same
 // magic-link login as the student invite, for the same reason (no admin-
 // minted token; whoever is signed in as this User can already use it).
+// Every value put into an email's HTML is escaped, so a name or message
+// containing markup (e.g. "<a href=...>") shows as text instead of
+// becoming a link or button in the recipient's inbox.
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function wardSupervisorAssignedEmailHtml({
   supervisorName,
   studentName,
@@ -85,14 +97,14 @@ export function wardSupervisorAssignedEmailHtml({
   return `
     <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
       <h2>You've been assigned as a ward supervisor</h2>
-      <p>Hi ${supervisorName},</p>
+      <p>Hi ${escapeHtml(supervisorName)},</p>
       <p>
-        ${studentName} has started logging cases on ${wardName} at ${clinicalSiteName} with you
+        ${escapeHtml(studentName)} has started logging cases on ${escapeHtml(wardName)} at ${escapeHtml(clinicalSiteName)} with you
         as their ward supervisor. You'll review their case entries from this ward — their main
         clinical supervisor still handles overall grading.
       </p>
       <p>
-        To sign in, go to <a href="${loginUrl}">${loginUrl}</a> and use
+        To sign in, go to <a href="${escapeHtml(loginUrl)}">${escapeHtml(loginUrl)}</a> and use
         "Email me a sign-in link" with this same email address — no password needed.
       </p>
       <p>See you there.</p>
@@ -115,13 +127,13 @@ export function supervisorInviteEmailHtml({
   return `
     <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
       <h2>You've been added to Praxxt</h2>
-      <p>Hi ${supervisorName},</p>
+      <p>Hi ${escapeHtml(supervisorName)},</p>
       <p>
-        ${institutionName} has set up your Praxxt supervisor account so you can review
+        ${escapeHtml(institutionName)} has set up your Praxxt supervisor account so you can review
         and sign off on students' clinical case entries.
       </p>
       <p>
-        To sign in, go to <a href="${loginUrl}">${loginUrl}</a> and use
+        To sign in, go to <a href="${escapeHtml(loginUrl)}">${escapeHtml(loginUrl)}</a> and use
         "Email me a sign-in link" with this same email address — no password needed.
       </p>
       <p>See you there.</p>
@@ -141,13 +153,13 @@ export function coordinatorInviteEmailHtml({
   return `
     <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
       <h2>You've been added to Praxxt</h2>
-      <p>Hi ${coordinatorName},</p>
+      <p>Hi ${escapeHtml(coordinatorName)},</p>
       <p>
-        You've been made a coordinator of ${programName} on Praxxt, so you can add its
+        You've been made a coordinator of ${escapeHtml(programName)} on Praxxt, so you can add its
         students and supervisors and manage their placements.
       </p>
       <p>
-        To sign in, go to <a href="${loginUrl}">${loginUrl}</a> and use
+        To sign in, go to <a href="${escapeHtml(loginUrl)}">${escapeHtml(loginUrl)}</a> and use
         "Email me a sign-in link" with this same email address — no password needed.
       </p>
       <p>See you there.</p>
@@ -167,13 +179,13 @@ export function studentInviteEmailHtml({
   return `
     <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
       <h2>You've been added to Praxxt</h2>
-      <p>Hi ${studentName},</p>
+      <p>Hi ${escapeHtml(studentName)},</p>
       <p>
-        Your clinical program (${programName}) has set up your Praxxt account so you can
+        Your clinical program (${escapeHtml(programName)}) has set up your Praxxt account so you can
         start logging clinical cases and tracking your rotations.
       </p>
       <p>
-        To sign in, go to <a href="${loginUrl}">${loginUrl}</a> and use
+        To sign in, go to <a href="${escapeHtml(loginUrl)}">${escapeHtml(loginUrl)}</a> and use
         "Email me a sign-in link" with this same email address — no password needed.
       </p>
       <p>See you there.</p>
@@ -199,12 +211,12 @@ export function supportTicketEmailHtml({
 }): string {
   return `
     <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
-      <h2>New support ticket: ${subject}</h2>
+      <h2>New support ticket: ${escapeHtml(subject)}</h2>
       <p>
-        <strong>From:</strong> ${submitterName} (${submitterRole}) —
-        <a href="mailto:${submitterEmail}">${submitterEmail}</a>
+        <strong>From:</strong> ${escapeHtml(submitterName)} (${escapeHtml(submitterRole)}) —
+        <a href="mailto:${escapeHtml(submitterEmail)}">${escapeHtml(submitterEmail)}</a>
       </p>
-      <p style="white-space: pre-wrap;">${description}</p>
+      <p style="white-space: pre-wrap;">${escapeHtml(description)}</p>
     </div>
   `;
 }
