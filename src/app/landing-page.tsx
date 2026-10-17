@@ -206,8 +206,8 @@ export function LandingPage() {
       </div>
 
       <header className="sticky top-0 z-20 border-b bg-white/95 backdrop-blur" style={{ borderColor: LINE }}>
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
-          <Link href="/" aria-label="Praxxt home" className="transition hover:opacity-80">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3.5 sm:gap-6 sm:px-6 sm:py-4">
+          <Link href="/" aria-label="Praxxt home" className="shrink-0 transition hover:opacity-80">
             <Wordmark size={27} />
           </Link>
           <nav className="hidden items-center gap-8 text-[15px] font-bold md:flex">
@@ -216,11 +216,20 @@ export function LandingPage() {
             <a href="#security" className="hover:text-[#5A3BF0]">Security</a>
             <Link href="/help" className="hover:text-[#5A3BF0]">Resources</Link>
           </nav>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="hidden text-[15px] font-bold hover:text-[#5A3BF0] sm:inline">
+          {/* Log in stays visible on phones too (an outlined pill there), so
+              students and supervisors can always reach their account. */}
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <Link
+              href="/login"
+              className="whitespace-nowrap rounded-full border border-[#DCD8F5] px-4 py-2 text-sm font-bold transition hover:border-[#5A3BF0] hover:text-[#5A3BF0] sm:border-transparent sm:px-2 sm:text-[15px] sm:hover:border-transparent"
+            >
               Log in
             </Link>
-            <a href="#contact" className="rounded-full px-5 py-3 text-[15px] font-bold text-white transition hover:opacity-90" style={{ background: BRAND_GRADIENT }}>
+            <a
+              href="#contact"
+              className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-white transition hover:opacity-90 sm:px-5 sm:py-3 sm:text-[15px]"
+              style={{ background: BRAND_GRADIENT }}
+            >
               Book a demo
             </a>
           </div>
