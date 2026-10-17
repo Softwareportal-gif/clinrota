@@ -13,6 +13,7 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { framingFor } from "@/lib/anatomy/camera";
 import type { AnatomySystem, Bbox, Catalogue, Structure } from "@/lib/anatomy/catalogue";
 import { visibleStructureIds, type ExplorerState } from "@/lib/anatomy/explorer-state";
+import { SYSTEM_COLOURS } from "./system-labels";
 
 const FOV = 50;
 const ANIMATION_MS = 600;
@@ -21,20 +22,6 @@ const HIGHLIGHT = "#5A3BF0";
 
 // Detail ranks: a structure shows the highest-ranked copy that has loaded.
 const RANK = { overview: 0, low: 1, medium: 2 } as const;
-
-const SYSTEM_COLOURS: Record<AnatomySystem, string> = {
-  integumentary: "#E3B79A",
-  muscular: "#B5544B",
-  skeletal: "#EDE3CF",
-  cardiovascular: "#C0392B",
-  respiratory: "#E7A1A8",
-  nervous: "#E6C84F",
-  digestive: "#D98E5F",
-  urinary: "#C9A227",
-  reproductive: "#C77DA3",
-  lymphatic: "#7FB77E",
-  endocrine: "#8E7CC3",
-};
 
 function makeMaterials() {
   const base = {} as Record<AnatomySystem, THREE.MeshStandardMaterial>;
