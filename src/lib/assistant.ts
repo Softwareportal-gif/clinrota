@@ -3,7 +3,13 @@ import { PRODUCT_DESCRIPTION, LOGIN_ACCESS_FAQ } from "@/lib/faq";
 
 // "Haiku-tier" per the explicit request — this widget answers short FAQ-
 // grounded questions, not anything that benefits from a larger model.
-const MODEL = "claude-haiku-4-5";
+const MODEL = "claude-haiku-5-5";
+// Claude Haiku 5.5 thinks before answering by default; short FAQ answers
+// don't need much of it, and low effort keeps replies quick and cheap.
+const EFFORT = "low";
+
+const DECLINED_REPLY =
+  "Sorry, I can't help with that one. I can answer questions about using Praxxt, or you can email hello@praxxt.com.";
 
 export const MAX_MESSAGE_LENGTH = 1000;
 export const MAX_HISTORY_MESSAGES = 10;
@@ -81,14 +87,25 @@ export async function* streamAssistantReply(
 
   const stream = client.messages.stream({
     model: MODEL,
-    max_tokens: 1024,
+    // Room for any thinking (it counts toward this cap) plus a short answer.
+    max_tokens: 2048,
+    output_config: { effort: EFFORT },
     system: buildSystemPrompt(role),
     messages: trimmedHistory,
   });
 
+  // Only the answer text is streamed to the visitor; thinking blocks are
+  // skipped.
+  let wroteText = false;
   for await (const event of stream) {
     if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+      wroteText = true;
       yield event.delta.text;
     }
   }
+
+  // The model's safety checks can decline a request (stop_reason
+  // "refusal"); say so plainly instead of leaving an empty bubble.
+  const final = await stream.finalMessage();
+  if (final.stop_reason === "refusal" && !wroteText) yield DECLINED_REPLY;
 }
