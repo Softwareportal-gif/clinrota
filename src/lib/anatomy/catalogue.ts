@@ -25,6 +25,10 @@ export type DepthLevel = (typeof DEPTH_LEVELS)[number];
 export const LODS = ["low", "medium", "high"] as const;
 export type Lod = (typeof LODS)[number];
 
+// The systems in overview.glb, the light model drawn first: what the explorer
+// opens on.
+export const OVERVIEW_SYSTEMS: readonly AnatomySystem[] = ["muscular", "skeletal"];
+
 export function layerOf(system: AnatomySystem): DepthLevel {
   if (system === "integumentary") return "skin";
   if (system === "muscular") return "muscle";

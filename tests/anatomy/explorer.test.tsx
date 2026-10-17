@@ -121,15 +121,18 @@ describe("Explorer", () => {
     await renderExplorer();
     fireEvent.click(screen.getByRole("button", { name: "Systems and layers" }));
     const drawer = screen.getByRole("dialog", { name: "Systems and layers" });
-    const muscular = within(drawer).getByRole("switch", { name: /Muscular/ });
-    expect(muscular).toHaveAttribute("aria-checked", "false");
-    fireEvent.click(muscular);
-    expect(muscular).toHaveAttribute("aria-checked", "true");
+    const cardiovascular = within(drawer).getByRole("switch", { name: /Cardiovascular/ });
+    expect(cardiovascular).toHaveAttribute("aria-checked", "false");
+    fireEvent.click(cardiovascular);
+    expect(cardiovascular).toHaveAttribute("aria-checked", "true");
     const levels = within(within(drawer).getByRole("list", { name: "Depth levels" })).getAllByRole("listitem");
     expect(levels.map((li) => li.textContent)).toEqual(["Skin", "Muscle", "Organs", "Bone"]);
     const slider = within(drawer).getByRole("slider", { name: "Depth" });
     fireEvent.change(slider, { target: { value: "2" } });
     expect(slider).toHaveAttribute("aria-valuetext", "Organs");
+    const xray = within(drawer).getByRole("switch", { name: "X-ray skin" });
+    fireEvent.click(xray);
+    expect(xray).toHaveAttribute("aria-checked", "true");
   });
 
   it("enables Hide and Isolate only with a selection", async () => {

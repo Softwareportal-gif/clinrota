@@ -2,7 +2,11 @@
 // names and synonyms, best matches first.
 import type { Catalogue, Structure } from "./catalogue";
 
-type Indexed = { structure: Structure; fields: string[] };
+type Indexed = { structure: Structure; fields: string[]; wrapping: boolean };
+
+// Wrappings (fascia, sheaths, bursae) come after the structure they wrap:
+// "deltoid" should find the muscle before the deltoid fascia.
+const WRAPPING = /fascia|sheath|bursa/i;
 
 const normalise = (text: string) =>
   text
@@ -20,6 +24,7 @@ function indexOf(catalogue: Catalogue): Indexed[] {
     index = catalogue.structures.map((structure) => ({
       structure,
       fields: [structure.name, structure.latin, ...structure.synonyms].filter((f): f is string => !!f).map(normalise),
+      wrapping: WRAPPING.test(structure.name),
     }));
     indexCache.set(catalogue, index);
   }
@@ -38,14 +43,15 @@ function rankField(field: string, query: string): number | null {
 export function searchStructures(catalogue: Catalogue, query: string, limit = 10): Structure[] {
   const q = normalise(query);
   if (!q) return [];
-  const matches: { structure: Structure; rank: number }[] = [];
-  for (const { structure, fields } of indexOf(catalogue)) {
+  const matches: { structure: Structure; rank: number; wrapping: boolean }[] = [];
+  for (const { structure, fields, wrapping } of indexOf(catalogue)) {
     const ranks = fields.map((f) => rankField(f, q)).filter((r): r is number => r !== null);
-    if (ranks.length) matches.push({ structure, rank: Math.min(...ranks) });
+    if (ranks.length) matches.push({ structure, rank: Math.min(...ranks), wrapping });
   }
   matches.sort(
     (a, b) =>
       a.rank - b.rank ||
+      Number(a.wrapping) - Number(b.wrapping) ||
       a.structure.name.length - b.structure.name.length ||
       a.structure.name.localeCompare(b.structure.name)
   );

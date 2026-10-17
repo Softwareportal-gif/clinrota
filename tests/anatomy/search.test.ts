@@ -59,6 +59,17 @@ describe("searchStructures", () => {
     expect(ids("   ")).toEqual([]);
   });
 
+  it("puts a muscle before the fascia wrapping it", () => {
+    const withWrappings: Catalogue = {
+      ...catalogue,
+      structures: [
+        structure("deltoid-fascia", "Deltoid fascia", { system: "muscular" }),
+        structure("deltoid-muscle", "Deltoid muscle", { system: "muscular" }),
+      ],
+    };
+    expect(searchStructures(withWrappings, "deltoid").map((s) => s.id)).toEqual(["deltoid-muscle", "deltoid-fascia"]);
+  });
+
   it("honours the limit", () => {
     expect(ids("stern", 1)).toEqual(["sternum"]);
   });

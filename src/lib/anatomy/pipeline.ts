@@ -14,16 +14,17 @@ import { Document, Logger, NodeIO, type Primitive } from "@gltf-transform/core";
 import { EXTMeshoptCompression, KHRMeshQuantization } from "@gltf-transform/extensions";
 import { meshopt, simplify, transformMesh, weld } from "@gltf-transform/functions";
 import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from "meshoptimizer";
-import { LODS, type AnatomySystem, type Bbox, type Catalogue, type Chunk, type Lod, type Structure } from "./catalogue";
+import { LODS, OVERVIEW_SYSTEMS, type Bbox, type Catalogue, type Chunk, type Lod, type Structure } from "./catalogue";
 import { parseStructuresCsv, validateSource, type SourceRow } from "./source-format";
 
-// Share of vertices kept at each detail level. Overwrite with Task 0 findings.
+// Share of vertices kept at each detail level, and the most each level may
+// move the surface (a fraction of the structure's size). The error cap keeps
+// shapes true: a structure that can't reach the ratio without distorting
+// keeps more vertices instead.
 export const SIMPLIFY_RATIO: Record<Lod, number> = { low: 0.1, medium: 0.35, high: 1 };
-export const OVERVIEW_SYSTEMS: AnatomySystem[] = ["integumentary", "skeletal"];
+export const SIMPLIFY_ERROR: Record<Lod, number> = { low: 0.01, medium: 0.003, high: 0 };
 export const OVERVIEW_RATIO = 0.05;
-
-// Let the ratio, not an error cap, decide how far each level is simplified.
-const SIMPLIFY_ERROR = 1;
+export const OVERVIEW_ERROR = 0.02;
 
 type Geometry = { positions: Float32Array; normals: Float32Array | null; indices: Uint32Array };
 type Loaded = { row: SourceRow; parts: Geometry[]; bbox: Bbox };
@@ -103,8 +104,8 @@ function addSmoothNormals(doc: Document, prim: Primitive) {
   prim.setAttribute("NORMAL", doc.createAccessor().setType("VEC3").setArray(n).setBuffer(position.getBuffer()));
 }
 
-// One .glb holding the given structures, simplified to `ratio`.
-async function writeModel(io: NodeIO, items: Loaded[], ratio: number, file: string): Promise<number> {
+// One .glb holding the given structures, simplified to `ratio` within `error`.
+async function writeModel(io: NodeIO, items: Loaded[], ratio: number, error: number, file: string): Promise<number> {
   const doc = new Document().setLogger(new Logger(Logger.Verbosity.WARN));
   const buffer = doc.createBuffer();
   const scene = doc.createScene();
@@ -123,12 +124,14 @@ async function writeModel(io: NodeIO, items: Loaded[], ratio: number, file: stri
     scene.addChild(doc.createNode(row.id).setMesh(mesh));
   }
 
-  await doc.transform(weld());
-  if (ratio < 1) {
-    await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio, error: SIMPLIFY_ERROR }));
-  }
+  // Normals come from the full-detail surface, so simplified levels keep its
+  // smooth shading instead of looking faceted.
   for (const mesh of doc.getRoot().listMeshes()) {
     for (const prim of mesh.listPrimitives()) if (!prim.getAttribute("NORMAL")) addSmoothNormals(doc, prim);
+  }
+  await doc.transform(weld());
+  if (ratio < 1) {
+    await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio, error }));
   }
   await doc.transform(meshopt({ encoder: MeshoptEncoder, level: "medium" }));
 
@@ -162,13 +165,13 @@ export async function buildAnatomy(opts: { sourceDir: string; outDir: string; ve
   for (const [id, items] of [...byChunk].sort(([a], [b]) => a.localeCompare(b))) {
     const bytes = {} as Record<Lod, number>;
     for (const lod of LODS) {
-      bytes[lod] = await writeModel(io, items, SIMPLIFY_RATIO[lod], path.join(modelDir, "chunks", id, `${lod}.glb`));
+      bytes[lod] = await writeModel(io, items, SIMPLIFY_RATIO[lod], SIMPLIFY_ERROR[lod], path.join(modelDir, "chunks", id, `${lod}.glb`));
     }
     chunks.push({ id, system: items[0].row.system, region: items[0].row.region, bytes });
   }
 
   const overviewItems = loaded.filter((item) => OVERVIEW_SYSTEMS.includes(item.row.system));
-  const overviewBytes = await writeModel(io, overviewItems, OVERVIEW_RATIO, path.join(modelDir, "overview.glb"));
+  const overviewBytes = await writeModel(io, overviewItems, OVERVIEW_RATIO, OVERVIEW_ERROR, path.join(modelDir, "overview.glb"));
 
   const structures: Structure[] = loaded.map(({ row, bbox }) => ({
     ...row,

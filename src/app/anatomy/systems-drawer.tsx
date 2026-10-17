@@ -11,6 +11,10 @@ export function SystemsDrawer({
   catalogue,
   systems,
   depth,
+  xray,
+  onToggleXray,
+  fascia,
+  onToggleFascia,
   onToggleSystem,
   onDepthChange,
   onClose,
@@ -18,6 +22,10 @@ export function SystemsDrawer({
   catalogue: Catalogue;
   systems: AnatomySystem[];
   depth: DepthLevel;
+  xray: boolean;
+  onToggleXray: () => void;
+  fascia: boolean;
+  onToggleFascia: () => void;
   onToggleSystem: (system: AnatomySystem) => void;
   onDepthChange: (depth: DepthLevel) => void;
   onClose: () => void;
@@ -75,6 +83,41 @@ export function SystemsDrawer({
           ))}
         </ol>
 
+        <button
+          type="button"
+          role="switch"
+          aria-checked={xray}
+          aria-label="X-ray skin"
+          onClick={onToggleXray}
+          className="mt-4 flex w-full cursor-pointer items-center gap-3 rounded-xl px-2 py-2 text-left text-sm"
+          style={{ color: INK }}
+        >
+          <span className="flex-1">
+            X-ray skin
+            <span className="block text-xs" style={{ color: TEXT_SECONDARY }}>
+              See through the skin when it&apos;s showing
+            </span>
+          </span>
+          <Toggle on={xray} />
+        </button>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={fascia}
+          aria-label="Fascia"
+          onClick={onToggleFascia}
+          className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-2 py-2 text-left text-sm"
+          style={{ color: INK }}
+        >
+          <span className="flex-1">
+            Fascia
+            <span className="block text-xs" style={{ color: TEXT_SECONDARY }}>
+              The thin film wrapping the muscles
+            </span>
+          </span>
+          <Toggle on={fascia} />
+        </button>
+
         <h3 className="mt-5 text-sm font-semibold" style={{ color: INK }}>
           Systems
         </h3>
@@ -98,16 +141,7 @@ export function SystemsDrawer({
                   <span className="text-xs" style={{ color: TEXT_SECONDARY }}>
                     {count}
                   </span>
-                  <span
-                    aria-hidden
-                    className="relative h-5 w-9 shrink-0 rounded-full transition-colors"
-                    style={{ backgroundColor: on ? ACCENT : BORDER }}
-                  >
-                    <span
-                      className="absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all"
-                      style={{ left: on ? "1.125rem" : "0.125rem" }}
-                    />
-                  </span>
+                  <Toggle on={on} />
                 </button>
               </li>
             );
@@ -115,5 +149,20 @@ export function SystemsDrawer({
         </ul>
       </div>
     </div>
+  );
+}
+
+function Toggle({ on }: { on: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className="relative h-5 w-9 shrink-0 rounded-full transition-colors"
+      style={{ backgroundColor: on ? ACCENT : BORDER }}
+    >
+      <span
+        className="absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all"
+        style={{ left: on ? "1.125rem" : "0.125rem" }}
+      />
+    </span>
   );
 }

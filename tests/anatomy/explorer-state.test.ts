@@ -29,31 +29,33 @@ const catalogue: Catalogue = {
   structures: [s("skin", "integumentary"), s("pectoralis", "muscular"), s("heart", "cardiovascular"), s("sternum", "skeletal")],
 };
 
-const ALL_ON: ExplorerState = { ...INITIAL_STATE, systems: ["integumentary", "muscular", "cardiovascular", "skeletal"] };
+const ALL_ON: ExplorerState = {
+  ...INITIAL_STATE,
+  systems: ["integumentary", "muscular", "cardiovascular", "skeletal"],
+  depth: "skin",
+};
 const run = (state: ExplorerState, ...actions: ExplorerAction[]) => actions.reduce(explorerReducer, state);
 const visible = (state: ExplorerState) => [...visibleStructureIds(catalogue, state)].sort();
 
 describe("explorer state", () => {
-  it("starts with skeleton and skin on, at skin depth, nothing chosen", () => {
+  it("starts on the muscles over the skeleton, nothing chosen", () => {
     expect(INITIAL_STATE).toEqual({
-      systems: ["skeletal", "integumentary"],
-      depth: "skin",
+      systems: ["skeletal", "muscular", "integumentary"],
+      depth: "muscle",
       hidden: [],
       isolatedId: null,
       selectedId: null,
       drawerOpen: false,
+      xray: false,
+      fascia: false,
       resetCount: 0,
     });
-    expect(visible(INITIAL_STATE)).toEqual(["skin", "sternum"]);
+    expect(visible(INITIAL_STATE)).toEqual(["pectoralis", "sternum"]);
   });
 
   it("shows only structures whose system is on", () => {
     expect(visible(run(ALL_ON, { type: "toggleSystem", system: "muscular" }))).toEqual(["heart", "skin", "sternum"]);
-    expect(visible(run(INITIAL_STATE, { type: "toggleSystem", system: "muscular" }))).toEqual([
-      "pectoralis",
-      "skin",
-      "sternum",
-    ]);
+    expect(visible(run(INITIAL_STATE, { type: "toggleSystem", system: "muscular" }))).toEqual(["sternum"]);
   });
 
   it("peels layers above the chosen depth", () => {
@@ -112,6 +114,23 @@ describe("explorer state", () => {
     const state = run(INITIAL_STATE, { type: "select", id: "heart", system: "cardiovascular" });
     expect(state.selectedId).toBe("heart");
     expect(state.systems).toContain("cardiovascular");
+  });
+
+  it("hides fascia unless asked for", () => {
+    const withFascia: Catalogue = { ...catalogue, structures: [...catalogue.structures, s("fascia-lata", "muscular")] };
+    withFascia.structures[4] = { ...withFascia.structures[4], name: "Fascia lata (left)" };
+    const ids = (state: ExplorerState) => [...visibleStructureIds(withFascia, state)].sort();
+    expect(ids(ALL_ON)).not.toContain("fascia-lata");
+    expect(ids(run(ALL_ON, { type: "toggleFascia" }))).toContain("fascia-lata");
+  });
+
+  it("shows fascia when a fascia is selected", () => {
+    expect(run(INITIAL_STATE, { type: "select", id: "fascia-lata", system: "muscular", fascia: true }).fascia).toBe(true);
+  });
+
+  it("toggles see-through skin", () => {
+    expect(run(INITIAL_STATE, { type: "toggleXray" }).xray).toBe(true);
+    expect(run(INITIAL_STATE, { type: "toggleXray" }, { type: "toggleXray" }).xray).toBe(false);
   });
 
   it("toggles the systems drawer", () => {

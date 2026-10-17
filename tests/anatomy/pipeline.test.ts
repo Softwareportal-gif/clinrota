@@ -95,7 +95,7 @@ describe("buildAnatomy", () => {
 
   it("puts only the overview systems in the overview", async () => {
     const doc = await readGlb(path.join(modelDir(), "overview.glb"));
-    expect(nodeNames(doc)).toEqual(["sternum"]);
+    expect(nodeNames(doc)).toEqual(["deltoid", "sternum"]);
   });
 
   it("rejects an invalid source with the validator's messages", async () => {

@@ -1,21 +1,28 @@
 "use client";
 
-// The Body Explorer's 3D view. Loads the light overview model first, then the
-// low-detail chunk of every system on screen and the medium-detail chunk of
-// the selected structure; each structure shows its most detailed loaded copy.
-// Meshes are matched to the catalogue by node name (the structure id); nodes
-// the catalogue doesn't know are ignored.
+// The Body Explorer's 3D view. Draws the light overview model first, then
+// each visible chunk at the detail level this device can afford (low first
+// for systems the overview doesn't cover); each structure shows its most
+// detailed loaded copy. Meshes are matched to the catalogue by node name
+// (the structure id); nodes the catalogue doesn't know are ignored.
+//
+// Looks: every structure gets its tissue's colour and surface (appearance.ts)
+// with a slight shade of its own, lit by a soft studio environment. Devices
+// on high detail also get crease shadowing (ambient occlusion) and a floor
+// shadow.
 import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
+import { ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
+import { EffectComposer, N8AO } from "@react-three/postprocessing";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
+import { appearanceOf } from "@/lib/anatomy/appearance";
 import { framingFor } from "@/lib/anatomy/camera";
-import type { AnatomySystem, Bbox, Catalogue, Structure } from "@/lib/anatomy/catalogue";
+import { OVERVIEW_SYSTEMS, type Bbox, type Catalogue, type Lod, type Structure } from "@/lib/anatomy/catalogue";
+import { currentDeviceHints, preferredLod } from "@/lib/anatomy/detail";
 import { visibleStructureIds, type ExplorerState } from "@/lib/anatomy/explorer-state";
-import { SYSTEM_COLOURS } from "./system-labels";
 
-const FOV = 50;
+const FOV = 40;
 const ANIMATION_MS = 600;
 const TAP_SLOP_PX = 6;
 const HIGHLIGHT = "#5A3BF0";
@@ -24,25 +31,53 @@ const HIGHLIGHT = "#5A3BF0";
 const MIN_FRAME_M = 0.3;
 
 // Detail ranks: a structure shows the highest-ranked copy that has loaded.
-const RANK = { overview: 0, low: 1, medium: 2 } as const;
+const RANK: Record<"overview" | Lod, number> = { overview: 0, low: 1, medium: 2, high: 3 };
 
-function makeMaterials() {
-  const base = {} as Record<AnatomySystem, THREE.MeshStandardMaterial>;
-  const selected = {} as Record<AnatomySystem, THREE.MeshStandardMaterial>;
-  for (const [system, colour] of Object.entries(SYSTEM_COLOURS) as [AnatomySystem, string][]) {
-    const skin = system === "integumentary";
-    base[system] = new THREE.MeshStandardMaterial({
-      color: colour,
-      roughness: 0.7,
-      transparent: skin,
-      opacity: skin ? 0.45 : 1,
-      depthWrite: !skin,
-    });
-    selected[system] = base[system].clone();
-    selected[system].emissive = new THREE.Color(HIGHLIGHT);
-    selected[system].emissiveIntensity = 0.6;
+type Quality = "high" | "standard";
+
+// One material per structure (its own shade), made on first use and reused.
+class MaterialCache {
+  private cache = new Map<string, THREE.Material>();
+  constructor(private quality: Quality) {}
+
+  get(structure: Structure, selected: boolean, xray: boolean): THREE.Material {
+    const key = `${structure.id}|${selected}|${xray}`;
+    let material = this.cache.get(key);
+    if (!material) {
+      material = this.make(structure, selected, xray);
+      this.cache.set(key, material);
+    }
+    return material;
   }
-  return { base, selected };
+
+  private make(structure: Structure, selected: boolean, xray: boolean): THREE.Material {
+    const { tissue, surface, lightnessOffset } = appearanceOf(structure);
+    const color = new THREE.Color(surface.colour).offsetHSL(0, 0, lightnessOffset);
+    const params = {
+      color,
+      roughness: surface.roughness,
+      emissive: new THREE.Color(selected ? HIGHLIGHT : "#000000"),
+      emissiveIntensity: selected ? 0.45 : 0,
+    };
+    const material =
+      this.quality === "high"
+        ? new THREE.MeshPhysicalMaterial({
+            ...params,
+            clearcoat: surface.clearcoat,
+            clearcoatRoughness: 0.4,
+            sheen: surface.sheen,
+            sheenRoughness: 0.5,
+            sheenColor: new THREE.Color("#ffd9d0"),
+          })
+        : new THREE.MeshStandardMaterial({ ...params, roughness: Math.max(0.25, surface.roughness - surface.clearcoat * 0.2) });
+    const opacity = tissue === "skin" && xray ? 0.2 : surface.opacity;
+    if (opacity !== undefined) {
+      material.transparent = true;
+      material.opacity = opacity;
+      material.depthWrite = false;
+    }
+    return material;
+  }
 }
 
 function atLeast(bbox: Bbox, size: number): Bbox {
@@ -86,8 +121,6 @@ function structureObjects(root: THREE.Object3D, known: Map<string, Structure>) {
   return found;
 }
 
-type Materials = ReturnType<typeof makeMaterials>;
-
 type Registry = {
   objects: Map<string, Map<string, THREE.Object3D>>; // model url → id → object
   ranks: Map<string, number>; // model url → detail rank
@@ -96,9 +129,9 @@ type Registry = {
 function applyVisibility(
   registry: Registry,
   visible: Set<string>,
-  selectedId: string | null,
+  state: ExplorerState,
   byId: Map<string, Structure>,
-  materials: Materials
+  materials: MaterialCache
 ) {
   const best = new Map<string, number>();
   for (const [url, objects] of registry.objects) {
@@ -109,10 +142,14 @@ function applyVisibility(
     const rank = registry.ranks.get(url)!;
     for (const [id, object] of objects) {
       object.visible = visible.has(id) && best.get(id) === rank;
-      const { system } = byId.get(id)!;
-      const material = id === selectedId ? materials.selected[system] : materials.base[system];
+      if (!object.visible) continue;
+      const material = materials.get(byId.get(id)!, id === state.selectedId, state.xray);
       object.traverse((child) => {
-        if (child instanceof THREE.Mesh) child.material = material;
+        if (child instanceof THREE.Mesh) {
+          child.material = material;
+          // See-through skin and fascia draw after everything under them.
+          child.renderOrder = material.transparent ? 1 : 0;
+        }
       });
     }
   }
@@ -127,26 +164,58 @@ type SceneProps = {
 };
 
 export function BodyScene(props: SceneProps) {
+  const [lod] = useState<Lod>(() => preferredLod(currentDeviceHints()));
+  const quality: Quality = lod === "high" ? "high" : "standard";
   return (
     <Canvas
       frameloop="demand"
       dpr={[1, 2]}
       camera={{ fov: FOV, near: 0.01, far: 50, position: [0, 1, 3] }}
       style={{ touchAction: "none" }}
+      onCreated={({ gl }) => {
+        // Neutral keeps tissue colours true; the default (ACES) muddies reds.
+        gl.toneMapping = THREE.NeutralToneMapping;
+        gl.toneMappingExposure = 1.05;
+      }}
     >
-      <hemisphereLight args={["#ffffff", "#8a8a9a", 1.1]} />
-      <directionalLight position={[2, 3, 4]} intensity={1.4} />
-      <directionalLight position={[-3, 2, -3]} intensity={0.6} />
-      <SceneContent {...props} />
+      <StudioLighting />
+      <SceneContent {...props} lod={lod} quality={quality} />
     </Canvas>
   );
 }
 
-function SceneContent({ catalogue, modelBaseUrl, state, onSelect, onLoadError }: SceneProps) {
+// A soft photo-studio light: a large key panel above and in front, fill from
+// the sides, a rim from behind, baked once into an environment map (nothing
+// is downloaded), plus one gentle directional light for definition.
+function StudioLighting() {
+  return (
+    <>
+      <Environment resolution={256} frames={1}>
+        <Lightformer form="rect" intensity={3} position={[0, 4, 4]} scale={[6, 4, 1]} />
+        <Lightformer form="rect" intensity={1.2} position={[-5, 1.5, 1]} rotation-y={Math.PI / 2} scale={[4, 3, 1]} />
+        <Lightformer form="rect" intensity={1.2} position={[5, 1.5, 1]} rotation-y={-Math.PI / 2} scale={[4, 3, 1]} />
+        <Lightformer form="rect" intensity={1.6} position={[0, 2, -5]} scale={[6, 3, 1]} />
+        <Lightformer form="circle" intensity={0.4} position={[0, -4, 0]} rotation-x={-Math.PI / 2} scale={6} />
+      </Environment>
+      <directionalLight position={[1.5, 3, 2.5]} intensity={0.8} />
+    </>
+  );
+}
+
+function SceneContent({
+  catalogue,
+  modelBaseUrl,
+  state,
+  onSelect,
+  onLoadError,
+  lod,
+  quality,
+}: SceneProps & { lod: Lod; quality: Quality }) {
   const invalidate = useThree((s) => s.invalidate);
   const byId = useMemo(() => new Map(catalogue.structures.map((s) => [s.id, s])), [catalogue]);
   const visible = useMemo(() => visibleStructureIds(catalogue, state), [catalogue, state]);
-  const materials = useMemo(() => makeMaterials(), []);
+  const materials = useMemo(() => new MaterialCache(quality), [quality]);
+  const body = useMemo(() => unionBbox(catalogue.structures), [catalogue]);
   const registry = useRef<Registry>({ objects: new Map(), ranks: new Map() });
   const [loadedCount, setLoadedCount] = useState(0);
 
@@ -156,35 +225,36 @@ function SceneContent({ catalogue, modelBaseUrl, state, onSelect, onLoadError }:
       const s = byId.get(id);
       if (s) visibleChunks.add(s.chunk);
     }
-    const urls: { chunkId: string; url: string; rank: number }[] = catalogue.chunks
-      .filter((c) => visibleChunks.has(c.id))
-      .map((c) => ({ chunkId: c.id, url: `${modelBaseUrl}/chunks/${c.id}/low.glb`, rank: RANK.low }));
     const selected = state.selectedId ? byId.get(state.selectedId) : undefined;
-    if (selected) {
-      urls.push({ chunkId: selected.chunk, url: `${modelBaseUrl}/chunks/${selected.chunk}/medium.glb`, rank: RANK.medium });
+    const urls: { chunkId: string; url: string; rank: number }[] = [];
+    const add = (chunkId: string, level: Lod) =>
+      urls.push({ chunkId, url: `${modelBaseUrl}/chunks/${chunkId}/${level}.glb`, rank: RANK[level] });
+    for (const chunk of catalogue.chunks) {
+      if (!visibleChunks.has(chunk.id)) continue;
+      // The overview already shows these systems roughly; others get a quick
+      // low-detail pass while the full level loads.
+      if (lod !== "low" && !OVERVIEW_SYSTEMS.includes(chunk.system)) add(chunk.id, "low");
+      add(chunk.id, chunk.id === selected?.chunk && lod === "low" ? "medium" : lod);
     }
     return urls;
-  }, [catalogue, byId, visible, state.selectedId, modelBaseUrl]);
+  }, [catalogue, byId, visible, state.selectedId, modelBaseUrl, lod]);
 
-  const register = useCallback(
-    (url: string, rank: number, objects: Map<string, THREE.Object3D> | null) => {
-      if (objects) {
-        registry.current.objects.set(url, objects);
-        registry.current.ranks.set(url, rank);
-      } else {
-        registry.current.objects.delete(url);
-        registry.current.ranks.delete(url);
-      }
-      setLoadedCount((n) => n + 1);
-    },
-    []
-  );
+  const register = useCallback((url: string, rank: number, objects: Map<string, THREE.Object3D> | null) => {
+    if (objects) {
+      registry.current.objects.set(url, objects);
+      registry.current.ranks.set(url, rank);
+    } else {
+      registry.current.objects.delete(url);
+      registry.current.ranks.delete(url);
+    }
+    setLoadedCount((n) => n + 1);
+  }, []);
 
   // Show each visible structure's best loaded copy; hide everything else.
   useEffect(() => {
-    applyVisibility(registry.current, visible, state.selectedId, byId, materials);
+    applyVisibility(registry.current, visible, state, byId, materials);
     invalidate();
-  }, [visible, state.selectedId, loadedCount, byId, materials, invalidate]);
+  }, [visible, state, loadedCount, byId, materials, invalidate]);
 
   return (
     <>
@@ -198,6 +268,24 @@ function SceneContent({ catalogue, modelBaseUrl, state, onSelect, onLoadError }:
           </Suspense>
         </ChunkBoundary>
       ))}
+      {quality === "high" && (
+        <>
+          {/* Re-baked whenever what's on screen changes, not every frame. */}
+          <ContactShadows
+            key={`${loadedCount}-${visible.size}`}
+            frames={1}
+            position={[0, body[1] - 0.002, 0]}
+            scale={2.4}
+            blur={2.5}
+            far={1.2}
+            opacity={0.35}
+            resolution={512}
+          />
+          <EffectComposer multisampling={4}>
+            <N8AO aoRadius={0.06} distanceFalloff={0.6} intensity={2.2} quality="medium" halfRes />
+          </EffectComposer>
+        </>
+      )}
       <TapPicker registry={registry} visible={visible} onSelect={onSelect} />
       <CameraRig catalogue={catalogue} byId={byId} selectedId={state.selectedId} resetCount={state.resetCount} />
     </>

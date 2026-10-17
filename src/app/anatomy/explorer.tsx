@@ -6,6 +6,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { Menu } from "lucide-react";
 import { parseCatalogue, type Catalogue, type Structure } from "@/lib/anatomy/catalogue";
+import { tissueOf } from "@/lib/anatomy/appearance";
 import { explorerReducer, INITIAL_STATE } from "@/lib/anatomy/explorer-state";
 import { searchStructures } from "@/lib/anatomy/search";
 import { ACCENT, BORDER, CANVAS, INK, TEXT_SECONDARY } from "@/app/student/dashboard-sections/colors";
@@ -20,6 +21,9 @@ const BodyScene = lazy(() => import("./body-scene").then((m) => ({ default: m.Bo
 
 const CREDIT =
   "3D model: Z-Anatomy, the open source atlas of anatomy (CC BY-SA 4.0), based on BodyParts3D, The Database Center for Life Science (CC BY-SA 2.1 Japan)";
+
+// A soft studio backdrop: brightest behind the body, falling off to the edges.
+const STUDIO_BACKDROP = "radial-gradient(ellipse 70% 80% at 50% 42%, #FFFFFF 0%, #EEF0F5 45%, #D5D9E3 100%)";
 
 type Load = { status: "loading" } | { status: "error" } | { status: "ready"; catalogue: Catalogue };
 
@@ -91,7 +95,15 @@ function ExplorerView({ catalogue, modelBaseUrl }: { catalogue: Catalogue; model
   const selected = state.selectedId ? byId.get(state.selectedId) : undefined;
 
   const select = useCallback(
-    (id: string | null) => dispatch({ type: "select", id, system: id ? byId.get(id)?.system : undefined }),
+    (id: string | null) => {
+      const structure = id ? byId.get(id) : undefined;
+      dispatch({
+        type: "select",
+        id,
+        system: structure?.system,
+        fascia: structure ? tissueOf(structure) === "fascia" : false,
+      });
+    },
     [byId]
   );
   const pick = useCallback((structure: Structure) => select(structure.id), [select]);
@@ -111,7 +123,7 @@ function ExplorerView({ catalogue, modelBaseUrl }: { catalogue: Catalogue; model
   }, [webgl, catalogue, query]);
 
   return (
-    <div className="fixed inset-0 overflow-hidden" style={{ backgroundColor: CANVAS }}>
+    <div className="fixed inset-0 overflow-hidden" style={{ background: STUDIO_BACKDROP }}>
       {webgl ? (
         <div className="absolute inset-0">
           <Suspense fallback={null}>
@@ -213,6 +225,10 @@ function ExplorerView({ catalogue, modelBaseUrl }: { catalogue: Catalogue; model
           catalogue={catalogue}
           systems={state.systems}
           depth={state.depth}
+          xray={state.xray}
+          onToggleXray={() => dispatch({ type: "toggleXray" })}
+          fascia={state.fascia}
+          onToggleFascia={() => dispatch({ type: "toggleFascia" })}
           onToggleSystem={(system) => dispatch({ type: "toggleSystem", system })}
           onDepthChange={(depth) => dispatch({ type: "setDepth", depth })}
           onClose={() => dispatch({ type: "toggleDrawer" })}
