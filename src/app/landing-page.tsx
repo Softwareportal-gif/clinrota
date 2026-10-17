@@ -11,7 +11,6 @@ const MUTED = "#6B6987";
 const VIOLET = "#5A3BF0";
 const BLUE = "#2563EB";
 const LINE = "#ECEBF5";
-const SOFT = "#F8F7FF";
 const BRAND_GRADIENT = `linear-gradient(90deg, ${VIOLET}, ${BLUE})`;
 const TEXT_GRADIENT = `linear-gradient(90deg, ${VIOLET}, ${BLUE} 55%, #0E9FB3)`;
 const HERO_BLEND =
@@ -214,10 +213,10 @@ export function LandingPage() {
             <Wordmark size={27} />
           </Link>
           <nav className="hidden items-center gap-8 text-[15px] font-bold md:flex">
-            <a href="#platform" className="hover:text-[#5A3BF0]">Platform</a>
-            <a href="#disciplines" className="hover:text-[#5A3BF0]">Disciplines</a>
-            <a href="#security" className="hover:text-[#5A3BF0]">Security</a>
-            <Link href="/help" className="hover:text-[#5A3BF0]">Resources</Link>
+            <a href="#platform" className="transition-colors hover:text-[#5A3BF0]">Platform</a>
+            <a href="#disciplines" className="transition-colors hover:text-[#5A3BF0]">Disciplines</a>
+            <a href="#security" className="transition-colors hover:text-[#5A3BF0]">Security</a>
+            <Link href="/help" className="transition-colors hover:text-[#5A3BF0]">Resources</Link>
           </nav>
           {/* Log in stays visible on phones too (an outlined pill there), so
               students and supervisors can always reach their account. */}
@@ -230,7 +229,7 @@ export function LandingPage() {
             </Link>
             <a
               href="#contact"
-              className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-white transition hover:opacity-90 sm:px-5 sm:py-3 sm:text-[15px]"
+              className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-white transition duration-200 hover:shadow-[0_8px_20px_rgba(90,59,240,.35)] motion-safe:hover:-translate-y-0.5 sm:px-5 sm:py-3 sm:text-[15px]"
               style={{ background: BRAND_GRADIENT }}
             >
               Book a demo
@@ -258,12 +257,12 @@ export function LandingPage() {
           <div className="mt-9 flex flex-col gap-3 pb-16 sm:flex-row sm:pb-0">
             <a
               href="#contact"
-              className="rounded-full px-7 py-4 text-base font-bold text-white transition hover:opacity-90"
+              className="rounded-full px-7 py-4 text-base font-bold text-white transition duration-200 hover:brightness-110 motion-safe:hover:-translate-y-0.5"
               style={{ background: BRAND_GRADIENT, boxShadow: "0 10px 24px rgba(90,59,240,.28)" }}
             >
               Book a demo →
             </a>
-            <a href="#platform" className="rounded-full border bg-white px-7 py-4 text-base font-bold transition hover:border-[#5A3BF0]" style={{ borderColor: "#DCD8F5" }}>
+            <a href="#platform" className="rounded-full border bg-white px-7 py-4 text-base font-bold transition duration-200 hover:border-[#5A3BF0] hover:text-[#5A3BF0] hover:shadow-[0_8px_20px_rgba(37,32,110,.10)] motion-safe:hover:-translate-y-0.5" style={{ borderColor: "#DCD8F5" }}>
               Explore the platform
             </a>
           </div>
@@ -302,16 +301,25 @@ export function LandingPage() {
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {MODULES.map((m) => (
-              <div key={m.title} className="flex flex-col gap-4 rounded-3xl border p-8" style={{ borderColor: LINE, boxShadow: "0 12px 30px rgba(37,32,110,.06)" }}>
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: m.gradient }}>
+              <div
+                key={m.title}
+                className="group flex flex-col gap-4 rounded-3xl border border-[#ECEBF5] bg-white p-8 shadow-[0_12px_30px_rgba(37,32,110,.06)] transition duration-300 hover:border-[#D7D1FB] hover:shadow-[0_24px_48px_rgba(37,32,110,.14)] motion-safe:hover:-translate-y-1.5"
+              >
+                <span
+                  className="flex h-14 w-14 items-center justify-center rounded-2xl transition duration-300 motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110"
+                  style={{ background: m.gradient }}
+                >
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     {m.icon}
                   </svg>
                 </span>
                 <h3 className="text-2xl font-extrabold tracking-[-0.02em]">{m.title}</h3>
                 <p className="leading-relaxed" style={{ color: BODY }}>{m.body}</p>
-                <a href="#contact" className="mt-auto text-[15px] font-bold" style={{ color: m.linkColor }}>
-                  See it in a demo →
+                <a href="#contact" className="mt-auto inline-flex items-center gap-1 text-[15px] font-bold" style={{ color: m.linkColor }}>
+                  See it in a demo
+                  <span aria-hidden="true" className="transition-transform duration-300 motion-safe:group-hover:translate-x-1.5">
+                    →
+                  </span>
                 </a>
               </div>
             ))}
@@ -340,10 +348,13 @@ export function LandingPage() {
             {DISCIPLINES.map((name) => (
               <span
                 key={name}
-                className="flex items-center gap-2.5 rounded-full bg-white px-6 py-3.5 text-[17px] font-bold"
-                style={{ boxShadow: "0 2px 6px rgba(37,32,110,.07)", color: INK }}
+                className="group flex items-center gap-2.5 rounded-full bg-white px-6 py-3.5 text-[17px] font-bold shadow-[0_2px_6px_rgba(37,32,110,.07)] ring-1 ring-transparent transition duration-300 hover:shadow-[0_10px_24px_rgba(90,59,240,.18)] hover:ring-[#5A3BF0]/30 motion-safe:hover:-translate-y-1"
+                style={{ color: INK }}
               >
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "linear-gradient(135deg, #5A3BF0, #12B5C9)" }} />
+                <span
+                  className="h-2.5 w-2.5 rounded-full transition-transform duration-300 motion-safe:group-hover:scale-150"
+                  style={{ background: "linear-gradient(135deg, #5A3BF0, #12B5C9)" }}
+                />
                 {name}
               </span>
             ))}
@@ -361,8 +372,15 @@ export function LandingPage() {
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {REASONS.map((r) => (
-              <div key={r.title} className="flex flex-col gap-3 rounded-3xl p-7" style={{ backgroundColor: SOFT }}>
-                <span className="h-1.5 w-9 rounded-full" style={{ background: r.bar }} aria-hidden="true" />
+              <div
+                key={r.title}
+                className="group flex flex-col gap-3 rounded-3xl bg-[#F8F7FF] p-7 ring-1 ring-transparent transition duration-300 hover:bg-white hover:shadow-[0_20px_40px_rgba(37,32,110,.12)] hover:ring-[#ECEBF5] motion-safe:hover:-translate-y-1.5"
+              >
+                <span
+                  className="h-1.5 w-9 rounded-full transition-all duration-300 group-hover:w-16"
+                  style={{ background: r.bar }}
+                  aria-hidden="true"
+                />
                 <h3 className="text-lg font-extrabold">{r.title}</h3>
                 <p className="leading-relaxed" style={{ color: BODY }}>{r.body}</p>
               </div>
@@ -385,7 +403,10 @@ export function LandingPage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {SECURITY.map((s) => (
-              <div key={s.title} className="flex flex-col gap-2 rounded-2xl border border-white/20 bg-white/10 p-6">
+              <div
+                key={s.title}
+                className="flex flex-col gap-2 rounded-2xl border border-white/20 bg-white/10 p-6 transition duration-300 hover:border-white/40 hover:bg-white/[.16] motion-safe:hover:-translate-y-1"
+              >
                 <h3 className="text-[17px] font-extrabold">{s.title}</h3>
                 <p className="text-[15px] leading-relaxed text-[#DCE2FF]">{s.body}</p>
               </div>
@@ -437,7 +458,7 @@ export function LandingPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Praxxt on ${label}`}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 transition duration-200 hover:bg-white/25 motion-safe:hover:scale-110"
                   >
                     <Icon className="h-4 w-4" color="#FFFFFF" />
                   </a>
