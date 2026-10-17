@@ -56,7 +56,7 @@ const MODULES = [
 
 // Each has a discipline template (rubric + logbook fields) an admin can pick
 // when creating a program — see prisma/migrations/*discipline_templates*.
-const DISCIPLINES = ["Nursing", "Midwifery", "Medicine", "Physiotherapy", "Pharmacy", "Physician Associate"];
+const DISCIPLINES = ["Nursing", "Midwifery", "Medicine", "Physiotherapy", "Pharmacy", "Physician Assistant"];
 
 const REASONS = [
   {
