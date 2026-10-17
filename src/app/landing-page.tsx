@@ -54,14 +54,9 @@ const MODULES = [
   },
 ];
 
-const DISCIPLINES = [
-  { name: "Nursing", available: true },
-  { name: "Midwifery", available: true },
-  { name: "Medicine", available: false },
-  { name: "Physiotherapy", available: false },
-  { name: "Pharmacy", available: false },
-  { name: "Physician Associate", available: false },
-];
+// Each has a discipline template (rubric + logbook fields) an admin can pick
+// when creating a program — see prisma/migrations/*discipline_templates*.
+const DISCIPLINES = ["Nursing", "Midwifery", "Medicine", "Physiotherapy", "Pharmacy", "Physician Associate"];
 
 const REASONS = [
   {
@@ -328,19 +323,14 @@ export function LandingPage() {
             </p>
           </div>
           <div className="mt-9 flex flex-wrap gap-3.5">
-            {DISCIPLINES.map((d) => (
+            {DISCIPLINES.map((name) => (
               <span
-                key={d.name}
+                key={name}
                 className="flex items-center gap-2.5 rounded-full bg-white px-6 py-3.5 text-[17px] font-bold"
-                style={{ boxShadow: "0 2px 6px rgba(37,32,110,.07)", color: d.available ? INK : BODY }}
+                style={{ boxShadow: "0 2px 6px rgba(37,32,110,.07)", color: INK }}
               >
-                {d.available && <span className="h-2.5 w-2.5 rounded-full" style={{ background: "linear-gradient(135deg, #5A3BF0, #12B5C9)" }} />}
-                {d.name}
-                {!d.available && (
-                  <span className="rounded-full px-2.5 py-0.5 text-xs font-extrabold" style={{ color: "#4A3BB5", backgroundColor: "#EFECFF" }}>
-                    Coming soon
-                  </span>
-                )}
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "linear-gradient(135deg, #5A3BF0, #12B5C9)" }} />
+                {name}
               </span>
             ))}
           </div>
