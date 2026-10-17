@@ -4,6 +4,7 @@ import { manrope } from "@/fonts/manrope";
 import { Wordmark } from "@/components/wordmark";
 import { LinkedInIcon, FacebookIcon, InstagramIcon, YouTubeIcon } from "@/components/social-icons";
 import { ContactForm } from "./contact-form";
+import { Reveal } from "@/components/reveal";
 
 const INK = "#17153B";
 const BODY = "#4A4867";
@@ -229,7 +230,7 @@ export function LandingPage() {
             </Link>
             <a
               href="#contact"
-              className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-white transition duration-200 hover:shadow-[0_8px_20px_rgba(90,59,240,.35)] motion-safe:hover:-translate-y-0.5 sm:px-5 sm:py-3 sm:text-[15px]"
+              className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-white transition duration-200 hover:shadow-[0_8px_20px_rgba(90,59,240,.35)] motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-95 sm:px-5 sm:py-3 sm:text-[15px]"
               style={{ background: BRAND_GRADIENT }}
             >
               Book a demo
@@ -257,12 +258,12 @@ export function LandingPage() {
           <div className="mt-9 flex flex-col gap-3 pb-16 sm:flex-row sm:pb-0">
             <a
               href="#contact"
-              className="rounded-full px-7 py-4 text-base font-bold text-white transition duration-200 hover:brightness-110 motion-safe:hover:-translate-y-0.5"
+              className="rounded-full px-7 py-4 text-base font-bold text-white transition duration-200 hover:brightness-110 motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-95"
               style={{ background: BRAND_GRADIENT, boxShadow: "0 10px 24px rgba(90,59,240,.28)" }}
             >
               Book a demo →
             </a>
-            <a href="#platform" className="rounded-full border bg-white px-7 py-4 text-base font-bold transition duration-200 hover:border-[#5A3BF0] hover:text-[#5A3BF0] hover:shadow-[0_8px_20px_rgba(37,32,110,.10)] motion-safe:hover:-translate-y-0.5" style={{ borderColor: "#DCD8F5" }}>
+            <a href="#platform" className="rounded-full border bg-white px-7 py-4 text-base font-bold transition duration-200 hover:border-[#5A3BF0] hover:text-[#5A3BF0] hover:shadow-[0_8px_20px_rgba(37,32,110,.10)] motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-95" style={{ borderColor: "#DCD8F5" }}>
               Explore the platform
             </a>
           </div>
@@ -300,10 +301,10 @@ export function LandingPage() {
             </p>
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {MODULES.map((m) => (
+            {MODULES.map((m, i) => (
+              <Reveal key={m.title} delay={i * 120} className="h-full">
               <div
-                key={m.title}
-                className="group flex flex-col gap-4 rounded-3xl border border-[#ECEBF5] bg-white p-8 shadow-[0_12px_30px_rgba(37,32,110,.06)] transition duration-300 hover:border-[#D7D1FB] hover:shadow-[0_24px_48px_rgba(37,32,110,.14)] motion-safe:hover:-translate-y-1.5"
+                className="group flex h-full flex-col gap-4 rounded-3xl border border-[#ECEBF5] bg-white p-8 shadow-[0_12px_30px_rgba(37,32,110,.06)] transition duration-300 hover:border-[#D7D1FB] hover:shadow-[0_24px_48px_rgba(37,32,110,.14)] active:shadow-[0_24px_48px_rgba(37,32,110,.14)] motion-safe:hover:-translate-y-1.5 motion-safe:active:scale-[.98]"
               >
                 <span
                   className="flex h-14 w-14 items-center justify-center rounded-2xl transition duration-300 motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110"
@@ -322,6 +323,7 @@ export function LandingPage() {
                   </span>
                 </a>
               </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -345,10 +347,10 @@ export function LandingPage() {
             </p>
           </div>
           <div className="mt-9 flex flex-wrap gap-3.5">
-            {DISCIPLINES.map((name) => (
+            {DISCIPLINES.map((name, i) => (
+              <Reveal key={name} delay={i * 70}>
               <span
-                key={name}
-                className="group flex items-center gap-2.5 rounded-full bg-white px-6 py-3.5 text-[17px] font-bold shadow-[0_2px_6px_rgba(37,32,110,.07)] ring-1 ring-transparent transition duration-300 hover:shadow-[0_10px_24px_rgba(90,59,240,.18)] hover:ring-[#5A3BF0]/30 motion-safe:hover:-translate-y-1"
+                className="group flex items-center gap-2.5 rounded-full bg-white px-6 py-3.5 text-[17px] font-bold shadow-[0_2px_6px_rgba(37,32,110,.07)] ring-1 ring-transparent transition duration-300 hover:shadow-[0_10px_24px_rgba(90,59,240,.18)] hover:ring-[#5A3BF0]/30 active:ring-[#5A3BF0]/40 motion-safe:hover:-translate-y-1 motion-safe:active:scale-95"
                 style={{ color: INK }}
               >
                 <span
@@ -357,6 +359,7 @@ export function LandingPage() {
                 />
                 {name}
               </span>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -371,10 +374,10 @@ export function LandingPage() {
             </h2>
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {REASONS.map((r) => (
+            {REASONS.map((r, i) => (
+              <Reveal key={r.title} delay={i * 100} className="h-full">
               <div
-                key={r.title}
-                className="group flex flex-col gap-3 rounded-3xl bg-[#F8F7FF] p-7 ring-1 ring-transparent transition duration-300 hover:bg-white hover:shadow-[0_20px_40px_rgba(37,32,110,.12)] hover:ring-[#ECEBF5] motion-safe:hover:-translate-y-1.5"
+                className="group flex h-full flex-col gap-3 rounded-3xl bg-[#F8F7FF] p-7 ring-1 ring-transparent transition duration-300 hover:bg-white hover:shadow-[0_20px_40px_rgba(37,32,110,.12)] hover:ring-[#ECEBF5] active:bg-white active:ring-[#ECEBF5] motion-safe:hover:-translate-y-1.5 motion-safe:active:scale-[.98]"
               >
                 <span
                   className="h-1.5 w-9 rounded-full transition-all duration-300 group-hover:w-16"
@@ -384,6 +387,7 @@ export function LandingPage() {
                 <h3 className="text-lg font-extrabold">{r.title}</h3>
                 <p className="leading-relaxed" style={{ color: BODY }}>{r.body}</p>
               </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -402,14 +406,15 @@ export function LandingPage() {
             <p className="text-lg leading-relaxed text-[#DCE2FF]">Built from day one to keep health and training records private.</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            {SECURITY.map((s) => (
+            {SECURITY.map((s, i) => (
+              <Reveal key={s.title} delay={i * 100} className="h-full">
               <div
-                key={s.title}
-                className="flex flex-col gap-2 rounded-2xl border border-white/20 bg-white/10 p-6 transition duration-300 hover:border-white/40 hover:bg-white/[.16] motion-safe:hover:-translate-y-1"
+                className="flex h-full flex-col gap-2 rounded-2xl border border-white/20 bg-white/10 p-6 transition duration-300 hover:border-white/40 hover:bg-white/[.16] active:bg-white/[.16] motion-safe:hover:-translate-y-1 motion-safe:active:scale-[.98]"
               >
                 <h3 className="text-[17px] font-extrabold">{s.title}</h3>
                 <p className="text-[15px] leading-relaxed text-[#DCE2FF]">{s.body}</p>
               </div>
+              </Reveal>
             ))}
           </div>
         </div>

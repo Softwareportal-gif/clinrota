@@ -57,3 +57,21 @@ body {
   outline: 2px solid #5a3bf0;
   outline-offset: 2px;
 }
+
+/* Scroll-in animation set by <Reveal> (src/components/reveal.tsx). Only
+   elements that start off-screen get data-reveal, so content is never
+   hidden without JavaScript. */
+[data-reveal] {
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+[data-reveal="hidden"] {
+  opacity: 0;
+  transform: translateY(24px);
+}
+[data-reveal="shown"] {
+  opacity: 1;
+  transform: none;
+}
