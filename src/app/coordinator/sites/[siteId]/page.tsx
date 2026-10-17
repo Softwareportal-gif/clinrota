@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { requireRole } from "@/lib/require-role";
 import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
 import { prisma } from "@/lib/prisma";
@@ -35,7 +34,7 @@ export default async function EditSitePage({ params }: { params: Promise<{ siteI
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title={site.name} userName={session.user.name ?? ""} />
+      <DashboardHeader back={{ href: "/coordinator/sites", label: "Clinical sites" }} title={site.name} />
       <div className="mx-auto max-w-3xl space-y-6 px-6 py-8">
         <div className="flex items-center gap-3">
           <p className="text-sm text-gray-500">Contract status</p>
@@ -96,9 +95,6 @@ export default async function EditSitePage({ params }: { params: Promise<{ siteI
           <p className="mt-2 text-xs text-gray-400">Leave both blank to export all placements on file.</p>
         </div>
 
-        <Link href="/coordinator/sites" className="block text-sm text-gray-500 hover:underline">
-          ← Back to sites
-        </Link>
       </div>
     </main>
   );

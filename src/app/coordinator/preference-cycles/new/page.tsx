@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { requireRole } from "@/lib/require-role";
 import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
 import { prisma } from "@/lib/prisma";
@@ -16,7 +15,7 @@ export default async function NewPreferenceCyclePage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="New preference cycle" userName={session.user.name ?? ""} />
+      <DashboardHeader title="New preference cycle" />
       <div className="mx-auto max-w-2xl space-y-6 px-6 py-8">
         <p className="text-sm text-gray-500">
           Opens a rotation-site wishlist for every student in the chosen cohort — they&apos;ll rank
@@ -27,9 +26,6 @@ export default async function NewPreferenceCyclePage() {
         ) : (
           <CycleForm cohorts={cohorts.map((c) => ({ id: c.id, label: `${c.name} · ${c.academicYear} ${c.term}` }))} />
         )}
-        <Link href="/coordinator" className="block text-sm text-gray-500 hover:underline">
-          ← Back to dashboard
-        </Link>
       </div>
     </main>
   );

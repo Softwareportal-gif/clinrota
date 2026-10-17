@@ -35,7 +35,7 @@ export default async function StudentsPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Student roster" userName={session.user.name ?? ""} />
+      <DashboardHeader title="Student roster" />
       <div className="mx-auto max-w-4xl space-y-6 px-6 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-gray-500">Program: {coordinatorProfile.program.name}</p>
@@ -49,9 +49,6 @@ export default async function StudentsPage() {
 
         <InviteList rows={rows} />
 
-        <Link href="/coordinator" className="block text-sm text-gray-500 hover:underline">
-          ← Back to dashboard
-        </Link>
       </div>
     </main>
   );

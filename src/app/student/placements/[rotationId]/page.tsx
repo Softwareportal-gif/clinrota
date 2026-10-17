@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/require-role";
 import { getStudentProfileByUserId } from "@/lib/student";
 import { getPlacementSummaries } from "@/lib/placement-summary";
+import { BackLink } from "@/components/back-link";
 import { INK, ACCENT, TEXT_SECONDARY, BORDER, STATUS_GREEN, STATUS_AMBER } from "../../dashboard-sections/colors";
 
 function fmtDate(d: Date) {
@@ -26,9 +27,7 @@ export default async function PlacementDetailPage({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link href="/student/placements" className="text-xs font-semibold" style={{ color: ACCENT }}>
-          ← Back to placements
-        </Link>
+        <BackLink href="/student/placements" label="My placements" />
         <h1 className="mt-2 text-xl font-bold" style={{ color: INK }}>
           {placement.siteName}
           {placement.departmentName ? ` — ${placement.departmentName}` : ""}

@@ -30,7 +30,7 @@ export default async function ReviewDocumentPage({
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Review document" userName={session.user.name ?? ""} />
+      <DashboardHeader back={{ href: "/coordinator/compliance/queue", label: "Review queue" }} title="Review document" />
       <div className="mx-auto max-w-2xl space-y-6 px-6 py-8">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">{doc.requiredDocumentType.name}</h2>
@@ -71,9 +71,6 @@ export default async function ReviewDocumentPage({
 
         <ReviewDocForm documentId={doc.id} />
 
-        <Link href="/coordinator/compliance/queue" className="block text-sm text-gray-500 hover:underline">
-          ← Back to pending review
-        </Link>
       </div>
     </main>
   );

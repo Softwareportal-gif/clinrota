@@ -11,7 +11,7 @@ const STATUS_CLASSES = {
 } as const;
 
 export default async function AdminTicketsPage() {
-  const session = await requireRole("SUPER_ADMIN");
+  await requireRole("SUPER_ADMIN");
 
   const tickets = await prisma.supportTicket.findMany({
     include: { createdBy: true },
@@ -20,7 +20,7 @@ export default async function AdminTicketsPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Support tickets" userName={session.user.name ?? ""} />
+      <DashboardHeader title="Support tickets" />
       <div className="mx-auto max-w-4xl px-6 py-8">
         {tickets.length === 0 ? (
           <p className="text-sm text-gray-500">No tickets yet.</p>

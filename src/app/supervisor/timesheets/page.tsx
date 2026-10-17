@@ -16,7 +16,7 @@ export default async function SupervisorTimesheetsPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Timesheets" userName={session.user.name ?? ""} userId={session.user.id} />
+      <DashboardHeader title="Timesheets" userId={session.user.id} />
       <div className="mx-auto max-w-3xl px-6 py-8">
         {entries.length === 0 ? (
           <p className="text-sm text-gray-500">No timesheet entries yet.</p>

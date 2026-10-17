@@ -54,7 +54,7 @@ export default async function NewRotationPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Assign rotation" userName={session.user.name ?? ""} />
+      <DashboardHeader title="Assign rotation" />
       <div className="mx-auto max-w-3xl px-6 py-8">
         {studentRows.length === 0 ? (
           <p className="text-sm text-gray-500">No students in this program yet.</p>

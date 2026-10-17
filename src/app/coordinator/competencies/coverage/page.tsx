@@ -66,7 +66,7 @@ export default async function CoverageReportPage({
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Competency coverage" userName={session.user.name ?? ""} />
+      <DashboardHeader back={{ href: "/coordinator/competencies", label: "Competencies" }} title="Competency coverage" />
       <div className="mx-auto max-w-5xl space-y-6 px-6 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-gray-500">Program: {coordinatorProfile.program.name}</p>
@@ -150,9 +150,6 @@ export default async function CoverageReportPage({
           </div>
         )}
 
-        <Link href="/coordinator/competencies" className="block text-sm text-gray-500 hover:underline">
-          ← Back to competencies
-        </Link>
       </div>
     </main>
   );

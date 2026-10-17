@@ -42,7 +42,7 @@ export default async function ComplianceOverviewPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Compliance overview" userName={session.user.name ?? ""} />
+      <DashboardHeader title="Compliance overview" />
       <div className="mx-auto max-w-5xl space-y-6 px-6 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-gray-500">Program: {coordinatorProfile.program.name}</p>

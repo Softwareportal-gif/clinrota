@@ -23,11 +23,10 @@ export default async function SuperAdminDashboard() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Super admin" userName={session.user.name ?? ""} />
+      <DashboardHeader title="Programs" />
       <div className="mx-auto max-w-3xl space-y-6 px-6 py-8">
         <p className="text-sm text-gray-500">
-          Institution, program, and user management will live here — kept
-          minimal for the pilot.
+          Your institution&apos;s programs and the coordinators who run them.
         </p>
 
         <div>

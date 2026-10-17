@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/wordmark";
+import { BackLink } from "@/components/back-link";
 
 const INK = "#17153B";
 const HIGHLIGHT = "#D63A74";
@@ -57,9 +58,7 @@ export default function TrainingVideosPage() {
           >
             <Wordmark size={24} tone="onDark" />
           </Link>
-          <Link href="/help" className="text-sm font-semibold text-white/80 hover:text-white">
-            ← Back to help
-          </Link>
+          <BackLink href="/help" label="Help center" tone="onDark" />
         </div>
       </header>
 

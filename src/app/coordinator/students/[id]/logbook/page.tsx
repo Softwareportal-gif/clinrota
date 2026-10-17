@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { requireRole } from "@/lib/require-role";
 import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
 import { prisma } from "@/lib/prisma";
@@ -30,7 +29,7 @@ export default async function StudentLogbookPage({ params }: { params: Promise<{
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title={`${student.user.name} — full logbook`} userName={session.user.name ?? ""} />
+      <DashboardHeader back={{ href: `/coordinator/students/${id}`, label: "Student record" }} title={`${student.user.name} — full logbook`} />
       <div className="mx-auto max-w-3xl space-y-4 px-6 py-8">
         <p className="text-sm text-gray-500">{entries.length} case{entries.length === 1 ? "" : "s"} logged</p>
 
@@ -89,9 +88,6 @@ export default async function StudentLogbookPage({ params }: { params: Promise<{
           </ul>
         )}
 
-        <Link href={`/coordinator/students/${id}`} className="block text-sm text-gray-500 hover:underline">
-          ← Back to student record
-        </Link>
       </div>
     </main>
   );

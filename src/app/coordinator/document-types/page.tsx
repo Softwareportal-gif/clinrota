@@ -16,7 +16,7 @@ export default async function DocumentTypesPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Required document types" userName={session.user.name ?? ""} />
+      <DashboardHeader title="Required document types" />
       <div className="mx-auto max-w-2xl space-y-6 px-6 py-8">
         <p className="text-sm text-gray-500">Program: {coordinatorProfile.program.name}</p>
 

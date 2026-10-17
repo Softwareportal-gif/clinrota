@@ -19,7 +19,7 @@ export default async function ComplianceQueuePage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Pending compliance review" userName={session.user.name ?? ""} />
+      <DashboardHeader back={{ href: "/coordinator/compliance", label: "Compliance" }} title="Pending compliance review" />
       <div className="mx-auto max-w-3xl px-6 py-8">
         <p className="mb-4 text-sm text-gray-500">
           {pending.length} document{pending.length === 1 ? "" : "s"} awaiting review
@@ -53,9 +53,6 @@ export default async function ComplianceQueuePage() {
           </ul>
         )}
 
-        <Link href="/coordinator/compliance" className="mt-4 block text-sm text-gray-500 hover:underline">
-          ← Back to overview
-        </Link>
       </div>
     </main>
   );

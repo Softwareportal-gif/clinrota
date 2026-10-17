@@ -39,24 +39,21 @@ export default async function SupervisorDashboard() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Pending review" userName={session.user.name ?? ""} userId={session.user.id} />
+      <DashboardHeader title="Pending review" userId={session.user.id} />
       <div className="mx-auto max-w-3xl px-6 py-8">
-        <div className="mb-4 flex items-center justify-end gap-2">
-          {isWardEligible && (
-            <Link
-              href="/supervisor/ward-review"
-              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700"
-            >
-              Ward review{wardPendingCount > 0 ? ` (${wardPendingCount})` : ""}
-            </Link>
-          )}
+        {/* Ward review and timesheets are in the sidebar; only waiting ward
+            cases are worth calling out here. */}
+        {isWardEligible && wardPendingCount > 0 && (
           <Link
-            href="/supervisor/timesheets"
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700"
+            href="/supervisor/ward-review"
+            className="mb-4 flex items-center justify-between gap-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 hover:bg-blue-100"
           >
-            Timesheets
+            <span>
+              {wardPendingCount} ward case{wardPendingCount === 1 ? "" : "s"} awaiting your review
+            </span>
+            <span className="shrink-0 font-medium">Ward review →</span>
           </Link>
-        </div>
+        )}
 
         <PendingReviewList
           entries={pending.map((entry) => ({

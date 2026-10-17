@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { requireRole } from "@/lib/require-role";
 import { getSupervisorProfileByUserId } from "@/lib/supervisor";
 import { prisma } from "@/lib/prisma";
@@ -27,7 +26,7 @@ export default async function WardReviewDashboard() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Ward review" userName={session.user.name ?? ""} userId={session.user.id} />
+      <DashboardHeader title="Ward review" userId={session.user.id} />
       <div className="mx-auto max-w-3xl px-6 py-8">
         <p className="mb-4 text-sm text-gray-500">
           Case entries submitted by students on wards where you&apos;re the ward supervisor.
@@ -45,9 +44,6 @@ export default async function WardReviewDashboard() {
           userId={session.user.id}
         />
 
-        <Link href="/supervisor" className="mt-6 block text-sm text-gray-500 hover:underline">
-          ← Back to dashboard
-        </Link>
       </div>
     </main>
   );

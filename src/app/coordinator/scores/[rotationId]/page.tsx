@@ -49,7 +49,7 @@ export default async function ScoreDetailPage({
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Score detail" userName={session.user.name ?? ""} />
+      <DashboardHeader back={{ href: "/coordinator", label: "Dashboard" }} title="Score detail" />
       <div className="mx-auto max-w-2xl space-y-6 px-6 py-8">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -140,9 +140,6 @@ export default async function ScoreDetailPage({
           </>
         )}
 
-        <Link href="/coordinator" className="block text-sm text-gray-500 hover:underline">
-          ← Back to rotations
-        </Link>
       </div>
     </main>
   );

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { BackLink } from "@/components/back-link";
 import { requireRole } from "@/lib/require-role";
 import { getStudentProfileByUserId } from "@/lib/student";
 import { prisma } from "@/lib/prisma";
@@ -31,6 +32,7 @@ export default async function LogEntryDetailPage({
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6">
+        <BackLink href="/student/logbook" label="Logbook" />
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">{entry.caseTitle}</h2>
@@ -110,19 +112,16 @@ export default async function LogEntryDetailPage({
           ))}
         </dl>
 
-        <div className="flex items-center gap-4">
-          <Link href="/student/logbook" className="text-sm text-gray-500 hover:underline">
-            ← Back to logbook
-          </Link>
-          {canEdit && (
+        {canEdit && (
+          <div className="flex justify-end">
             <Link
               href={`/student/log/${entry.id}/edit`}
-              className="ml-auto rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white"
             >
               {entry.status === "DRAFT" ? "Continue editing" : "Edit & resubmit"}
             </Link>
-          )}
-        </div>
+          </div>
+        )}
     </div>
   );
 }

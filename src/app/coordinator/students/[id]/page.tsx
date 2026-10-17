@@ -32,10 +32,10 @@ export default async function StudentRecordPage({ params }: { params: Promise<{ 
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title={student.user.name} userName={session.user.name ?? ""} />
+      <DashboardHeader back={{ href: "/coordinator/students", label: "Students" }} title={student.user.name} />
       <div className="mx-auto max-w-4xl space-y-8 px-6 py-8">
         <div className="flex flex-wrap items-start justify-between gap-4 rounded-md border border-gray-200 bg-white p-4">
-          <dl className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm sm:grid-cols-4">
+          <dl className="grid min-w-0 flex-1 grid-cols-1 gap-x-8 gap-y-3 text-sm sm:grid-cols-2 xl:grid-cols-4">
             <div>
               <dt className="text-xs text-gray-400">Student ID</dt>
               <dd className="text-gray-900">{student.studentIdNumber}</dd>
@@ -52,9 +52,13 @@ export default async function StudentRecordPage({ params }: { params: Promise<{ 
                   : "—"}
               </dd>
             </div>
-            <div>
+            <div className="min-w-0">
               <dt className="text-xs text-gray-400">Email</dt>
-              <dd className="text-gray-900">{student.user.email}</dd>
+              <dd className="text-gray-900 [overflow-wrap:anywhere]">
+                {/* Prefer wrapping a long address at the @ over mid-word. */}
+                {student.user.email.split("@")[0]}
+                <wbr />@{student.user.email.split("@").slice(1).join("@")}
+              </dd>
             </div>
           </dl>
           <a
@@ -241,9 +245,6 @@ export default async function StudentRecordPage({ params }: { params: Promise<{ 
           )}
         </section>
 
-        <Link href="/coordinator" className="block text-sm text-gray-500 hover:underline">
-          ← Back to dashboard
-        </Link>
       </div>
     </main>
   );

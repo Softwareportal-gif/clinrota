@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { requireRole } from "@/lib/require-role";
 import { getSupervisorProfileByUserId } from "@/lib/supervisor";
 import { prisma } from "@/lib/prisma";
@@ -34,7 +33,7 @@ export default async function ReviewEntryPage({
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Review entry" userName={session.user.name ?? ""} userId={session.user.id} />
+      <DashboardHeader back={{ href: "/supervisor", label: "Pending review" }} title="Review entry" userId={session.user.id} />
       <div className="mx-auto max-w-2xl space-y-6 px-6 py-8">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">{entry.caseTitle}</h2>
@@ -99,9 +98,6 @@ export default async function ReviewEntryPage({
           userId={session.user.id}
         />
 
-        <Link href="/supervisor" className="block text-sm text-gray-500 hover:underline">
-          ← Back to pending review
-        </Link>
       </div>
     </main>
   );

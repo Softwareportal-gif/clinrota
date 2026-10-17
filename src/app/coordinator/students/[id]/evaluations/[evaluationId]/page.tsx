@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { requireRole } from "@/lib/require-role";
 import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
 import { prisma } from "@/lib/prisma";
@@ -41,7 +40,7 @@ export default async function EvaluationBreakdownPage({
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Evaluation breakdown" userName={session.user.name ?? ""} />
+      <DashboardHeader back={{ href: `/coordinator/students/${id}`, label: "Student record" }} title="Evaluation breakdown" />
       <div className="mx-auto max-w-2xl space-y-6 px-6 py-8">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">{evaluation.student.user.name}</h2>
@@ -84,9 +83,6 @@ export default async function EvaluationBreakdownPage({
           </div>
         )}
 
-        <Link href={`/coordinator/students/${id}`} className="block text-sm text-gray-500 hover:underline">
-          ← Back to student record
-        </Link>
       </div>
     </main>
   );

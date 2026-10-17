@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { Wordmark } from "@/components/wordmark";
+import { BackLink } from "@/components/back-link";
+import { ROLE_HOME } from "@/lib/role-routes";
 import { LOGIN_ACCESS_FAQ } from "@/lib/faq";
 import { PlayIcon, TicketIcon } from "./help-icons";
 
@@ -78,9 +80,11 @@ export default async function HelpPage() {
           >
             <Wordmark size={24} tone="onDark" />
           </Link>
-          <Link href="/login" className="text-sm font-semibold text-white/80 hover:text-white">
-            ← Back to login
-          </Link>
+          {session?.user?.role ? (
+            <BackLink href={ROLE_HOME[session.user.role]} label="Back to dashboard" tone="onDark" />
+          ) : (
+            <BackLink href="/login" label="Back to sign in" tone="onDark" />
+          )}
         </div>
       </header>
 

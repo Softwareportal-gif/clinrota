@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { Wordmark } from "@/components/wordmark";
+import { BackLink } from "@/components/back-link";
 import { Badge } from "@/components/badge";
 import { TicketForm } from "./ticket-form";
 
@@ -43,9 +44,7 @@ export default async function TicketsPage({
           >
             <Wordmark size={24} tone="onDark" />
           </Link>
-          <Link href="/help" className="text-sm font-semibold text-white/80 hover:text-white">
-            ← Back to help
-          </Link>
+          <BackLink href="/help" label="Help center" tone="onDark" />
         </div>
       </header>
 

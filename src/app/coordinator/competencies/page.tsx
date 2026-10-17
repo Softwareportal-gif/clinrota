@@ -24,7 +24,7 @@ export default async function CompetenciesPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Competencies" userName={session.user.name ?? ""} />
+      <DashboardHeader title="Competencies" />
       <div className="mx-auto max-w-3xl space-y-6 px-6 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-gray-500">Program: {coordinatorProfile.program.name}</p>

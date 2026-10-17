@@ -17,7 +17,7 @@ export default async function SitesPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Clinical sites" userName={session.user.name ?? ""} />
+      <DashboardHeader title="Clinical sites" />
       <div className="mx-auto max-w-3xl space-y-6 px-6 py-8">
         <div className="flex justify-end">
           <Link
