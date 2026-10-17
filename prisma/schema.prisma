@@ -417,16 +417,18 @@ model User {
   coordinatorProfile CoordinatorProfile?
 
   // Reverse relations
-  reviewsGiven          SupervisorReview[]     @relation("SupervisorReviews")
-  evaluationsGiven      CompetencyEvaluation[] @relation("SupervisorEvaluations")
-  timesheetsApproved    TimesheetEntry[]       @relation("TimesheetApprover")
-  documentsVerified     ComplianceDocument[]   @relation("DocumentVerifier")
-  scoresOverridden      RotationScore[]        @relation("ScoreOverriddenBy")
-  scoringConfigsUpdated ScoringConfig[]        @relation("ScoringConfigUpdatedBy")
+  reviewsGiven          SupervisorReview[]        @relation("SupervisorReviews")
+  evaluationsGiven      CompetencyEvaluation[]    @relation("SupervisorEvaluations")
+  timesheetsApproved    TimesheetEntry[]          @relation("TimesheetApprover")
+  documentsVerified     ComplianceDocument[]      @relation("DocumentVerifier")
+  scoresOverridden      RotationScore[]           @relation("ScoreOverriddenBy")
+  scoringConfigsUpdated ScoringConfig[]           @relation("ScoringConfigUpdatedBy")
   notifications         Notification[]
-  auditLogs             AuditLog[]             @relation("AuditActor")
+  auditLogs             AuditLog[]                @relation("AuditActor")
   studentImportBatches  StudentImportBatch[]
   supportTickets        SupportTicket[]
+  conversations         ConversationParticipant[]
+  messagesSent          Message[]                 @relation("MessagesSent")
 
   @@index([institutionId])
   @@index([role])
@@ -954,4 +956,54 @@ model AuditLog {
 
   @@index([entityType, entityId])
   @@index([actorId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Messaging
+// ─────────────────────────────────────────────────────────────────────────
+
+// A direct conversation between two people. Who may start one with whom is
+// decided by src/lib/messaging.ts (a student's coordinators and
+// supervisors, and so on), not by the schema.
+model Conversation {
+  id            String   @id @default(uuid())
+  // The two participants' user ids, sorted and joined with ":" — makes
+  // "one conversation per pair" a unique constraint, so two people starting
+  // a conversation at the same moment can't end up with two.
+  pairKey       String   @unique
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([lastMessageAt])
+}
+
+model ConversationParticipant {
+  id             String    @id @default(uuid())
+  conversationId String
+  userId         String
+  // Messages from others after this are unread for this participant.
+  lastReadAt     DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  conversationId String
+  senderId       String
+  body           String   @db.Text
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("MessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
 }

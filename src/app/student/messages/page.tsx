@@ -1,25 +1,19 @@
 import { requireRole } from "@/lib/require-role";
-import { INK, TEXT_SECONDARY, BORDER } from "../dashboard-sections/colors";
+import { MessagesView } from "@/components/messaging/messages-view";
+import { INK, TEXT_SECONDARY } from "../dashboard-sections/colors";
 
 export default async function StudentMessagesPage() {
-  await requireRole("STUDENT");
+  const session = await requireRole("STUDENT");
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-xl font-bold" style={{ color: INK }}>Messages</h1>
         <p className="mt-1 text-sm" style={{ color: TEXT_SECONDARY }}>
-          Direct messaging with your coordinator and preceptors.
+          Message your coordinator and supervisors.
         </p>
       </div>
-
-      <div
-        className="rounded-2xl border border-dashed px-6 py-12 text-center text-sm"
-        style={{ borderColor: BORDER, color: TEXT_SECONDARY }}
-      >
-        Coming soon — we&apos;re building in-app messaging. For now, reach your coordinator or preceptor
-        through the contact details on your placement.
-      </div>
+      <MessagesView basePath="/student/messages" userId={session.user.id} role="STUDENT" pane={{ kind: "inbox" }} />
     </div>
   );
 }

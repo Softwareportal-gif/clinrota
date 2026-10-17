@@ -26,6 +26,31 @@ export const PORTAL_ICONS = {
       <path d="M5 9.5V21h14V9.5" />
     </Svg>
   ),
+  grid: (p: IconProps) => (
+    <Svg {...p}>
+      <rect x="3" y="3" width="7" height="9" rx="1.5" />
+      <rect x="14" y="3" width="7" height="5" rx="1.5" />
+      <rect x="14" y="12" width="7" height="9" rx="1.5" />
+      <rect x="3" y="16" width="7" height="5" rx="1.5" />
+    </Svg>
+  ),
+  user: (p: IconProps) => (
+    <Svg {...p}>
+      <circle cx="12" cy="8" r="3.4" />
+      <path d="M5 20c0-3.6 3.1-6.2 7-6.2s7 2.6 7 6.2" />
+    </Svg>
+  ),
+  star: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M12 3l2.6 5.6 6 0.8-4.4 4.2 1.1 6-5.3-3-5.3 3 1.1-6-4.4-4.2 6-0.8z" />
+    </Svg>
+  ),
+  pin: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M12 21s-7-4.5-7-10a7 7 0 0114 0c0 5.5-7 10-7 10z" />
+      <circle cx="12" cy="11" r="2.2" />
+    </Svg>
+  ),
   users: (p: IconProps) => (
     <Svg {...p}>
       <circle cx="9" cy="8" r="3.5" />
@@ -107,6 +132,11 @@ export const PORTAL_ICONS = {
     <Svg {...p}>
       <path d="M3.5 8.5V6A1.5 1.5 0 0 1 5 4.5h14A1.5 1.5 0 0 1 20.5 6v2.5a3.5 3.5 0 0 0 0 7V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18v-2.5a3.5 3.5 0 0 0 0-7Z" />
       <path d="M14 4.5v15" strokeDasharray="2 2.5" />
+    </Svg>
+  ),
+  messages: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M20.5 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 20.5 12Z" />
     </Svg>
   ),
   help: (p: IconProps) => (

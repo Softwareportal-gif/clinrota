@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { LCJR_FLAT } from "../src/lib/lcjr";
 import { AMSAT_TEMPLATE_ID, LCJR_TEMPLATE_ID } from "../src/lib/discipline-template";
 import { seedProfessionDemos } from "./seed-professions";
+import { seedDemoMessages } from "./seed-messages";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL,
@@ -24,6 +25,7 @@ async function main() {
   if (process.env.SEED_ONLY_IF_EMPTY === "true" && (await prisma.user.count()) > 0) {
     console.log("Database already has users; skipping the main demo seed.");
     await seedProfessionDemos(prisma, passwordHash);
+    await seedDemoMessages(prisma);
     return;
   }
 
@@ -710,6 +712,7 @@ async function main() {
   });
 
   await seedProfessionDemos(prisma, passwordHash);
+  await seedDemoMessages(prisma);
 
   console.log("\nSeed complete.\n");
   console.log("Demo accounts (all use the same password):");

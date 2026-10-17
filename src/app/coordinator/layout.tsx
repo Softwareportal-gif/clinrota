@@ -1,10 +1,12 @@
 import { requireRole } from "@/lib/require-role";
 import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
+import { totalUnreadMessages } from "@/lib/messaging";
 import { PortalShell, type PortalNavItem } from "@/components/portal-shell/portal-shell";
 
 const NAV_ITEMS: PortalNavItem[] = [
   { href: "/coordinator", label: "Dashboard", icon: "home", exact: true },
   { href: "/coordinator/students", label: "Students", icon: "users" },
+  { href: "/coordinator/messages", label: "Messages", icon: "messages" },
   { href: "/coordinator/rotations/new", label: "Assign rotation", icon: "calendar" },
   { href: "/coordinator/competencies", label: "Competencies", icon: "target" },
   { href: "/coordinator/compliance", label: "Compliance", icon: "shield" },
@@ -17,11 +19,15 @@ const NAV_ITEMS: PortalNavItem[] = [
 
 export default async function CoordinatorLayout({ children }: { children: React.ReactNode }) {
   const session = await requireRole("COORDINATOR");
-  const coordinatorProfile = await getCoordinatorProfileByUserId(session.user.id);
+  const [coordinatorProfile, unread] = await Promise.all([
+    getCoordinatorProfileByUserId(session.user.id),
+    totalUnreadMessages(session.user.id),
+  ]);
+  const items = NAV_ITEMS.map((item) => (item.href === "/coordinator/messages" ? { ...item, badge: unread } : item));
   return (
     <PortalShell
       portalLabel="Coordinator portal"
-      items={NAV_ITEMS}
+      items={items}
       userName={session.user.name ?? ""}
       subLabel={coordinatorProfile.program.name}
     >
