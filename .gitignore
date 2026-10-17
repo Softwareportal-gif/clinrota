@@ -59,3 +59,7 @@ next-env.d.ts
 
 # Brainstorming mockups (local only, never published)
 .superpowers/
+
+# Anatomy model files (generated; never committed)
+anatomy-source/
+anatomy-build/
