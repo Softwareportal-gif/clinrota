@@ -12,7 +12,8 @@
     "db:studio": "prisma studio",
     "postinstall": "prisma generate",
     "test": "vitest run",
-    "anatomy:validate": "tsx scripts/anatomy/validate-source.ts"
+    "anatomy:validate": "tsx scripts/anatomy/validate-source.ts",
+    "anatomy:build": "tsx scripts/anatomy/build.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",

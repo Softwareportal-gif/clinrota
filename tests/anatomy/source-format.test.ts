@@ -64,4 +64,10 @@ describe("validateSource", () => {
       "invalid id: Sternum Bone",
     ]);
   });
+
+  it("reports a region that couldn't be a folder name", () => {
+    const r = rows();
+    r[0].region = "../thorax";
+    expect(validateSource(r, meshIds())).toEqual(["invalid region '../thorax' for sternum"]);
+  });
 });

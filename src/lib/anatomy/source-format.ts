@@ -49,6 +49,8 @@ export function validateSource(rows: SourceRow[], meshIds: string[]): string[] {
   const meshes = new Set(meshIds);
   for (const row of rows) {
     if (!ID_PATTERN.test(row.id)) errors.push(`invalid id: ${row.id}`);
+    // Regions become folder names in the build output.
+    if (!ID_PATTERN.test(row.region)) errors.push(`invalid region '${row.region}' for ${row.id}`);
     if (!(SYSTEMS as readonly string[]).includes(row.system)) errors.push(`unknown system '${row.system}' for ${row.id}`);
     if (row.parentId && !ids.has(row.parentId)) errors.push(`unknown parent '${row.parentId}' for ${row.id}`);
   }
