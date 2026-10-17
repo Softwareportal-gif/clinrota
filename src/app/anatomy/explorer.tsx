@@ -18,7 +18,8 @@ import { systemLabel } from "./system-labels";
 // three.js is large; only load it once there's something to draw.
 const BodyScene = lazy(() => import("./body-scene").then((m) => ({ default: m.BodyScene })));
 
-const CREDIT = "3D model: Z-Anatomy (CC BY-SA 4.0), based on BodyParts3D";
+const CREDIT =
+  "3D model: Z-Anatomy, the open source atlas of anatomy (CC BY-SA 4.0), based on BodyParts3D, The Database Center for Life Science (CC BY-SA 2.1 Japan)";
 
 type Load = { status: "loading" } | { status: "error" } | { status: "ready"; catalogue: Catalogue };
 

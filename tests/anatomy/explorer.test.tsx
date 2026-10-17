@@ -78,7 +78,7 @@ describe("Explorer", () => {
     await renderExplorer();
     expect(fetch).toHaveBeenCalledWith("/api/anatomy/model/v1/catalogue.json");
     expect(await screen.findByTestId("body-scene")).toBeInTheDocument();
-    expect(screen.getByText(/Z-Anatomy \(CC BY-SA 4\.0\), based on BodyParts3D/)).toBeInTheDocument();
+    expect(screen.getByText(/Z-Anatomy.*\(CC BY-SA 4\.0\).*BodyParts3D.*\(CC BY-SA 2\.1 Japan\)/)).toBeInTheDocument();
   });
 
   it("offers a retry when the catalogue can't load", async () => {

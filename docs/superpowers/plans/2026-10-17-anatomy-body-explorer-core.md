@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - **Not published:** nothing in this plan may appear on praxxt.com. `/anatomy` and the model route return 404 unless `ANATOMY_PREVIEW=true` **and** the signed-in user's email is in `ANATOMY_PREVIEW_EMAILS` (comma-separated). Neither variable is set in Vercel. No sidebar item is added (that is spec step 6).
-- **Source model:** Z-Anatomy (CC BY-SA 4.0). The viewer shows the credit line `3D model: Z-Anatomy (CC BY-SA 4.0), based on BodyParts3D` at all times.
+- **Source model:** Z-Anatomy (CC BY-SA 4.0). The viewer shows the credit line `3D model: Z-Anatomy, the open source atlas of anatomy (CC BY-SA 4.0), based on BodyParts3D, The Database Center for Life Science (CC BY-SA 2.1 Japan)` (wording from Z-Anatomy's License.txt) at all times.
 - **Size budget:** the first view (overview chunk) is **≤ 5 MB**; other chunks target **1–5 MB** each.
 - **Performance targets:** first view usable within **~5 s** on a mid-range Android over 4G; **≥ 30 fps** rotation at medium detail.
 - **Systems** (exact ids): `integumentary, muscular, skeletal, cardiovascular, respiratory, nervous, digestive, urinary, reproductive, lymphatic, endocrine`.
