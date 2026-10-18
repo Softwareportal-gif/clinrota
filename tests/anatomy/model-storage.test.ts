@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "fs";
 import os from "os";
 import path from "path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { modelResponseFor, validModelPath } from "@/lib/anatomy/model-storage";
+import { modelResponseFor, modelStorage, validModelPath } from "@/lib/anatomy/model-storage";
 
 describe("validModelPath", () => {
   it.each([
@@ -62,5 +62,36 @@ describe("modelResponseFor without R2", () => {
   it("404s for a file the build doesn't have", async () => {
     localBuild();
     expect((await modelResponseFor("v1/overview.glb")).status).toBe(404);
+  });
+});
+
+describe("modelStorage", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  function r2Env() {
+    vi.stubEnv("R2_ACCOUNT_ID", "acct");
+    vi.stubEnv("R2_ACCESS_KEY_ID", "key");
+    vi.stubEnv("R2_SECRET_ACCESS_KEY", "secret");
+    vi.stubEnv("R2_BUCKET", "praxxt-anatomy");
+  }
+
+  it("prefers R2 over the Blob store when both are set", () => {
+    r2Env();
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN_STORE_ID", "store_x");
+    expect(modelStorage()).toBe("r2");
+  });
+
+  it("uses the Blob store without R2", () => {
+    vi.stubEnv("R2_ACCOUNT_ID", "");
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN_STORE_ID", "store_x");
+    expect(modelStorage()).toBe("blob");
+  });
+
+  it("falls back to the local build", () => {
+    vi.stubEnv("R2_ACCOUNT_ID", "");
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    vi.stubEnv("BLOB_STORE_ID", "");
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN_STORE_ID", "");
+    expect(modelStorage()).toBe("local");
   });
 });

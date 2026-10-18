@@ -2,11 +2,13 @@
 // answered. Paths are versioned ("v3/chunks/skeletal/thorax/low.glb"), so a
 // file never changes once published and can be cached for a year.
 //
-// Deployed, the files sit in the site's private Vercel Blob store under
-// anatomy/models/ and the route answers with a short-lived signed link, so
-// large files never pass through a function. (Cloudflare R2, if configured,
-// works the same way.) Locally, without either, they're read from the build
-// output, ANATOMY_BUILD_DIR (default ./anatomy-build), uncached.
+// Deployed, the files sit in a private Cloudflare R2 bucket under models/
+// (or, without R2, the site's Vercel Blob store under anatomy/models/) and
+// the route answers with a short-lived signed link, so large files never pass
+// through a function. R2 is preferred: the Hobby plan's Blob operation limit
+// is far below what one upload of the atlas needs. Locally, without either,
+// they're read from the build output, ANATOMY_BUILD_DIR (default
+// ./anatomy-build), uncached.
 import { readFile } from "fs/promises";
 import path from "path";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
@@ -61,6 +63,15 @@ export function blobEnabled(): boolean {
 
 export const BLOB_PREFIX = "anatomy/models";
 
+// Where the model files are read from: R2 when configured (it wins over the
+// Blob store, which the main app also uses for uploads), else the Blob
+// store, else the local build.
+export function modelStorage(): "r2" | "blob" | "local" {
+  if (r2Config()) return "r2";
+  if (blobEnabled()) return "blob";
+  return "local";
+}
+
 // One store-wide read token, kept server-side and reused until near expiry;
 // each request then gets its own URL, signed for just that file.
 let readToken: IssuedSignedToken | null = null;
@@ -88,7 +99,13 @@ export async function structureSystems(version: string): Promise<Map<string, str
   if (cached) return cached;
   const key = `${version}/catalogue.json`;
   let text: string;
-  if (blobEnabled()) {
+  const storage = modelStorage();
+  if (storage === "r2") {
+    const r2 = r2Config()!;
+    const result = await r2.client.send(new GetObjectCommand({ Bucket: r2.bucket, Key: `models/${key}` }));
+    if (!result.Body) throw new Error("catalogue not found");
+    text = await result.Body.transformToString();
+  } else if (storage === "blob") {
     const result = await get(`${BLOB_PREFIX}/${key}`, { access: "private", storeId: blobStoreId() });
     if (!result || !result.stream) throw new Error("catalogue not found");
     text = await new Response(result.stream).text();
@@ -114,8 +131,9 @@ export function r2Config() {
 
 // `key` must come from validModelPath.
 export async function modelResponseFor(key: string): Promise<Response> {
-  const r2 = r2Config();
-  if (r2) {
+  const storage = modelStorage();
+  if (storage === "r2") {
+    const r2 = r2Config()!;
     const url = await getSignedUrl(
       r2.client,
       new GetObjectCommand({
@@ -131,7 +149,7 @@ export async function modelResponseFor(key: string): Promise<Response> {
     return new Response(null, { status: 302, headers: { Location: url, "Cache-Control": "private, max-age=300" } });
   }
 
-  if (blobEnabled()) {
+  if (storage === "blob") {
     const url = await signedBlobUrl(key);
     return new Response(null, { status: 302, headers: { Location: url, "Cache-Control": "private, max-age=300" } });
   }
