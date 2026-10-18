@@ -8,13 +8,14 @@
 //
 // Every structure is one node named exactly its id, so the viewer can pick,
 // hide and highlight it by id. Run through scripts/anatomy/build.ts.
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "fs";
 import path from "path";
 import { Document, Logger, NodeIO, type Primitive } from "@gltf-transform/core";
 import { EXTMeshoptCompression, KHRMeshQuantization } from "@gltf-transform/extensions";
 import { meshopt, simplify, transformMesh, weld } from "@gltf-transform/functions";
 import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from "meshoptimizer";
 import { LODS, OVERVIEW_SYSTEMS, type AnatomySystem, type Bbox, type Catalogue, type Chunk, type Lod, type Structure } from "./catalogue";
+import { buildContent, factsFor, matchDescription, type Fact } from "./content";
 import { parseStructuresCsv, validateSource, type SourceRow } from "./source-format";
 
 // Share of vertices kept at each detail level, and the most each level may
@@ -208,5 +209,37 @@ export async function buildAnatomy(opts: { sourceDir: string; outDir: string; ve
   }));
   const catalogue: Catalogue = { version, overviewBytes, structures, chunks };
   writeFileSync(path.join(modelDir, "catalogue.json"), JSON.stringify(catalogue));
+  writeContent(sourceDir, modelDir, rows);
   return catalogue;
+}
+
+// One study card per structure that has a description (content/<id>.json),
+// from the export's texts.json and the optional facts.json import.
+function writeContent(sourceDir: string, modelDir: string, rows: SourceRow[]): number {
+  const textsFile = path.join(sourceDir, "texts.json");
+  if (!existsSync(textsFile)) return 0;
+  const texts = JSON.parse(readFileSync(textsFile, "utf8")) as Record<string, string>;
+  const factsFile = path.join(sourceDir, "facts.json");
+  const facts = existsSync(factsFile) ? (JSON.parse(readFileSync(factsFile, "utf8")) as Record<string, Fact[]>) : {};
+  const names = Object.keys(texts);
+  const dir = path.join(modelDir, "content");
+  mkdirSync(dir, { recursive: true });
+
+  let written = 0;
+  for (const row of rows) {
+    const match = matchDescription(row.name, names);
+    if (!match) continue;
+    const quick = factsFor(row.name, facts);
+    const card = buildContent({
+      id: row.id,
+      name: row.name,
+      text: texts[match.name],
+      match,
+      facts: quick?.facts ?? [],
+      factsFrom: quick && !quick.exact ? quick.from.replace(/[()]/g, "").trim() : null,
+    });
+    writeFileSync(path.join(dir, `${row.id}.json`), JSON.stringify(card));
+    written++;
+  }
+  return written;
 }

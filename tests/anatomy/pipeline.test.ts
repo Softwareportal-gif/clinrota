@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { cpSync, mkdtempSync, readFileSync, rmSync, statSync } from "fs";
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "fs";
 import os from "os";
 import path from "path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -96,6 +96,27 @@ describe("buildAnatomy", () => {
   it("puts only the overview systems in the overview", async () => {
     const doc = await readGlb(path.join(modelDir(), "overview.glb"));
     expect(nodeNames(doc)).toEqual(["deltoid", "sternum"]);
+  });
+
+  it("writes a study card for each structure that has a description", async () => {
+    const withText = path.join(tmp, "with-text");
+    cpSync(FIXTURE, withText, { recursive: true });
+    writeFileSync(
+      path.join(withText, "texts.json"),
+      JSON.stringify({ Sternum: "STERNUM\n\nThe sternum is a flat bone.\n\n== Structure ==\n\nThree parts." })
+    );
+    writeFileSync(path.join(withText, "facts.json"), JSON.stringify({ Sternum: [{ label: "Articulations", value: "Clavicle" }] }));
+    const out = path.join(tmp, "out-text");
+    await buildAnatomy({ sourceDir: withText, outDir: out, version: "v-test" });
+    const card = JSON.parse(readFileSync(path.join(out, "models", "v-test", "content", "sternum.json"), "utf8"));
+    expect(card).toMatchObject({
+      id: "sternum",
+      summary: ["The sternum is a flat bone."],
+      facts: [{ label: "Articulations", value: "Clavicle" }],
+      factsFrom: null,
+      reviewed: false,
+    });
+    expect(existsSync(path.join(out, "models", "v-test", "content", "heart.json"))).toBe(false);
   });
 
   it("rejects an invalid source with the validator's messages", async () => {

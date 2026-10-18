@@ -260,7 +260,14 @@ def main():
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"Exported {len(rows)} structures to {out_dir}")
+    # Z-Anatomy's descriptions (adapted from Wikipedia, CC BY-SA), one text
+    # block per structure name; the build matches them to structures. Empty
+    # blocks and the odd huge log-like block are left out.
+    texts = {t.name: t.as_string() for t in bpy.data.texts if 40 <= len(t.as_string()) <= 100_000}
+    with open(os.path.join(out_dir, "texts.json"), "w", encoding="utf-8") as f:
+        json.dump(texts, f, ensure_ascii=False)
+
+    print(f"Exported {len(rows)} structures and {len(texts)} descriptions to {out_dir}")
     counts = {}
     for r in rows:
         key = f"{r['system']}/{r['region']}"

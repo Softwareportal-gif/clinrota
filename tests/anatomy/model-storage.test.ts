@@ -10,6 +10,7 @@ describe("validModelPath", () => {
     [["v1", "catalogue.json"], "v1/catalogue.json"],
     [["v1", "overview.glb"], "v1/overview.glb"],
     [["v12", "chunks", "skeletal", "upper-limb", "medium.glb"], "v12/chunks/skeletal/upper-limb/medium.glb"],
+    [["v1", "content", "rectus-femoris-muscle-right.json"], "v1/content/rectus-femoris-muscle-right.json"],
   ])("accepts %j", (segments, expected) => {
     expect(validModelPath(segments)).toBe(expected);
   });
@@ -24,6 +25,9 @@ describe("validModelPath", () => {
     [["latest", "catalogue.json"]],
     [["v1", "catalogue.txt"]],
     [["v1", "overview.gltf"]],
+    [["v1", "content", "..json"]],
+    [["v1", "content", "Sternum.json"]],
+    [["v1", "content", "sternum.glb"]],
     [["v1", "chunks", "skeletal", "upper-limb", "low.glb", "extra"]],
     [[]],
   ])("rejects %j", (segments) => {

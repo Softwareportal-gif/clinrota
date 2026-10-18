@@ -29,6 +29,10 @@ export function validModelPath(segments: string[]): string | null {
   if (rest.length === 1 && (rest[0] === "catalogue.json" || rest[0] === "overview.glb")) {
     return [version, ...rest].join("/");
   }
+  // Study cards: content/<structure id>.json
+  if (rest.length === 2 && rest[0] === "content" && /^[a-z0-9][a-z0-9-]*\.json$/.test(rest[1])) {
+    return [version, ...rest].join("/");
+  }
   if (rest.length === 4 && rest[0] === "chunks") {
     const [, system, region, file] = rest;
     const lod = file.endsWith(".glb") ? file.slice(0, -".glb".length) : "";
