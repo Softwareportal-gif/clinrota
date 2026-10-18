@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { allowedSystems, TRIAL_DAYS } from "@/lib/anatomy/access";
+import { allowedSystems, freeTesting, TRIAL_DAYS } from "@/lib/anatomy/access";
 import { isAnatomyOpenTo } from "@/lib/anatomy/preview-access";
 import { accessForUser } from "@/lib/anatomy/subscriptions";
 import { Explorer } from "./explorer";
@@ -27,6 +27,7 @@ export default async function AnatomyPage() {
       modelBaseUrl="/api/anatomy/model/v1"
       allowedSystems={allowedSystems(access.level)}
       plan={access.plan ? { plan: access.plan, daysLeft: access.daysLeft } : null}
+      freeTesting={freeTesting()}
     />
   );
 }

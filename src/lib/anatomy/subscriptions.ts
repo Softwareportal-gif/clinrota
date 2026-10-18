@@ -2,12 +2,12 @@
 // when, starting trials, and turning a Paystack payment into a plan.
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
-import { anatomyAccess, nextPaidEnd, PLANS, trialEnd, trialLimit, type Access, type PlanId } from "./access";
+import { anatomyAccess, freeTesting, nextPaidEnd, PLANS, trialEnd, trialLimit, type Access, type PlanId } from "./access";
 import { initializeCheckout, verifyTransaction } from "./paystack";
 
 export async function accessForUser(userId: string, role: string, now = new Date()): Promise<Access> {
   const subscription = await prisma.anatomySubscription.findUnique({ where: { userId } });
-  return anatomyAccess({ role, subscription, now, trialLimit: trialLimit() });
+  return anatomyAccess({ role, subscription, now, trialLimit: trialLimit(), freeTesting: freeTesting() });
 }
 
 // A trial, once per user: anyone who has ever had a subscription can't start

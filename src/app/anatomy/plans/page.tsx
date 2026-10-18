@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
-import { formatCedis, PLANS, TRIAL_DAYS } from "@/lib/anatomy/access";
+import { formatCedis, freeTesting, PLANS, TRIAL_DAYS } from "@/lib/anatomy/access";
 import { isPaystackConfigured } from "@/lib/anatomy/paystack";
 import { isAnatomyPublic } from "@/lib/anatomy/preview-access";
 import { BRAND, MarketingFrame } from "../marketing";
@@ -47,6 +47,7 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
   const { error } = await searchParams;
   const session = await auth();
   const canPayOnline = isPaystackConfigured();
+  const free = freeTesting();
 
   function action(plan: Column) {
     if (plan === "INSTITUTION") {
@@ -58,6 +59,13 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
         >
           Contact sales
         </a>
+      );
+    }
+    if (free) {
+      return (
+        <span className="inline-block rounded-full px-5 py-2.5 text-sm font-bold" style={{ backgroundColor: "#EEF9F1", color: "#1E7A3E" }}>
+          Free during testing
+        </span>
       );
     }
     if (!canPayOnline) {
@@ -93,9 +101,14 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
           <p className="text-lg" style={{ color: BRAND.body }}>
             Start with a free {TRIAL_DAYS}-day trial, then pick the plan that fits. Prices are per year, in Ghana cedis.
           </p>
+          {free && (
+            <p className="mt-2 rounded-2xl px-5 py-3 text-[15px] font-semibold" style={{ backgroundColor: "#EEF9F1", color: "#1E7A3E" }}>
+              Praxxt Anatomy is free while we test it. Sign up and explore everything; paid plans start later.
+            </p>
+          )}
           {!session?.user && (
             <Link href="/anatomy/start" className="mt-2 rounded-full px-7 py-3.5 font-bold text-white transition hover:brightness-110" style={{ background: BRAND.warm }}>
-              Start your free trial →
+              {free ? "Try it free →" : "Start your free trial →"}
             </Link>
           )}
           {error && ERRORS[error] && (

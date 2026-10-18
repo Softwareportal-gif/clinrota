@@ -26,6 +26,8 @@ const BodyScene = lazy(() => import("./body-scene").then((m) => ({ default: m.Bo
 const CREDIT =
   "3D model: Z-Anatomy, the open source atlas of anatomy (CC BY-SA 4.0), based on BodyParts3D, The Database Center for Life Science (CC BY-SA 2.1 Japan)";
 
+const FEEDBACK_MAILTO = `mailto:hello@praxxt.com?subject=${encodeURIComponent("Praxxt Anatomy feedback")}`;
+
 type Load = { status: "loading" } | { status: "error" } | { status: "ready"; catalogue: Catalogue };
 
 function hasWebGL() {
@@ -43,10 +45,12 @@ export function Explorer({
   modelBaseUrl,
   allowedSystems = null,
   plan = null,
+  freeTesting = false,
 }: {
   modelBaseUrl: string;
   allowedSystems?: AnatomySystem[] | null; // null: every system
   plan?: PlanBadge;
+  freeTesting?: boolean; // free for everyone while testing: ask for feedback instead of plans
 }) {
   const [load, setLoad] = useState<Load>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
@@ -94,7 +98,15 @@ export function Explorer({
     );
   }
 
-  return <ExplorerView catalogue={load.catalogue} modelBaseUrl={modelBaseUrl} allowedSystems={allowedSystems} plan={plan} />;
+  return (
+    <ExplorerView
+      catalogue={load.catalogue}
+      modelBaseUrl={modelBaseUrl}
+      allowedSystems={allowedSystems}
+      plan={plan}
+      freeTesting={freeTesting}
+    />
+  );
 }
 
 // Loads the selected structure's study card, keeping ones already seen.
@@ -148,11 +160,13 @@ function ExplorerView({
   modelBaseUrl,
   allowedSystems,
   plan,
+  freeTesting,
 }: {
   catalogue: Catalogue;
   modelBaseUrl: string;
   allowedSystems: AnatomySystem[] | null;
   plan: PlanBadge;
+  freeTesting: boolean;
 }) {
   const catalogue = useMemo(() => limitCatalogue(fullCatalogue, allowedSystems), [fullCatalogue, allowedSystems]);
   const [state, dispatch] = useReducer(explorerReducer, INITIAL_STATE, (initial) => {
@@ -250,7 +264,20 @@ function ExplorerView({
         search={<SearchBar catalogue={catalogue} query={query} onQueryChange={setQuery} onPick={pick} showResults={webgl} />}
       />
 
-      {plan && (plan.plan === "TRIAL" || (plan.daysLeft !== null && plan.daysLeft <= 30)) && (
+      {freeTesting && (
+        <div className="pointer-events-none absolute left-3 top-24 sm:left-5 sm:top-14">
+          <a
+            href={FEEDBACK_MAILTO}
+            className="pointer-events-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-md"
+            style={{ backgroundColor: PANEL, border: `1px solid ${PANEL_BORDER}`, color: TEXT }}
+          >
+            Free during testing
+            <span style={{ color: ACCENT }}>· Send feedback</span>
+          </a>
+        </div>
+      )}
+
+      {!freeTesting && plan && (plan.plan === "TRIAL" || (plan.daysLeft !== null && plan.daysLeft <= 30)) && (
         <div className="pointer-events-none absolute left-3 top-24 sm:left-5 sm:top-14">
           <a
             href="/anatomy/plans"

@@ -276,4 +276,13 @@ describe("Explorer", () => {
     search(box, "rectus");
     expect(screen.getByText("No structures match")).toBeInTheDocument();
   });
+
+  it("asks for feedback instead of showing plans while free for testing", async () => {
+    await renderExplorer({ freeTesting: true, plan: { plan: "TRIAL", daysLeft: 3 } });
+    expect(screen.getByRole("link", { name: /Free during testing.*Send feedback/ })).toHaveAttribute(
+      "href",
+      expect.stringContaining("mailto:hello@praxxt.com")
+    );
+    expect(screen.queryByText(/days left/)).not.toBeInTheDocument();
+  });
 });

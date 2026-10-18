@@ -67,7 +67,7 @@ export function SignUpForm() {
         className="w-full cursor-pointer rounded-full px-6 py-3.5 text-base font-bold text-white transition hover:brightness-110 disabled:opacity-60"
         style={{ background: BRAND.warm }}
       >
-        {pending ? "Creating your account…" : "Start my free 2-week trial"}
+        {pending ? "Creating your account…" : "Create my free account"}
       </button>
       <p className="text-center text-sm" style={{ color: BRAND.body }}>
         Already have a Praxxt account?{" "}

@@ -22,6 +22,12 @@ export const PLANS: Record<Exclude<PlanId, "TRIAL">, { name: string; amount: num
 export const formatCedis = (pesewas: number) =>
   `GH₵${(pesewas / 100).toLocaleString("en-GH", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 
+// While testing (ANATOMY_FREE_TESTING="true") everyone signed in gets the
+// whole atlas free and trial end dates are ignored; plans start later.
+export function freeTesting(): boolean {
+  return process.env.ANATOMY_FREE_TESTING === "true";
+}
+
 export function trialLimit(): TrialLimit {
   return process.env.ANATOMY_TRIAL_LIMIT === "skeletal" ? "skeletal" : "none";
 }
@@ -35,8 +41,10 @@ export function anatomyAccess(input: {
   subscription: { plan: PlanId; endsAt: Date } | null;
   now: Date;
   trialLimit: TrialLimit;
+  freeTesting?: boolean;
 }): Access {
   const { role, subscription, now } = input;
+  if (input.freeTesting) return { level: "full", plan: subscription?.plan ?? null, endsAt: null, daysLeft: null };
   if (role === "SUPER_ADMIN") return { level: "full", plan: subscription?.plan ?? null, endsAt: subscription?.endsAt ?? null, daysLeft: null };
   if (!subscription) return { level: "none", plan: null, endsAt: null, daysLeft: null };
 

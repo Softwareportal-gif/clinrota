@@ -52,6 +52,15 @@ describe("anatomyAccess", () => {
     ).toEqual({ level: "none", plan: "TRIAL", endsAt: days(-1), daysLeft: 0 });
   });
 
+  it("gives everyone full access while it's free for testing, plan or not", () => {
+    expect(
+      anatomyAccess({ role: "LEARNER", subscription: null, now: NOW, trialLimit: "skeletal", freeTesting: true })
+    ).toEqual({ level: "full", plan: null, endsAt: null, daysLeft: null });
+    expect(
+      anatomyAccess({ role: "LEARNER", subscription: { plan: "TRIAL", endsAt: days(-3) }, now: NOW, trialLimit: "skeletal", freeTesting: true }).level
+    ).toBe("full");
+  });
+
   it("has no access without a plan", () => {
     expect(anatomyAccess({ role: "STUDENT", subscription: null, now: NOW, trialLimit: "none" })).toEqual({
       level: "none",

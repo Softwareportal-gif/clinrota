@@ -3,7 +3,7 @@ import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { isAnatomyPublic } from "@/lib/anatomy/preview-access";
-import { TRIAL_DAYS } from "@/lib/anatomy/access";
+import { freeTesting, TRIAL_DAYS } from "@/lib/anatomy/access";
 import { BRAND, MarketingFrame } from "../marketing";
 import { SignUpForm } from "./sign-up-form";
 
@@ -20,6 +20,7 @@ export default async function StartTrialPage() {
   if (!isAnatomyPublic()) notFound();
   const session = await auth();
   if (session?.user) redirect("/anatomy");
+  const free = freeTesting();
 
   return (
     <MarketingFrame>
@@ -29,7 +30,7 @@ export default async function StartTrialPage() {
             className="inline-flex w-fit items-center gap-2 rounded-full border bg-white px-4 py-1.5 text-[13px] font-bold"
             style={{ borderColor: "#FBD5E0", color: "#C2295A" }}
           >
-            {TRIAL_DAYS}-day free trial · no card needed
+            {free ? "Free while we test · no card needed" : `${TRIAL_DAYS}-day free trial · no card needed`}
           </span>
           <h1 className="text-4xl font-extrabold leading-tight tracking-[-0.03em] sm:text-5xl">Explore the human body in 3D</h1>
           <p className="text-lg leading-relaxed" style={{ color: BRAND.body }}>
@@ -50,7 +51,7 @@ export default async function StartTrialPage() {
         <div className="rounded-3xl bg-white p-6 shadow-[0_12px_40px_rgba(37,32,110,.10)] sm:p-8" style={{ border: `1px solid ${BRAND.line}` }}>
           <h2 className="text-2xl font-extrabold tracking-[-0.02em]">Create your account</h2>
           <p className="mb-6 mt-1 text-sm" style={{ color: BRAND.body }}>
-            Your trial starts straight away and lasts {TRIAL_DAYS} days.
+            {free ? "It's free while we test it. Tell us what you think!" : `Your trial starts straight away and lasts ${TRIAL_DAYS} days.`}
           </p>
           <SignUpForm />
         </div>

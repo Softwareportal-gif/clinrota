@@ -15,7 +15,8 @@
     "anatomy:validate": "tsx scripts/anatomy/validate-source.ts",
     "anatomy:build": "tsx scripts/anatomy/build.ts",
     "anatomy:upload": "tsx scripts/anatomy/upload.ts",
-    "anatomy:facts": "tsx scripts/anatomy/fetch-facts.ts"
+    "anatomy:facts": "tsx scripts/anatomy/fetch-facts.ts",
+    "anatomy:upload-blob": "tsx scripts/anatomy/upload-blob.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
