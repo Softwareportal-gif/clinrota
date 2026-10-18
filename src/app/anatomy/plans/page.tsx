@@ -9,6 +9,8 @@ import { BRAND, MarketingFrame } from "../marketing";
 import { buyPlan } from "../plan-actions";
 
 export const metadata: Metadata = { title: "Plans · Praxxt Anatomy" };
+// Depends on the session and launch settings, so never pre-rendered.
+export const dynamic = "force-dynamic";
 
 const CONTACT_EMAIL = "hello@praxxt.com";
 

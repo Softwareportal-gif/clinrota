@@ -8,6 +8,8 @@ import { BRAND, MarketingFrame } from "../marketing";
 import { SignUpForm } from "./sign-up-form";
 
 export const metadata: Metadata = { title: "Start your free trial · Praxxt Anatomy" };
+// Depends on the session and launch settings, so never pre-rendered.
+export const dynamic = "force-dynamic";
 
 const POINTS = [
   "3,000+ structures across 11 body systems, in 3D",
