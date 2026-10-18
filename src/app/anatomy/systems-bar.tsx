@@ -46,7 +46,7 @@ export function SystemsBar({
 
   return (
     <div
-      className="pointer-events-auto flex max-w-full items-stretch gap-3 overflow-x-auto rounded-2xl px-3 py-2 backdrop-blur-md [scrollbar-width:thin]"
+      className="pointer-events-auto flex max-w-full items-stretch gap-3 overflow-x-auto rounded-2xl px-3 py-2 backdrop-blur-md [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       style={{ backgroundColor: PANEL, border: `1px solid ${PANEL_BORDER}` }}
     >
       <div role="radiogroup" aria-label="Depth" className="flex shrink-0 flex-col justify-center">
