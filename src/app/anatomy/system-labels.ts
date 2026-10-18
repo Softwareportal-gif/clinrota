@@ -18,3 +18,14 @@ export const SYSTEM_COLOURS: Record<AnatomySystem, string> = {
   lymphatic: "#8CBF4E",
   endocrine: "#9A7FD0",
 };
+
+const REGION_LABELS: Record<string, string> = {
+  "head-neck": "Head & neck",
+  thorax: "Thorax",
+  abdomen: "Abdomen",
+  pelvis: "Pelvis",
+  "upper-limb": "Upper limb",
+  "lower-limb": "Lower limb",
+};
+export const regionLabel = (region: string) =>
+  REGION_LABELS[region] ?? region.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());

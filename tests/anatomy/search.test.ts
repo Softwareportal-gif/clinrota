@@ -70,6 +70,18 @@ describe("searchStructures", () => {
     expect(searchStructures(withWrappings, "deltoid").map((s) => s.id)).toEqual(["deltoid-muscle", "deltoid-fascia"]);
   });
 
+  it("puts skin regions after muscles, unless named exactly", () => {
+    const withRegion: Catalogue = {
+      ...catalogue,
+      structures: [
+        structure("deltoid-region-left", "Deltoid region (left)", { system: "integumentary" }),
+        structure("acromial-part-of-deltoid-muscle-left", "Acromial part of deltoid muscle (left)", { system: "muscular" }),
+      ],
+    };
+    expect(searchStructures(withRegion, "deltoid")[0].id).toBe("acromial-part-of-deltoid-muscle-left");
+    expect(searchStructures(withRegion, "deltoid region (left)")[0].id).toBe("deltoid-region-left");
+  });
+
   it("honours the limit", () => {
     expect(ids("stern", 1)).toEqual(["sternum"]);
   });

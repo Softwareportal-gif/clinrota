@@ -4,7 +4,7 @@ import { useId, useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import type { Catalogue, Structure } from "@/lib/anatomy/catalogue";
 import { searchStructures } from "@/lib/anatomy/search";
-import { BORDER, TEXT_PRIMARY, TEXT_SECONDARY } from "@/app/student/dashboard-sections/colors";
+import { ACCENT_SOFT, PANEL, PANEL_BORDER, PANEL_SOLID, TEXT, TEXT_MUTED } from "./theme";
 import { systemLabel } from "./system-labels";
 
 // Floating search box: everyday names, Latin names and synonyms. Arrow keys
@@ -57,10 +57,10 @@ export function SearchBar({
         Search anatomy
       </label>
       <div
-        className="flex h-11 items-center gap-2 rounded-full bg-white px-4 shadow-md"
-        style={{ border: `1px solid ${BORDER}` }}
+        className="flex h-11 items-center gap-2 rounded-full px-4 shadow-lg backdrop-blur-md"
+        style={{ backgroundColor: PANEL, border: `1px solid ${PANEL_BORDER}` }}
       >
-        <Search size={18} aria-hidden style={{ color: TEXT_SECONDARY }} />
+        <Search size={18} aria-hidden style={{ color: TEXT_MUTED }} />
         <input
           id={`${id}-input`}
           role="combobox"
@@ -77,8 +77,8 @@ export function SearchBar({
             setActive(0);
           }}
           onKeyDown={onKeyDown}
-          className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-          style={{ color: TEXT_PRIMARY }}
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[#A8A5CC]"
+          style={{ color: TEXT }}
         />
         {query && (
           <button
@@ -87,7 +87,7 @@ export function SearchBar({
             onClick={() => onQueryChange("")}
             className="cursor-pointer rounded-full p-1"
           >
-            <X size={16} aria-hidden style={{ color: TEXT_SECONDARY }} />
+            <X size={16} aria-hidden style={{ color: TEXT_MUTED }} />
           </button>
         )}
       </div>
@@ -96,11 +96,11 @@ export function SearchBar({
           id={`${id}-results`}
           role="listbox"
           aria-label="Matching structures"
-          className="absolute inset-x-0 top-12 z-20 max-h-80 overflow-y-auto rounded-2xl bg-white py-1 shadow-lg"
-          style={{ border: `1px solid ${BORDER}` }}
+          className="absolute inset-x-0 top-12 z-20 max-h-80 overflow-y-auto rounded-2xl py-1 shadow-2xl"
+          style={{ backgroundColor: PANEL_SOLID, border: `1px solid ${PANEL_BORDER}` }}
         >
           {results.length === 0 ? (
-            <li className="px-4 py-3 text-sm" style={{ color: TEXT_SECONDARY }}>
+            <li className="px-4 py-3 text-sm" style={{ color: TEXT_MUTED }}>
               No structures match
             </li>
           ) : (
@@ -114,10 +114,10 @@ export function SearchBar({
                 onClick={() => pick(structure)}
                 onMouseEnter={() => setActive(i)}
                 className="flex cursor-pointer items-baseline justify-between gap-3 px-4 py-2 text-sm"
-                style={{ backgroundColor: i === active ? "#F1EEFF" : undefined, color: TEXT_PRIMARY }}
+                style={{ backgroundColor: i === active ? ACCENT_SOFT : undefined, color: TEXT }}
               >
                 <span className="truncate">{structure.name}</span>
-                <span className="shrink-0 text-xs" style={{ color: TEXT_SECONDARY }}>
+                <span className="shrink-0 text-xs" style={{ color: TEXT_MUTED }}>
                   {systemLabel(structure.system)}
                 </span>
               </li>

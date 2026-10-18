@@ -45,7 +45,7 @@ describe("explorer state", () => {
       hidden: [],
       isolatedId: null,
       selectedId: null,
-      drawerOpen: false,
+      faded: [],
       xray: false,
       fascia: false,
       resetCount: 0,
@@ -107,7 +107,14 @@ describe("explorer state", () => {
       { type: "isolateSelected" }
     );
     const after = run(before, { type: "resetView" });
-    expect(after).toEqual({ ...before, selectedId: null, hidden: [], isolatedId: null, resetCount: before.resetCount + 1 });
+    expect(after).toEqual({
+      ...before,
+      selectedId: null,
+      hidden: [],
+      isolatedId: null,
+      faded: [],
+      resetCount: before.resetCount + 1,
+    });
   });
 
   it("turns a structure's system on when it is selected", () => {
@@ -133,9 +140,18 @@ describe("explorer state", () => {
     expect(run(INITIAL_STATE, { type: "toggleXray" }, { type: "toggleXray" }).xray).toBe(false);
   });
 
-  it("toggles the systems drawer", () => {
-    expect(run(INITIAL_STATE, { type: "toggleDrawer" }).drawerOpen).toBe(true);
-    expect(run(INITIAL_STATE, { type: "toggleDrawer" }, { type: "toggleDrawer" }).drawerOpen).toBe(false);
+  it("fades the selection in and out without hiding it", () => {
+    const faded = run(ALL_ON, { type: "select", id: "heart" }, { type: "fadeSelected" });
+    expect(faded.faded).toEqual(["heart"]);
+    expect(faded.selectedId).toBe("heart");
+    expect(visible(faded)).toContain("heart");
+    expect(run(faded, { type: "fadeSelected" }).faded).toEqual([]);
+  });
+
+  it("clears fading with Show all and Reset view", () => {
+    const faded = run(ALL_ON, { type: "select", id: "heart" }, { type: "fadeSelected" });
+    expect(run(faded, { type: "showAll" }).faded).toEqual([]);
+    expect(run(faded, { type: "resetView" }).faded).toEqual([]);
   });
 
   it("never mutates the previous state", () => {

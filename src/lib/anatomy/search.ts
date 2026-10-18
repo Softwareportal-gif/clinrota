@@ -2,10 +2,12 @@
 // names and synonyms, best matches first.
 import type { Catalogue, Structure } from "./catalogue";
 
-type Indexed = { structure: Structure; fields: string[]; wrapping: boolean };
+type Indexed = { structure: Structure; fields: string[]; secondary: boolean };
 
-// Wrappings (fascia, sheaths, bursae) come after the structure they wrap:
-// "deltoid" should find the muscle before the deltoid fascia.
+// Wrappings (fascia, sheaths, bursae) and skin regions come after the
+// structures students usually mean: "deltoid" should find the muscle before
+// the deltoid fascia or the deltoid region of the skin. An exact name still
+// comes first.
 const WRAPPING = /fascia|sheath|bursa/i;
 
 const normalise = (text: string) =>
@@ -24,7 +26,7 @@ function indexOf(catalogue: Catalogue): Indexed[] {
     index = catalogue.structures.map((structure) => ({
       structure,
       fields: [structure.name, structure.latin, ...structure.synonyms].filter((f): f is string => !!f).map(normalise),
-      wrapping: WRAPPING.test(structure.name),
+      secondary: WRAPPING.test(structure.name) || structure.system === "integumentary",
     }));
     indexCache.set(catalogue, index);
   }
@@ -43,15 +45,16 @@ function rankField(field: string, query: string): number | null {
 export function searchStructures(catalogue: Catalogue, query: string, limit = 10): Structure[] {
   const q = normalise(query);
   if (!q) return [];
-  const matches: { structure: Structure; rank: number; wrapping: boolean }[] = [];
-  for (const { structure, fields, wrapping } of indexOf(catalogue)) {
+  const matches: { structure: Structure; rank: number; secondary: boolean }[] = [];
+  for (const { structure, fields, secondary } of indexOf(catalogue)) {
     const ranks = fields.map((f) => rankField(f, q)).filter((r): r is number => r !== null);
-    if (ranks.length) matches.push({ structure, rank: Math.min(...ranks), wrapping });
+    if (ranks.length) matches.push({ structure, rank: Math.min(...ranks), secondary });
   }
   matches.sort(
     (a, b) =>
+      Number(a.rank > 0) - Number(b.rank > 0) ||
+      Number(a.secondary) - Number(b.secondary) ||
       a.rank - b.rank ||
-      Number(a.wrapping) - Number(b.wrapping) ||
       a.structure.name.length - b.structure.name.length ||
       a.structure.name.localeCompare(b.structure.name)
   );

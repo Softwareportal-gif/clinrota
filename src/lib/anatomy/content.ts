@@ -49,7 +49,8 @@ function toBlocks(lines: string[]): ContentBlock[] {
   const blocks: ContentBlock[] = [];
   let paragraph: string[] = [];
   const flush = () => {
-    if (paragraph.length) blocks.push({ kind: "paragraph", text: paragraph.join(" ").trim() });
+    // Some source sentences run together ("skiing.The"); put the space back.
+    if (paragraph.length) blocks.push({ kind: "paragraph", text: paragraph.join(" ").replace(/([a-z)]\.)([A-Z])/g, "$1 $2").trim() });
     paragraph = [];
   };
   for (const raw of lines) {

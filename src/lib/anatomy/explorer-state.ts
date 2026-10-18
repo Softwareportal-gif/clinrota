@@ -1,5 +1,5 @@
 // What the Body Explorer is showing: which systems are on, how deep the body
-// is peeled, what's hidden, isolated or selected. Pure, so the rules can be
+// is peeled, what's hidden, faded, isolated or selected. Pure, so the rules can be
 // tested without a 3D scene; the explorer drives it with useReducer.
 import { tissueOf } from "./appearance";
 import { DEPTH_LEVELS, layerOf, type AnatomySystem, type Catalogue, type DepthLevel } from "./catalogue";
@@ -10,7 +10,7 @@ export type ExplorerState = {
   hidden: string[];
   isolatedId: string | null;
   selectedId: string | null;
-  drawerOpen: boolean;
+  faded: string[]; // drawn see-through, still in place and selectable
   xray: boolean; // skin drawn see-through, so what is under it shows
   fascia: boolean; // the film of fascia over the muscles, hidden by default
   resetCount: number; // the scene re-frames the camera whenever this changes
@@ -23,7 +23,7 @@ export const INITIAL_STATE: ExplorerState = {
   hidden: [],
   isolatedId: null,
   selectedId: null,
-  drawerOpen: false,
+  faded: [],
   xray: false,
   fascia: false,
   resetCount: 0,
@@ -37,8 +37,8 @@ export type ExplorerAction =
   | { type: "setDepth"; depth: DepthLevel }
   | { type: "hideSelected" }
   | { type: "isolateSelected" }
+  | { type: "fadeSelected" }
   | { type: "showAll" }
-  | { type: "toggleDrawer" }
   | { type: "toggleXray" }
   | { type: "toggleFascia" }
   | { type: "resetView" };
@@ -65,16 +65,19 @@ export function explorerReducer(state: ExplorerState, action: ExplorerAction): E
     case "isolateSelected":
       if (!state.selectedId) return state;
       return { ...state, isolatedId: state.selectedId };
+    case "fadeSelected": {
+      const id = state.selectedId;
+      if (!id) return state;
+      return { ...state, faded: state.faded.includes(id) ? state.faded.filter((f) => f !== id) : [...state.faded, id] };
+    }
     case "showAll":
-      return { ...state, hidden: [], isolatedId: null };
-    case "toggleDrawer":
-      return { ...state, drawerOpen: !state.drawerOpen };
+      return { ...state, hidden: [], isolatedId: null, faded: [] };
     case "toggleXray":
       return { ...state, xray: !state.xray };
     case "toggleFascia":
       return { ...state, fascia: !state.fascia };
     case "resetView":
-      return { ...state, selectedId: null, hidden: [], isolatedId: null, resetCount: state.resetCount + 1 };
+      return { ...state, selectedId: null, hidden: [], isolatedId: null, faded: [], resetCount: state.resetCount + 1 };
   }
 }
 

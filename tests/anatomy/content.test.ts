@@ -49,6 +49,13 @@ describe("parseDescription", () => {
   });
 });
 
+describe("sentence spacing", () => {
+  it("restores the space missing between run-together sentences", () => {
+    const d = parseDescription("TITLE\n\nIt helps skiing.The muscle is common.");
+    expect(d.summary).toEqual(["It helps skiing. The muscle is common."]);
+  });
+});
+
 describe("matchDescription", () => {
   const names = ["Sternum", "Costal cartilage", "Rectus femoris muscle", "(Abdominal part of pectoralis major muscle)"];
 

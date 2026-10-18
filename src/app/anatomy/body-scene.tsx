@@ -85,8 +85,8 @@ class MaterialCache {
   private axes = new Map<string, THREE.Vector3>();
   constructor(private quality: Quality) {}
 
-  get(structure: Structure, selected: boolean, xray: boolean, object: THREE.Object3D): THREE.Material {
-    const key = `${structure.id}|${selected}|${xray}`;
+  get(structure: Structure, selected: boolean, xray: boolean, faded: boolean, object: THREE.Object3D): THREE.Material {
+    const key = `${structure.id}|${selected}|${xray}|${faded}`;
     let material = this.cache.get(key);
     if (!material) {
       let axis = this.axes.get(structure.id);
@@ -94,7 +94,7 @@ class MaterialCache {
         axis = mainAxis(object);
         this.axes.set(structure.id, axis);
       }
-      material = this.make(structure, selected, xray, axis);
+      material = this.make(structure, selected, xray, faded, axis);
       this.cache.set(key, material);
     }
     return material;
@@ -105,7 +105,7 @@ class MaterialCache {
     this.cache.clear();
   }
 
-  private make(structure: Structure, selected: boolean, xray: boolean, axis: THREE.Vector3): THREE.Material {
+  private make(structure: Structure, selected: boolean, xray: boolean, faded: boolean, axis: THREE.Vector3): THREE.Material {
     const { tissue, surface, lightnessOffset } = appearanceOf(structure);
     const color = new THREE.Color(surface.colour).offsetHSL(0, 0, lightnessOffset);
     const params = {
@@ -128,7 +128,8 @@ class MaterialCache {
           roughness: Math.max(0.25, surface.roughness - surface.clearcoat * 0.2),
         });
     addTissueDetail(material, detailFor(tissue), axis, QUALITY[this.quality].twoOctaves);
-    const opacity = tissue === "skin" && xray ? 0.2 : surface.opacity;
+    // Faded structures stay in place as a ghost, so what is behind them shows.
+    const opacity = faded ? 0.18 : tissue === "skin" && xray ? 0.2 : surface.opacity;
     if (opacity !== undefined) {
       material.transparent = true;
       material.opacity = opacity;
@@ -205,7 +206,7 @@ function applyVisibility(
     for (const [id, object] of objects) {
       object.visible = visible.has(id) && best.get(id) === rank;
       if (!object.visible) continue;
-      const material = materials.get(byId.get(id)!, id === state.selectedId, state.xray, object);
+      const material = materials.get(byId.get(id)!, id === state.selectedId, state.xray, state.faded.includes(id), object);
       object.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.material = material;

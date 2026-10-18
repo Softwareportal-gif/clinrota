@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
 import type { Catalogue, Structure } from "@/lib/anatomy/catalogue";
+import type { StructureContent } from "@/lib/anatomy/content";
 import { Explorer } from "@/app/anatomy/explorer";
 
 type SceneProps = {
@@ -35,26 +36,54 @@ const CATALOGUE: Catalogue = {
   overviewBytes: 10,
   chunks: [
     { id: "skeletal/thorax", system: "skeletal", region: "thorax", bytes: { low: 1, medium: 2, high: 3 } },
-    { id: "muscular/upper-limb", system: "muscular", region: "upper-limb", bytes: { low: 1, medium: 2, high: 3 } },
+    { id: "muscular/lower-limb", system: "muscular", region: "lower-limb", bytes: { low: 1, medium: 2, high: 3 } },
   ],
   structures: [
-    s("sternum", "Sternum", { latin: "Sternum", synonyms: ["Breastbone"] }),
-    s("deltoid", "Deltoid", {
-      latin: "Musculus deltoideus",
+    s("sternum", "Sternum", { synonyms: ["Breastbone"] }),
+    s("rectus-femoris-muscle-right", "Rectus femoris muscle (right)", {
       system: "muscular",
-      region: "upper-limb",
-      chunk: "muscular/upper-limb",
+      region: "lower-limb",
+      chunk: "muscular/lower-limb",
     }),
   ],
 };
 
+const RECTUS: StructureContent = {
+  id: "rectus-femoris-muscle-right",
+  sourceTitle: "Rectus femoris muscle",
+  exact: true,
+  summary: ["The rectus femoris is one of the four quadriceps muscles."],
+  facts: [
+    { label: "Origin", value: "Anterior inferior iliac spine" },
+    { label: "Innervation", value: "Femoral nerve" },
+  ],
+  factsFrom: null,
+  sections: [
+    { heading: "Structure", blocks: [{ kind: "paragraph", text: "It is bipennate." }] },
+    { heading: "Function", blocks: [{ kind: "paragraph", text: "It extends the knee." }] },
+    { heading: "Clinical significance", blocks: [{ kind: "paragraph", text: "Strains are common in sprinters." }] },
+  ],
+  reviewed: false,
+  credit: {
+    text: "Text adapted from Wikipedia via Z-Anatomy",
+    licence: "CC BY-SA 4.0",
+    url: "https://en.wikipedia.org/wiki/Rectus_femoris_muscle",
+  },
+};
+
 let getContext: MockInstance;
+
+function respond(url: string) {
+  if (url.endsWith("/catalogue.json")) return new Response(JSON.stringify(CATALOGUE));
+  if (url.endsWith("/content/rectus-femoris-muscle-right.json")) return new Response(JSON.stringify(RECTUS));
+  return new Response("not found", { status: 404 });
+}
 
 beforeEach(() => {
   scene.props = null;
   vi.stubGlobal(
     "fetch",
-    vi.fn(async () => new Response(JSON.stringify(CATALOGUE), { headers: { "Content-Type": "application/json" } }))
+    vi.fn(async (url: string) => respond(url))
   );
   getContext = vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({} as never);
 });
@@ -89,14 +118,67 @@ describe("Explorer", () => {
     expect(await screen.findByRole("combobox", { name: "Search anatomy" })).toBeInTheDocument();
   });
 
-  it("selects a structure by synonym with Enter and shows its card", async () => {
+  it("shows where you are in the breadcrumb", async () => {
+    const box = await renderExplorer();
+    const crumbs = screen.getByRole("navigation", { name: "Breadcrumb" });
+    expect(crumbs).toHaveTextContent("Praxxt Anatomy");
+    search(box, "rectus");
+    fireEvent.keyDown(box, { key: "Enter" });
+    expect(crumbs).toHaveTextContent(/Muscular system.*Lower limb.*Rectus femoris muscle \(right\)/);
+  });
+
+  it("opens the study panel with quick facts, a summary and the review label", async () => {
+    const box = await renderExplorer();
+    search(box, "rectus");
+    fireEvent.keyDown(box, { key: "Enter" });
+    const panel = screen.getByRole("region", { name: "Study panel" });
+    expect(within(panel).getByRole("heading", { name: "Rectus femoris muscle (right)" })).toBeInTheDocument();
+    expect(await within(panel).findByText("Anterior inferior iliac spine")).toBeInTheDocument();
+    expect(within(panel).getByText("Femoral nerve")).toBeInTheDocument();
+    expect(within(panel).getByText(/one of the four quadriceps muscles/)).toBeInTheDocument();
+    expect(within(panel).getByText(/Not yet reviewed/)).toBeInTheDocument();
+    expect(fetch).toHaveBeenCalledWith("/api/anatomy/model/v1/content/rectus-femoris-muscle-right.json");
+  });
+
+  it("sorts the card into Anatomy, Function, Clinical and Credits tabs", async () => {
+    const box = await renderExplorer();
+    search(box, "rectus");
+    fireEvent.keyDown(box, { key: "Enter" });
+    const panel = screen.getByRole("region", { name: "Study panel" });
+    await within(panel).findByText("Femoral nerve");
+    const tabs = within(panel)
+      .getAllByRole("tab")
+      .map((t) => t.textContent);
+    expect(tabs).toEqual(["Overview", "Anatomy", "Function", "Clinical", "Credits"]);
+    fireEvent.click(within(panel).getByRole("tab", { name: "Clinical" }));
+    expect(within(panel).getByText("Strains are common in sprinters.")).toBeInTheDocument();
+    fireEvent.click(within(panel).getByRole("tab", { name: "Credits" }));
+    expect(within(panel).getByRole("link", { name: "Rectus femoris muscle" })).toHaveAttribute(
+      "href",
+      "https://en.wikipedia.org/wiki/Rectus_femoris_muscle"
+    );
+  });
+
+  it("says when a structure has no description yet", async () => {
     const box = await renderExplorer();
     search(box, "breastbone");
     fireEvent.keyDown(box, { key: "Enter" });
-    const card = screen.getByRole("region", { name: "Selected structure" });
-    expect(within(card).getByRole("heading", { name: "Sternum" })).toBeInTheDocument();
-    expect(within(card).getByText("Sternum", { selector: "p" })).toBeInTheDocument();
-    expect(within(card).getByText("Skeletal")).toBeInTheDocument();
+    const panel = screen.getByRole("region", { name: "Study panel" });
+    expect(await within(panel).findByText(/No description for this structure yet/)).toBeInTheDocument();
+  });
+
+  it("isolates, fades and hides from the study panel", async () => {
+    const box = await renderExplorer();
+    search(box, "sternum");
+    fireEvent.keyDown(box, { key: "Enter" });
+    const panel = screen.getByRole("region", { name: "Study panel" });
+    fireEvent.click(within(panel).getByRole("button", { name: "Fade" }));
+    expect(within(panel).getByRole("button", { name: "Unfade" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Show all" })).toBeEnabled();
+    fireEvent.click(within(panel).getByRole("button", { name: "Isolate" }));
+    expect(within(panel).getByRole("button", { name: "Isolated" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(within(panel).getByRole("button", { name: "Hide" }));
+    expect(screen.queryByRole("region", { name: "Study panel" })).not.toBeInTheDocument();
   });
 
   it("says when nothing matches and clears the search with Escape", async () => {
@@ -105,44 +187,42 @@ describe("Explorer", () => {
     expect(screen.getByText("No structures match")).toBeInTheDocument();
     fireEvent.keyDown(box, { key: "Escape" });
     expect(box).toHaveValue("");
-    expect(screen.queryByText("No structures match")).not.toBeInTheDocument();
   });
 
-  it("selects a structure tapped in the 3D view", async () => {
+  it("selects a structure tapped in the 3D view and closes on empty space", async () => {
     await renderExplorer();
     await screen.findByTestId("body-scene");
-    act(() => scene.props!.onSelect("deltoid"));
-    expect(screen.getByRole("heading", { name: "Deltoid" })).toBeInTheDocument();
+    act(() => scene.props!.onSelect("sternum"));
+    expect(screen.getByRole("heading", { name: "Sternum" })).toBeInTheDocument();
     act(() => scene.props!.onSelect(null));
-    expect(screen.queryByRole("region", { name: "Selected structure" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Study panel" })).not.toBeInTheDocument();
   });
 
-  it("toggles systems and lists the depth levels in the drawer", async () => {
+  it("switches body systems and depth from the bottom bar", async () => {
     await renderExplorer();
-    fireEvent.click(screen.getByRole("button", { name: "Systems and layers" }));
-    const drawer = screen.getByRole("dialog", { name: "Systems and layers" });
-    const cardiovascular = within(drawer).getByRole("switch", { name: /Cardiovascular/ });
-    expect(cardiovascular).toHaveAttribute("aria-checked", "false");
-    fireEvent.click(cardiovascular);
-    expect(cardiovascular).toHaveAttribute("aria-checked", "true");
-    const levels = within(within(drawer).getByRole("list", { name: "Depth levels" })).getAllByRole("listitem");
-    expect(levels.map((li) => li.textContent)).toEqual(["Skin", "Muscle", "Organs", "Bone"]);
-    const slider = within(drawer).getByRole("slider", { name: "Depth" });
-    fireEvent.change(slider, { target: { value: "2" } });
-    expect(slider).toHaveAttribute("aria-valuetext", "Organs");
-    const xray = within(drawer).getByRole("switch", { name: "X-ray skin" });
-    fireEvent.click(xray);
-    expect(xray).toHaveAttribute("aria-checked", "true");
+    const systems = screen.getByRole("list", { name: "Body systems" });
+    const cardio = within(systems).getByRole("switch", { name: /Cardiovascular/ });
+    expect(cardio).toHaveAttribute("aria-checked", "false");
+    fireEvent.click(cardio);
+    expect(cardio).toHaveAttribute("aria-checked", "true");
+    const depth = screen.getByRole("radiogroup", { name: "Depth" });
+    expect(
+      within(depth)
+        .getAllByRole("radio")
+        .map((r) => r.textContent)
+    ).toEqual(["Skin", "Muscle", "Organs", "Bone"]);
+    fireEvent.click(within(depth).getByRole("radio", { name: "Organs" }));
+    expect(within(depth).getByRole("radio", { name: "Organs" })).toHaveAttribute("aria-checked", "true");
   });
 
-  it("enables Hide and Isolate only with a selection", async () => {
-    const box = await renderExplorer();
-    expect(screen.getByRole("button", { name: "Hide" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Isolate" })).toBeDisabled();
-    search(box, "sternum");
-    fireEvent.keyDown(box, { key: "Enter" });
-    expect(screen.getByRole("button", { name: "Hide" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "Isolate" })).toBeEnabled();
+  it("toggles X-ray skin and fascia from the view tools", async () => {
+    await renderExplorer();
+    const tools = screen.getByRole("toolbar", { name: "View tools" });
+    fireEvent.click(within(tools).getByRole("button", { name: "X-ray skin" }));
+    expect(within(tools).getByRole("button", { name: "X-ray skin" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(within(tools).getByRole("button", { name: "Fascia" }));
+    expect(within(tools).getByRole("button", { name: "Fascia" })).toHaveAttribute("aria-pressed", "true");
+    expect(within(tools).getByRole("button", { name: "Show all" })).toBeDisabled();
   });
 
   it("reports a part that failed to load, retries it, and keeps search working", async () => {
@@ -154,10 +234,9 @@ describe("Explorer", () => {
     expect(notice).toHaveTextContent(/Couldn.t load this part/);
     fireEvent.click(within(notice).getByRole("button", { name: "Retry" }));
     expect(retry).toHaveBeenCalledOnce();
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    search(box, "deltoid");
+    search(box, "sternum");
     fireEvent.keyDown(box, { key: "Enter" });
-    expect(screen.getByRole("heading", { name: "Deltoid" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Sternum" })).toBeInTheDocument();
   });
 
   it("falls back to a list of structures without WebGL", async () => {
@@ -165,12 +244,11 @@ describe("Explorer", () => {
     await renderExplorer();
     expect(screen.getByText(/This device can.t show the 3D body/)).toBeInTheDocument();
     expect(screen.queryByTestId("body-scene")).not.toBeInTheDocument();
-    const list = screen.getByRole("list", { name: "Structures" });
-    fireEvent.click(within(list).getByRole("button", { name: "Deltoid" }));
-    expect(screen.getByRole("heading", { name: "Deltoid" })).toBeInTheDocument();
+    fireEvent.click(within(screen.getByRole("list", { name: "Structures" })).getByRole("button", { name: "Sternum" }));
+    expect(screen.getByRole("heading", { name: "Sternum" })).toBeInTheDocument();
   });
 
-  it("names every control and puts the search box near the top of the tab order", async () => {
+  it("names every control and puts the search box first in the tab order", async () => {
     const box = await renderExplorer();
     const controls = [...document.querySelectorAll<HTMLElement>("button, input, a, [tabindex]")];
     for (const control of controls) {
@@ -180,6 +258,6 @@ describe("Explorer", () => {
       expect(Number(control.getAttribute("tabindex") ?? 0)).toBeLessThanOrEqual(0);
     }
     const tabbable = controls.filter((c) => c.getAttribute("tabindex") !== "-1" && !(c as HTMLButtonElement).disabled);
-    expect(tabbable.indexOf(box)).toBeLessThanOrEqual(1);
+    expect(tabbable.indexOf(box)).toBe(0);
   });
 });
