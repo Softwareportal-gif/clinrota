@@ -84,6 +84,15 @@ const REASONS = [
   },
 ];
 
+// Praxxt Anatomy, the upcoming 3D body explorer. Claims here must stay true
+// to what the explorer already does; the images are captures of it.
+const ANATOMY_FEATURES = [
+  "3,000+ structures across 11 body systems",
+  "Search by everyday or medical name: “breastbone” finds the sternum",
+  "Peel from skin to muscle, organs and bone; hide or isolate any structure",
+  "Built for phones and laptops, adapting its detail to each device",
+];
+
 const SECURITY = [
   { title: "Role-based access", body: "Students, supervisors and coordinators see only what their role allows." },
   { title: "Private document storage", body: "Compliance files are never public and open only to authorised users." },
@@ -195,9 +204,9 @@ export function LandingPage() {
       <div className="px-6 py-2.5 text-[13px] font-medium text-white" style={{ background: `linear-gradient(90deg, ${VIOLET}, ${BLUE} 55%, #0E8FA3)` }}>
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <p>
-            New: verified clinical CVs for every student.{" "}
-            <a href="#platform" className="font-bold underline">
-              See how it works
+            Coming soon: Praxxt Anatomy, a 3D body explorer for students.{" "}
+            <a href="#anatomy" className="font-bold underline">
+              Take a look
             </a>
           </p>
           <div className="hidden items-center gap-6 sm:flex">
@@ -215,6 +224,12 @@ export function LandingPage() {
           </Link>
           <nav className="hidden items-center gap-8 text-[15px] font-bold md:flex">
             <a href="#platform" className="transition-colors hover:text-[#5A3BF0]">Platform</a>
+            <a href="#anatomy" className="flex items-center gap-1.5 transition-colors hover:text-[#5A3BF0]">
+              Anatomy
+              <span className="rounded-full px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white" style={{ background: "linear-gradient(90deg, #FF5C8A, #5A3BF0)" }}>
+                Soon
+              </span>
+            </a>
             <a href="#disciplines" className="transition-colors hover:text-[#5A3BF0]">Disciplines</a>
             <a href="#security" className="transition-colors hover:text-[#5A3BF0]">Security</a>
             <Link href="/help" className="transition-colors hover:text-[#5A3BF0]">Resources</Link>
@@ -326,6 +341,94 @@ export function LandingPage() {
               </Reveal>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section
+        id="anatomy"
+        className="scroll-mt-24 px-6 py-20 sm:py-24"
+        style={{ background: "radial-gradient(ellipse at 85% 15%, rgba(255,92,138,.12), transparent 50%), radial-gradient(ellipse at 10% 90%, rgba(90,59,240,.14), transparent 50%), #FFFFFF" }}
+      >
+        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[5fr_6fr] lg:gap-16">
+          <div className="flex flex-col gap-5">
+            <span
+              className="inline-flex w-fit items-center gap-2 rounded-full border bg-white px-4 py-1.5 text-[13px] font-bold"
+              style={{ borderColor: "#FBD5E0", color: "#C2295A" }}
+            >
+              <span className="h-2 w-2 rounded-full" style={{ background: "linear-gradient(135deg, #FF5C8A, #5A3BF0)" }} />
+              Coming soon
+            </span>
+            <h2 className="text-3xl font-extrabold leading-tight tracking-[-0.03em] sm:text-5xl">
+              Praxxt Anatomy:{" "}
+              <span style={{ background: TEXT_GRADIENT, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
+                explore the human body in 3D
+              </span>
+            </h2>
+            <p className="text-lg leading-relaxed" style={{ color: BODY }}>
+              An interactive 3D anatomy atlas for health-profession students, built into Praxxt. Rotate, zoom and
+              study every structure, from skin to bone, on a laptop or a phone.
+            </p>
+            <ul className="flex flex-col gap-3">
+              {ANATOMY_FEATURES.map((feature) => (
+                <li key={feature} className="flex items-start gap-3 leading-relaxed" style={{ color: INK }}>
+                  <span
+                    aria-hidden="true"
+                    className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+                    style={{ background: "linear-gradient(135deg, #FF5C8A, #5A3BF0)" }}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12l5 5 9-10" />
+                    </svg>
+                  </span>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <a
+                href="#contact"
+                className="w-fit rounded-full px-7 py-4 text-base font-bold text-white transition duration-200 hover:brightness-110 motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-95"
+                style={{ background: "linear-gradient(90deg, #FF5C8A, #5A3BF0)", boxShadow: "0 10px 24px rgba(194,41,90,.25)" }}
+              >
+                Join the waitlist →
+              </a>
+              <p className="text-[15px]" style={{ color: MUTED }}>
+                Be among the first schools to try it.
+              </p>
+            </div>
+          </div>
+
+          <Reveal className="relative">
+            <div className="relative ml-auto w-full max-w-[560px]">
+              <div className="overflow-hidden rounded-[28px] shadow-[0_24px_60px_rgba(37,32,110,.16)]" style={{ backgroundColor: "#EEF0F5" }}>
+                <Image
+                  src="/images/anatomy/anatomy-chest.webp"
+                  alt="Praxxt Anatomy showing the rib cage, lungs and blood vessels in 3D"
+                  width={960}
+                  height={920}
+                  sizes="(min-width: 1024px) 560px, 100vw"
+                  className="h-auto w-full"
+                />
+              </div>
+              <div
+                className="absolute -bottom-8 -left-4 w-[34%] overflow-hidden rounded-[22px] border-4 border-white shadow-[0_18px_40px_rgba(37,32,110,.22)] sm:-left-10"
+                style={{ backgroundColor: "#EEF0F5" }}
+              >
+                <Image
+                  src="/images/anatomy/anatomy-muscles.webp"
+                  alt="Praxxt Anatomy showing the full muscular system"
+                  width={640}
+                  height={1212}
+                  sizes="200px"
+                  className="h-auto w-full"
+                />
+              </div>
+            </div>
+            <p className="mt-14 text-xs leading-relaxed sm:text-right" style={{ color: MUTED }}>
+              Captured from Praxxt Anatomy in development. 3D model: Z-Anatomy (CC BY-SA 4.0), based on BodyParts3D
+              (CC BY-SA 2.1 Japan).
+            </p>
+          </Reveal>
         </div>
       </section>
 
@@ -473,6 +576,7 @@ export function LandingPage() {
             <div className="flex flex-col gap-3 text-[15px]">
               <p className="text-xs font-extrabold uppercase tracking-widest text-white">Platform</p>
               <a href="#platform" className="hover:text-white">Modules</a>
+              <a href="#anatomy" className="hover:text-white">Anatomy (coming soon)</a>
               <a href="#disciplines" className="hover:text-white">Disciplines</a>
               <a href="#security" className="hover:text-white">Security</a>
             </div>
