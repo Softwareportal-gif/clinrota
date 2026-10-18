@@ -11,3 +11,13 @@ export function isAnatomyPreviewEnabled(email: string | null | undefined): boole
     .filter(Boolean);
   return allowed.includes(wanted);
 }
+
+// Once launched (ANATOMY_PUBLIC="true"), every signed-in user may open
+// Praxxt Anatomy, subject to their plan; before that, only the preview list.
+export function isAnatomyOpenTo(email: string | null | undefined): boolean {
+  return process.env.ANATOMY_PUBLIC === "true" || isAnatomyPreviewEnabled(email);
+}
+
+export function isAnatomyPublic(): boolean {
+  return process.env.ANATOMY_PUBLIC === "true";
+}

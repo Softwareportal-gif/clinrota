@@ -5,11 +5,13 @@
 // left (a bottom sheet on phones), view tools on the right and the body
 // systems bar along the bottom.
 import { lazy, Suspense, useCallback, useEffect, useMemo, useReducer, useState } from "react";
-import { parseCatalogue, type Catalogue, type Structure } from "@/lib/anatomy/catalogue";
+import { parseCatalogue, type AnatomySystem, type Catalogue, type Structure } from "@/lib/anatomy/catalogue";
+import type { PlanId } from "@/lib/anatomy/access";
 import { tissueOf } from "@/lib/anatomy/appearance";
 import type { StructureContent } from "@/lib/anatomy/content";
 import { explorerReducer, INITIAL_STATE } from "@/lib/anatomy/explorer-state";
 import { searchStructures } from "@/lib/anatomy/search";
+import { SYSTEMS } from "@/lib/anatomy/catalogue";
 import { SearchBar } from "./search-bar";
 import { SideRail } from "./side-rail";
 import { StudyPanel, type ContentState } from "./study-panel";
@@ -35,7 +37,17 @@ function hasWebGL() {
   return true;
 }
 
-export function Explorer({ modelBaseUrl }: { modelBaseUrl: string }) {
+export type PlanBadge = { plan: PlanId; daysLeft: number | null } | null;
+
+export function Explorer({
+  modelBaseUrl,
+  allowedSystems = null,
+  plan = null,
+}: {
+  modelBaseUrl: string;
+  allowedSystems?: AnatomySystem[] | null; // null: every system
+  plan?: PlanBadge;
+}) {
   const [load, setLoad] = useState<Load>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
 
@@ -82,7 +94,7 @@ export function Explorer({ modelBaseUrl }: { modelBaseUrl: string }) {
     );
   }
 
-  return <ExplorerView catalogue={load.catalogue} modelBaseUrl={modelBaseUrl} />;
+  return <ExplorerView catalogue={load.catalogue} modelBaseUrl={modelBaseUrl} allowedSystems={allowedSystems} plan={plan} />;
 }
 
 // Loads the selected structure's study card, keeping ones already seen.
@@ -120,8 +132,34 @@ function useStructureContent(modelBaseUrl: string, id: string | null): ContentSt
   return { status: "loading" };
 }
 
-function ExplorerView({ catalogue, modelBaseUrl }: { catalogue: Catalogue; modelBaseUrl: string }) {
-  const [state, dispatch] = useReducer(explorerReducer, INITIAL_STATE);
+// Only the systems the plan allows: a skeleton-only trial sees (and
+// searches) just the skeleton, with the rest shown locked in the systems bar.
+function limitCatalogue(full: Catalogue, allowed: AnatomySystem[] | null): Catalogue {
+  if (!allowed) return full;
+  return {
+    ...full,
+    structures: full.structures.filter((s) => allowed.includes(s.system)),
+    chunks: full.chunks.filter((c) => allowed.includes(c.system)),
+  };
+}
+
+function ExplorerView({
+  catalogue: fullCatalogue,
+  modelBaseUrl,
+  allowedSystems,
+  plan,
+}: {
+  catalogue: Catalogue;
+  modelBaseUrl: string;
+  allowedSystems: AnatomySystem[] | null;
+  plan: PlanBadge;
+}) {
+  const catalogue = useMemo(() => limitCatalogue(fullCatalogue, allowedSystems), [fullCatalogue, allowedSystems]);
+  const [state, dispatch] = useReducer(explorerReducer, INITIAL_STATE, (initial) => {
+    if (!allowedSystems) return initial;
+    const systems = initial.systems.filter((s) => allowedSystems.includes(s));
+    return { ...initial, systems: systems.length ? systems : allowedSystems };
+  });
   const [query, setQuery] = useState("");
   const [failedChunks, setFailedChunks] = useState<Map<string, () => void>>(new Map());
   const [webgl] = useState(hasWebGL);
@@ -168,6 +206,7 @@ function ExplorerView({ catalogue, modelBaseUrl }: { catalogue: Catalogue; model
               state={state}
               onSelect={select}
               onLoadError={onLoadError}
+              useOverview={!allowedSystems}
             />
           </Suspense>
         </div>
@@ -210,6 +249,24 @@ function ExplorerView({ catalogue, modelBaseUrl }: { catalogue: Catalogue; model
         structure={selected}
         search={<SearchBar catalogue={catalogue} query={query} onQueryChange={setQuery} onPick={pick} showResults={webgl} />}
       />
+
+      {plan && (plan.plan === "TRIAL" || (plan.daysLeft !== null && plan.daysLeft <= 30)) && (
+        <div className="pointer-events-none absolute left-3 top-24 sm:left-5 sm:top-14">
+          <a
+            href="/anatomy/plans"
+            className="pointer-events-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-md"
+            style={{ backgroundColor: PANEL, border: `1px solid ${PANEL_BORDER}`, color: TEXT }}
+          >
+            {plan.plan === "TRIAL" ? "Free trial" : "Plan ends soon"}
+            {plan.daysLeft !== null && (
+              <span style={{ color: TEXT_MUTED }}>
+                · {plan.daysLeft} {plan.daysLeft === 1 ? "day" : "days"} left
+              </span>
+            )}
+            <span style={{ color: ACCENT }}>· See plans</span>
+          </a>
+        </div>
+      )}
 
       {failedChunks.size > 0 && (
         <div className="pointer-events-none absolute inset-x-0 top-28 flex justify-center px-3 sm:top-20">
@@ -256,7 +313,8 @@ function ExplorerView({ catalogue, modelBaseUrl }: { catalogue: Catalogue; model
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-1 px-3 pb-2">
         <SystemsBar
-          catalogue={catalogue}
+          catalogue={fullCatalogue}
+          locked={allowedSystems ? SYSTEMS.filter((s) => !allowedSystems.includes(s)) : []}
           systems={state.systems}
           depth={state.depth}
           onToggleSystem={(system) => dispatch({ type: "toggleSystem", system })}

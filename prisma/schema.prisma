@@ -19,6 +19,7 @@ enum Role {
   SUPERVISOR
   COORDINATOR
   SUPER_ADMIN
+  LEARNER // signed up for Praxxt Anatomy only
 }
 
 // Onboarding lifecycle for an account created via bulk import (or, in
@@ -415,6 +416,10 @@ model User {
   studentProfile     StudentProfile?
   supervisorProfile  SupervisorProfile?
   coordinatorProfile CoordinatorProfile?
+
+  // Praxxt Anatomy
+  anatomySubscription AnatomySubscription?
+  anatomyPayments     AnatomyPayment[]
 
   // Reverse relations
   reviewsGiven          SupervisorReview[]        @relation("SupervisorReviews")
@@ -1023,4 +1028,48 @@ model RateLimitHit {
 
   @@index([key, createdAt])
   @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Praxxt Anatomy plans: a 2-week trial on sign-up, then Student / Professional
+// (bought online) or Institution (arranged with sales). One subscription per
+// user; buying a plan replaces the trial and runs a year from payment.
+// ---------------------------------------------------------------------------
+
+enum AnatomyPlan {
+  TRIAL
+  STUDENT
+  PROFESSIONAL
+  INSTITUTION
+}
+
+model AnatomySubscription {
+  id        String      @id @default(uuid())
+  userId    String      @unique
+  plan      AnatomyPlan
+  startsAt  DateTime    @default(now())
+  endsAt    DateTime
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// One row per Paystack checkout; the reference makes confirmation idempotent
+// (the redirect and the webhook may both report the same payment).
+model AnatomyPayment {
+  id        String      @id @default(uuid())
+  userId    String
+  plan      AnatomyPlan
+  reference String      @unique
+  amount    Int // in pesewas
+  currency  String      @default("GHS")
+  status    String      @default("pending") // pending | success | failed
+  paidAt    DateTime?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

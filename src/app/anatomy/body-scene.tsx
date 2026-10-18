@@ -224,6 +224,8 @@ type SceneProps = {
   state: ExplorerState;
   onSelect: (id: string | null) => void;
   onLoadError: (chunkId: string, retry: () => void) => void;
+  // The overview holds muscles and bones; skeleton-only access skips it.
+  useOverview?: boolean;
 };
 
 export function BodyScene(props: SceneProps) {
@@ -272,6 +274,7 @@ function SceneContent({
   state,
   onSelect,
   onLoadError,
+  useOverview = true,
   lod,
   quality,
 }: SceneProps & { lod: Lod; quality: Quality }) {
@@ -302,11 +305,11 @@ function SceneContent({
       if (!visibleChunks.has(chunk.id)) continue;
       // The overview already shows these systems roughly; others get a quick
       // low-detail pass while the full level loads.
-      if (lod !== "low" && !OVERVIEW_SYSTEMS.includes(chunk.system)) add(chunk.id, "low");
+      if (lod !== "low" && (!useOverview || !OVERVIEW_SYSTEMS.includes(chunk.system))) add(chunk.id, "low");
       add(chunk.id, chunk.id === selected?.chunk && lod === "low" ? "medium" : lod);
     }
     return urls;
-  }, [catalogue, byId, visible, state.selectedId, modelBaseUrl, lod]);
+  }, [catalogue, byId, visible, state.selectedId, modelBaseUrl, lod, useOverview]);
 
   const register = useCallback((url: string, rank: number, objects: Map<string, THREE.Object3D> | null) => {
     if (objects) {
@@ -327,9 +330,11 @@ function SceneContent({
 
   return (
     <>
-      <Suspense fallback={null}>
-        <Model url={`${modelBaseUrl}/overview.glb`} rank={RANK.overview} known={byId} register={register} />
-      </Suspense>
+      {useOverview && (
+        <Suspense fallback={null}>
+          <Model url={`${modelBaseUrl}/overview.glb`} rank={RANK.overview} known={byId} register={register} />
+        </Suspense>
+      )}
       {chunkUrls.map(({ chunkId, url, rank }) => (
         <ChunkBoundary key={url} url={url} chunkId={chunkId} onLoadError={onLoadError}>
           <Suspense fallback={null}>

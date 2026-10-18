@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { ROLE_HOME, isSharedPath } from "@/lib/role-routes";
+import { ROLE_HOME, isPublicAnatomyPage, isSharedPath } from "@/lib/role-routes";
 
 // Next.js 16 renamed `middleware.ts` to `proxy.ts` (the exported function
 // keeps working as a default export either way). This is the coarse,
@@ -16,15 +16,15 @@ export default auth((req) => {
   // /help and /anatomy (and everything under them) are shared across every
   // role — a student and a coordinator both need to reach /help/tickets —
   // unlike every other section, which belongs to exactly one role's home
-  // path. Only /help is public; /anatomy still needs a session, and its
-  // pages check the preview gate themselves.
+  // path. /help is public; of /anatomy, only the sign-up and plans pages are
+  // (the explorer needs a session, and checks the plan itself).
   const isSharedPage = isSharedPath(nextUrl.pathname);
   const isHelpPage = nextUrl.pathname === "/help" || nextUrl.pathname.startsWith("/help/");
   // "/" is the public marketing page, reachable without a session like
   // /help and /login. A logged-in visitor still gets bounced off "/" and
   // /login to their dashboard below — /help is the one exception that
   // stays reachable either way, handled with the shared pages below.
-  const isPublicPage = isLoginPage || nextUrl.pathname === "/" || isHelpPage;
+  const isPublicPage = isLoginPage || nextUrl.pathname === "/" || isHelpPage || isPublicAnatomyPage(nextUrl.pathname);
 
   if (!isLoggedIn) {
     if (isPublicPage) return NextResponse.next();

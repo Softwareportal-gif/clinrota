@@ -3,7 +3,7 @@
 // The bar along the bottom: how deep the body is peeled, and one switch per
 // body system showing whether it's on. Scrolls sideways on phones.
 import { useMemo } from "react";
-import { BicepsFlexed, Bone, Brain, Dna, Droplets, FlaskConical, Hand, HeartPulse, ShieldPlus, Utensils, Wind, type LucideIcon } from "lucide-react";
+import { BicepsFlexed, Bone, Brain, Dna, Droplets, FlaskConical, Hand, HeartPulse, Lock, ShieldPlus, Utensils, Wind, type LucideIcon } from "lucide-react";
 import { DEPTH_LEVELS, SYSTEMS, type AnatomySystem, type Catalogue, type DepthLevel } from "@/lib/anatomy/catalogue";
 import { SYSTEM_COLOURS, depthLabel, systemLabel } from "./system-labels";
 import { ACCENT, ACCENT_SOFT, PANEL, PANEL_BORDER, TEXT, TEXT_MUTED } from "./theme";
@@ -31,8 +31,10 @@ export function SystemsBar({
   depth,
   onToggleSystem,
   onDepthChange,
+  locked = [],
 }: {
   catalogue: Catalogue;
+  locked?: AnatomySystem[]; // outside the user's plan: shown with a lock, linking to the plans
   systems: AnatomySystem[];
   depth: DepthLevel;
   onToggleSystem: (system: AnatomySystem) => void;
@@ -77,6 +79,24 @@ export function SystemsBar({
           const on = systems.includes(system);
           const Icon = ICONS[system];
           const count = counts.get(system) ?? 0;
+          if (locked.includes(system)) {
+            return (
+              <li key={system}>
+                <a
+                  href="/anatomy/plans"
+                  aria-label={`${systemLabel(system)}, locked on your plan. See plans`}
+                  className="flex w-[84px] flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-[11px] font-semibold leading-tight opacity-60 hover:opacity-90"
+                  style={{ color: TEXT_MUTED }}
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full" style={{ border: "1.5px dashed rgba(255,255,255,0.25)" }}>
+                    <Lock size={14} aria-hidden />
+                  </span>
+                  <span className="truncate">{systemLabel(system)}</span>
+                  <span className="text-[10px] font-medium">Upgrade</span>
+                </a>
+              </li>
+            );
+          }
           return (
             <li key={system}>
               <button

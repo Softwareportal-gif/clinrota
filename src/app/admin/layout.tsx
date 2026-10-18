@@ -5,6 +5,7 @@ const NAV_ITEMS: PortalNavItem[] = [
   { href: "/admin", label: "Programs", icon: "layers", exact: true },
   { href: "/admin/programs/new", label: "New program", icon: "file" },
   { href: "/admin/tickets", label: "Support tickets", icon: "ticket" },
+  { href: "/admin/anatomy", label: "Anatomy plans", icon: "target" },
   { href: "/help", label: "Help", icon: "help" },
 ];
 

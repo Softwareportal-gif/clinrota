@@ -14,6 +14,7 @@ const ROLE_LABEL: Record<Role, string> = {
   SUPERVISOR: "Supervisor",
   COORDINATOR: "Coordinator",
   SUPER_ADMIN: "Administrator",
+  LEARNER: "Learner",
 };
 
 export function roleLabel(role: Role) {

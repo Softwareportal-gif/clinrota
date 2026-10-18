@@ -93,8 +93,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-async function renderExplorer() {
-  render(<Explorer modelBaseUrl="/api/anatomy/model/v1" />);
+async function renderExplorer(props: Partial<Parameters<typeof Explorer>[0]> = {}) {
+  render(<Explorer modelBaseUrl="/api/anatomy/model/v1" {...props} />);
   return screen.findByRole("combobox", { name: "Search anatomy" });
 }
 
@@ -259,5 +259,21 @@ describe("Explorer", () => {
     }
     const tabbable = controls.filter((c) => c.getAttribute("tabindex") !== "-1" && !(c as HTMLButtonElement).disabled);
     expect(tabbable.indexOf(box)).toBe(0);
+  });
+
+  it("shows how many trial days are left, linking to the plans", async () => {
+    await renderExplorer({ plan: { plan: "TRIAL", daysLeft: 10 } });
+    const pill = screen.getByRole("link", { name: /Free trial.*10 days left.*See plans/ });
+    expect(pill).toHaveAttribute("href", "/anatomy/plans");
+  });
+
+  it("limits a skeleton-only trial to the skeleton, with the other systems locked", async () => {
+    const box = await renderExplorer({ allowedSystems: ["skeletal"], plan: { plan: "TRIAL", daysLeft: 5 } });
+    const systems = screen.getByRole("list", { name: "Body systems" });
+    expect(within(systems).getByRole("switch", { name: /Skeletal/ })).toHaveAttribute("aria-checked", "true");
+    expect(within(systems).getByRole("link", { name: /Muscular, locked/ })).toHaveAttribute("href", "/anatomy/plans");
+    expect(within(systems).queryByRole("switch", { name: /Muscular/ })).not.toBeInTheDocument();
+    search(box, "rectus");
+    expect(screen.getByText("No structures match")).toBeInTheDocument();
   });
 });

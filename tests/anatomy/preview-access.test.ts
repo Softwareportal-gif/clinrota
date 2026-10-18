@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { isAnatomyPreviewEnabled } from "@/lib/anatomy/preview-access";
+import { isAnatomyOpenTo, isAnatomyPreviewEnabled } from "@/lib/anatomy/preview-access";
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -36,5 +36,21 @@ describe("isAnatomyPreviewEnabled", () => {
     vi.stubEnv("ANATOMY_PREVIEW_EMAILS", "tester@example.com, other@x.com");
     expect(isAnatomyPreviewEnabled(" Tester@Example.com ")).toBe(true);
     expect(isAnatomyPreviewEnabled("other@x.com")).toBe(true);
+  });
+});
+
+describe("isAnatomyOpenTo", () => {
+  it("opens to everyone once public", () => {
+    vi.stubEnv("ANATOMY_PUBLIC", "true");
+    vi.stubEnv("ANATOMY_PREVIEW", undefined);
+    expect(isAnatomyOpenTo("anyone@example.com")).toBe(true);
+  });
+
+  it("falls back to the preview list before launch", () => {
+    vi.stubEnv("ANATOMY_PUBLIC", undefined);
+    vi.stubEnv("ANATOMY_PREVIEW", "true");
+    vi.stubEnv("ANATOMY_PREVIEW_EMAILS", "tester@example.com");
+    expect(isAnatomyOpenTo("tester@example.com")).toBe(true);
+    expect(isAnatomyOpenTo("anyone@example.com")).toBe(false);
   });
 });

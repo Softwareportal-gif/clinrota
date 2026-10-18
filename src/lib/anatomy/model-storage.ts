@@ -2,13 +2,15 @@
 // answered. Paths are versioned ("v3/chunks/skeletal/thorax/low.glb"), so a
 // file never changes once published and can be cached for a year.
 //
-// With R2 configured (R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY,
-// R2_BUCKET) the route answers with a short-lived signed link to the private
-// bucket. Without it (local development) the file is read from the build
+// Deployed, the files sit in the site's private Vercel Blob store under
+// anatomy/models/ and the route answers with a short-lived signed link, so
+// large files never pass through a function. (Cloudflare R2, if configured,
+// works the same way.) Locally, without either, they're read from the build
 // output, ANATOMY_BUILD_DIR (default ./anatomy-build), uncached.
 import { readFile } from "fs/promises";
 import path from "path";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { get, issueSignedToken, presignUrl, type IssuedSignedToken } from "@vercel/blob";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { LODS, SYSTEMS } from "./catalogue";
 
@@ -47,6 +49,58 @@ export function contentTypeFor(key: string) {
   return key.endsWith(".json") ? "application/json" : "model/gltf-binary";
 }
 
+// The project's Blob store connects via OIDC + store ID (custom-prefixed
+// name, see src/lib/upload.ts) or a read-write token.
+export function blobStoreId(): string | undefined {
+  return process.env.BLOB_STORE_ID ?? process.env.BLOB_READ_WRITE_TOKEN_STORE_ID;
+}
+
+export function blobEnabled(): boolean {
+  return !!(process.env.BLOB_READ_WRITE_TOKEN || blobStoreId());
+}
+
+export const BLOB_PREFIX = "anatomy/models";
+
+// One store-wide read token, kept server-side and reused until near expiry;
+// each request then gets its own URL, signed for just that file.
+let readToken: IssuedSignedToken | null = null;
+
+async function signedBlobUrl(key: string): Promise<string> {
+  const now = Date.now();
+  if (!readToken || readToken.validUntil - now < 15 * 60_000) {
+    readToken = await issueSignedToken({ operations: ["get"], validUntil: now + 60 * 60_000, storeId: blobStoreId() });
+  }
+  const { presignedUrl } = await presignUrl(readToken, {
+    operation: "get",
+    pathname: `${BLOB_PREFIX}/${key}`,
+    access: "private",
+    validUntil: Math.min(now + SIGNED_URL_SECONDS * 1000, readToken.validUntil),
+  });
+  return presignedUrl;
+}
+
+// Structure id → system, from the catalogue, for checks that depend on a
+// structure's system (skeleton-only access). Cached per version.
+const systemsCache = new Map<string, Map<string, string>>();
+
+export async function structureSystems(version: string): Promise<Map<string, string>> {
+  const cached = systemsCache.get(version);
+  if (cached) return cached;
+  const key = `${version}/catalogue.json`;
+  let text: string;
+  if (blobEnabled()) {
+    const result = await get(`${BLOB_PREFIX}/${key}`, { access: "private", storeId: blobStoreId() });
+    if (!result || !result.stream) throw new Error("catalogue not found");
+    text = await new Response(result.stream).text();
+  } else {
+    text = await readFile(path.join(path.resolve(process.env.ANATOMY_BUILD_DIR || "anatomy-build", "models"), version, "catalogue.json"), "utf8");
+  }
+  const catalogue = JSON.parse(text) as { structures: { id: string; system: string }[] };
+  const map = new Map(catalogue.structures.map((s) => [s.id, s.system]));
+  systemsCache.set(version, map);
+  return map;
+}
+
 export function r2Config() {
   const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET } = process.env;
   if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET) return null;
@@ -74,6 +128,11 @@ export async function modelResponseFor(key: string): Promise<Response> {
     );
     // Reusing the redirect for a few minutes keeps the signed URL stable, so
     // the browser's cached copy of the file is reused too.
+    return new Response(null, { status: 302, headers: { Location: url, "Cache-Control": "private, max-age=300" } });
+  }
+
+  if (blobEnabled()) {
+    const url = await signedBlobUrl(key);
     return new Response(null, { status: 302, headers: { Location: url, "Cache-Control": "private, max-age=300" } });
   }
 
