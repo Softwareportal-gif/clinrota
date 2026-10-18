@@ -133,6 +133,10 @@ class MaterialCache {
       material.transparent = true;
       material.opacity = opacity;
       material.depthWrite = false;
+    } else {
+      // Some source meshes are open shells; drawing both sides keeps them
+      // solid when isolated or seen from an unusual angle.
+      material.side = THREE.DoubleSide;
     }
     return material;
   }

@@ -13,25 +13,28 @@ export type Detail = {
   fibre: boolean; // stretch the noise along the structure's long axis
 };
 
+// Kept deliberately smooth: relief on bone and organs read as sandpaper, so
+// only muscle keeps a faint fibre direction; everything else gets just a
+// light colour variation.
 const DETAIL: Record<Tissue, Detail> = {
-  muscle: { scale: 900, bump: 0.22, tint: 0.07, fibre: true },
-  heart: { scale: 700, bump: 0.14, tint: 0.06, fibre: true },
-  tendon: { scale: 900, bump: 0.08, tint: 0.03, fibre: true },
-  ligament: { scale: 800, bump: 0.08, tint: 0.03, fibre: true },
-  fascia: { scale: 600, bump: 0.04, tint: 0.02, fibre: false },
-  bone: { scale: 110, bump: 0.05, tint: 0.06, fibre: false },
-  cartilage: { scale: 160, bump: 0.02, tint: 0.03, fibre: false },
-  artery: { scale: 400, bump: 0.03, tint: 0.05, fibre: false },
-  vein: { scale: 400, bump: 0.03, tint: 0.05, fibre: false },
-  nerve: { scale: 900, bump: 0.08, tint: 0.04, fibre: true },
-  neural: { scale: 90, bump: 0.08, tint: 0.05, fibre: false },
-  lymph: { scale: 300, bump: 0.08, tint: 0.06, fibre: false },
-  skin: { scale: 700, bump: 0.05, tint: 0.04, fibre: false },
-  respiratory: { scale: 60, bump: 0.07, tint: 0.1, fibre: false },
-  digestive: { scale: 90, bump: 0.06, tint: 0.07, fibre: false },
-  urinary: { scale: 180, bump: 0.08, tint: 0.07, fibre: false },
-  reproductive: { scale: 180, bump: 0.08, tint: 0.07, fibre: false },
-  endocrine: { scale: 220, bump: 0.08, tint: 0.07, fibre: false },
+  muscle: { scale: 900, bump: 0.1, tint: 0.05, fibre: true },
+  heart: { scale: 700, bump: 0.06, tint: 0.04, fibre: true },
+  tendon: { scale: 900, bump: 0, tint: 0.02, fibre: true },
+  ligament: { scale: 800, bump: 0, tint: 0.02, fibre: true },
+  fascia: { scale: 600, bump: 0, tint: 0.02, fibre: false },
+  bone: { scale: 110, bump: 0, tint: 0.025, fibre: false },
+  cartilage: { scale: 160, bump: 0, tint: 0.02, fibre: false },
+  artery: { scale: 400, bump: 0, tint: 0.03, fibre: false },
+  vein: { scale: 400, bump: 0, tint: 0.03, fibre: false },
+  nerve: { scale: 900, bump: 0, tint: 0.03, fibre: true },
+  neural: { scale: 90, bump: 0, tint: 0.04, fibre: false },
+  lymph: { scale: 300, bump: 0, tint: 0.04, fibre: false },
+  skin: { scale: 700, bump: 0, tint: 0.02, fibre: false },
+  respiratory: { scale: 60, bump: 0, tint: 0.05, fibre: false },
+  digestive: { scale: 90, bump: 0, tint: 0.05, fibre: false },
+  urinary: { scale: 180, bump: 0, tint: 0.04, fibre: false },
+  reproductive: { scale: 180, bump: 0, tint: 0.04, fibre: false },
+  endocrine: { scale: 220, bump: 0, tint: 0.04, fibre: false },
 };
 
 // Phones sample one octave of noise instead of two.
@@ -147,7 +150,7 @@ export function addTissueDetail(
       .replace(
         "#include <normal_fragment_maps>",
         `#include <normal_fragment_maps>
-        {
+        if (uTissueBump > 0.0) {
           vec3 q = tdSpace(vTissuePos);
           float e = 0.35;
           float n0 = tdField(q);

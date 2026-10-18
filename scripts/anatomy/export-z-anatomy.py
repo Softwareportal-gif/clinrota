@@ -194,6 +194,12 @@ def evaluated_triangles(obj, depsgraph):
         mesh.loop_triangles.foreach_get("vertices", tri)
         m = np.array(evaluated.matrix_world)
         world = co @ m[:3, :3].T + m[:3, 3]
+        # Mirrored objects (one side of the body is a negative-scale copy of
+        # the other) flip each triangle's facing when the transform is baked
+        # in; turn them back so faces point outward, or the viewer culls them
+        # and the structure looks hollow.
+        if np.linalg.det(m[:3, :3]) < 0:
+            tri = tri.reshape(-1, 3)[:, ::-1].reshape(-1)
         return world, tri
     finally:
         evaluated.to_mesh_clear()
