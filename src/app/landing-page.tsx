@@ -204,10 +204,10 @@ export function LandingPage() {
       <div className="px-6 py-2.5 text-[13px] font-medium text-white" style={{ background: `linear-gradient(90deg, ${VIOLET}, ${BLUE} 55%, #0E8FA3)` }}>
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <p>
-            Coming soon: Praxxt Anatomy, a 3D body explorer for students.{" "}
-            <a href="#anatomy" className="font-bold underline">
-              Take a look
-            </a>
+            New: Praxxt Anatomy, the human body in 3D.{" "}
+            <Link href="/anatomy/start" className="font-bold underline">
+              Start a free 2-week trial
+            </Link>
           </p>
           <div className="hidden items-center gap-6 sm:flex">
             <a href="#contact" className="hover:opacity-80">Contact us</a>
@@ -227,7 +227,7 @@ export function LandingPage() {
             <a href="#anatomy" className="flex items-center gap-1.5 transition-colors hover:text-[#5A3BF0]">
               Anatomy
               <span className="rounded-full px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white" style={{ background: "linear-gradient(90deg, #FF5C8A, #5A3BF0)" }}>
-                Soon
+                New
               </span>
             </a>
             <a href="#disciplines" className="transition-colors hover:text-[#5A3BF0]">Disciplines</a>
@@ -356,7 +356,7 @@ export function LandingPage() {
               style={{ borderColor: "#FBD5E0", color: "#C2295A" }}
             >
               <span className="h-2 w-2 rounded-full" style={{ background: "linear-gradient(135deg, #FF5C8A, #5A3BF0)" }} />
-              Coming soon
+              New · 2-week free trial
             </span>
             <h2 className="text-3xl font-extrabold leading-tight tracking-[-0.03em] sm:text-5xl">
               Praxxt Anatomy:{" "}
@@ -385,16 +385,20 @@ export function LandingPage() {
               ))}
             </ul>
             <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <a
-                href="#contact"
+              <Link
+                href="/anatomy/start"
                 className="w-fit rounded-full px-7 py-4 text-base font-bold text-white transition duration-200 hover:brightness-110 motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-95"
                 style={{ background: "linear-gradient(90deg, #FF5C8A, #5A3BF0)", boxShadow: "0 10px 24px rgba(194,41,90,.25)" }}
               >
-                Join the waitlist →
-              </a>
-              <p className="text-[15px]" style={{ color: MUTED }}>
-                Be among the first schools to try it.
-              </p>
+                Start free trial →
+              </Link>
+              <Link
+                href="/anatomy/plans"
+                className="w-fit rounded-full border bg-white px-7 py-4 text-base font-bold transition duration-200 hover:border-[#5A3BF0] hover:text-[#5A3BF0]"
+                style={{ borderColor: "#DCD8F5" }}
+              >
+                See plans
+              </Link>
             </div>
           </div>
 
@@ -425,7 +429,7 @@ export function LandingPage() {
               </div>
             </div>
             <p className="mt-14 text-xs leading-relaxed sm:text-right" style={{ color: MUTED }}>
-              Captured from Praxxt Anatomy in development. 3D model: Z-Anatomy (CC BY-SA 4.0), based on BodyParts3D
+              Captured from Praxxt Anatomy. 3D model: Z-Anatomy (CC BY-SA 4.0), based on BodyParts3D
               (CC BY-SA 2.1 Japan).
             </p>
           </Reveal>
@@ -576,7 +580,7 @@ export function LandingPage() {
             <div className="flex flex-col gap-3 text-[15px]">
               <p className="text-xs font-extrabold uppercase tracking-widest text-white">Platform</p>
               <a href="#platform" className="hover:text-white">Modules</a>
-              <a href="#anatomy" className="hover:text-white">Anatomy (coming soon)</a>
+              <Link href="/anatomy/plans" className="hover:text-white">Anatomy plans</Link>
               <a href="#disciplines" className="hover:text-white">Disciplines</a>
               <a href="#security" className="hover:text-white">Security</a>
             </div>
