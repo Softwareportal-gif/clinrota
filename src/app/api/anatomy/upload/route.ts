@@ -26,6 +26,8 @@ export async function POST(request: Request) {
     const result = await handleUploadPresigned({
       body,
       request,
+      // This project's store was connected with a custom prefix (see blobStoreId).
+      webhookPublicKey: process.env.BLOB_WEBHOOK_PUBLIC_KEY ?? process.env.BLOB_READ_WRITE_TOKEN_WEBHOOK_PUBLIC_KEY,
       getSignedToken: async (pathname) => {
         if (!PATHNAME.test(pathname) || pathname.includes("..")) throw new Error("Not an anatomy model path");
         const token = await issueSignedToken({
