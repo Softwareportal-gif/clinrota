@@ -206,7 +206,7 @@ export function LandingPage() {
           <p>
             New: Praxxt Anatomy, the human body in 3D.{" "}
             <Link href="/anatomy/start" className="font-bold underline">
-              Start a free 2-week trial
+              Try it free
             </Link>
           </p>
           <div className="hidden items-center gap-6 sm:flex">
@@ -356,7 +356,7 @@ export function LandingPage() {
               style={{ borderColor: "#FBD5E0", color: "#C2295A" }}
             >
               <span className="h-2 w-2 rounded-full" style={{ background: "linear-gradient(135deg, #FF5C8A, #5A3BF0)" }} />
-              New · 2-week free trial
+              New · Try it free
             </span>
             <h2 className="text-3xl font-extrabold leading-tight tracking-[-0.03em] sm:text-5xl">
               Praxxt Anatomy:{" "}
@@ -390,7 +390,7 @@ export function LandingPage() {
                 className="w-fit rounded-full px-7 py-4 text-base font-bold text-white transition duration-200 hover:brightness-110 motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-95"
                 style={{ background: "linear-gradient(90deg, #FF5C8A, #5A3BF0)", boxShadow: "0 10px 24px rgba(194,41,90,.25)" }}
               >
-                Start free trial →
+                Try it free →
               </Link>
               <Link
                 href="/anatomy/plans"
