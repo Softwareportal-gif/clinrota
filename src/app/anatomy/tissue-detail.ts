@@ -145,7 +145,10 @@ export function addTissueDetail(
       .replace(
         "#include <color_fragment>",
         `#include <color_fragment>
-        diffuseColor.rgb *= 1.0 + uTissueTint * tdNoise(vTissuePos * uTissueScale * 0.18);`,
+        diffuseColor.rgb *= 1.0 + uTissueTint * tdNoise(vTissuePos * uTissueScale * 0.18);
+        // The inside of an open surface (seen once a neighbour is hidden) is
+        // shaded like a cut section, so it reads as solid, not see-through.
+        if (!gl_FrontFacing) diffuseColor.rgb *= 0.5;`,
       )
       .replace(
         "#include <normal_fragment_maps>",
