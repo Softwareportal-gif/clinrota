@@ -2,8 +2,9 @@ import { requireRole } from "@/lib/require-role";
 import { prisma } from "@/lib/prisma";
 import { formatCedis, trialLimit } from "@/lib/anatomy/access";
 import { isPaystackConfigured } from "@/lib/anatomy/paystack";
-import { isAnatomyPublic } from "@/lib/anatomy/preview-access";
+import { isAnatomyPublic, isAnatomySignupOpen } from "@/lib/anatomy/preview-access";
 import { SetPlanForm } from "./set-plan-form";
+import { TesterForm } from "./tester-form";
 
 const date = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
@@ -57,6 +58,19 @@ export default async function AdminAnatomyPage() {
           </div>
         ))}
       </dl>
+
+      <section className="rounded-xl border border-gray-200 bg-white p-4">
+        <h2 className="font-semibold">Shared tester login</h2>
+        <p className="mb-3 mt-1 text-sm text-gray-600">
+          One login every tester can use, with full access. Pick an email and a new password used nowhere else, then
+          share them with your testers. Public sign-up is {isAnatomySignupOpen() ? "open" : "paused"}.
+        </p>
+        <TesterForm />
+        <p className="mt-2 text-xs text-gray-500">
+          To stop testers later, set this login&apos;s plan below with Months = 0. Ten wrong passwords in 15 minutes
+          lock the login for 15 minutes, so share the password exactly.
+        </p>
+      </section>
 
       <section className="rounded-xl border border-gray-200 bg-white p-4">
         <h2 className="mb-3 font-semibold">Set a plan by hand</h2>

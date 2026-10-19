@@ -21,3 +21,9 @@ export function isAnatomyOpenTo(email: string | null | undefined): boolean {
 export function isAnatomyPublic(): boolean {
   return process.env.ANATOMY_PUBLIC === "true";
 }
+
+// Public sign-up can be frozen (ANATOMY_SIGNUP="closed"), e.g. while testers
+// share one account an admin made; existing accounts still log in as usual.
+export function isAnatomySignupOpen(): boolean {
+  return process.env.ANATOMY_SIGNUP !== "closed";
+}

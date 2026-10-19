@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import { auth, signIn } from "@/auth";
 import { isPaystackConfigured } from "@/lib/anatomy/paystack";
+import { isAnatomySignupOpen } from "@/lib/anatomy/preview-access";
 import { isBuyablePlan, startCheckout, startTrial } from "@/lib/anatomy/subscriptions";
 import { trialEnd } from "@/lib/anatomy/access";
 import { appBaseUrl } from "@/lib/app-url";
@@ -23,6 +24,7 @@ export async function signUpForTrial(_prev: SignUpState, formData: FormData): Pr
   const password = String(formData.get("password") ?? "");
   const values = { name, email };
 
+  if (!isAnatomySignupOpen()) return { error: "Sign-ups are paused while we test. Log in with the tester account you were given.", values };
   if (name.length < 2 || name.length > 100) return { error: "Enter your full name.", values };
   if (!EMAIL.test(email) || email.length > 200) return { error: "Enter a valid email address.", values };
   if (password.length < 8 || password.length > 200) return { error: "Choose a password of at least 8 characters.", values };

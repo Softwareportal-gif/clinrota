@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { isAnatomyPublic } from "@/lib/anatomy/preview-access";
+import Link from "next/link";
+import { isAnatomyPublic, isAnatomySignupOpen } from "@/lib/anatomy/preview-access";
 import { freeTesting, TRIAL_DAYS } from "@/lib/anatomy/access";
 import { BRAND, MarketingFrame } from "../marketing";
 import { SignUpForm } from "./sign-up-form";
@@ -51,11 +52,35 @@ export default async function StartTrialPage() {
           </div>
         </div>
         <div className="rounded-3xl bg-white p-6 shadow-[0_12px_40px_rgba(37,32,110,.10)] sm:p-8" style={{ border: `1px solid ${BRAND.line}` }}>
-          <h2 className="text-2xl font-extrabold tracking-[-0.02em]">Create your account</h2>
-          <p className="mb-6 mt-1 text-sm" style={{ color: BRAND.body }}>
-            {free ? "It's free while we test it. Tell us what you think!" : `Your trial starts straight away and lasts ${TRIAL_DAYS} days.`}
-          </p>
-          <SignUpForm />
+          {isAnatomySignupOpen() ? (
+            <>
+              <h2 className="text-2xl font-extrabold tracking-[-0.02em]">Create your account</h2>
+              <p className="mb-6 mt-1 text-sm" style={{ color: BRAND.body }}>
+                {free ? "It's free while we test it. Tell us what you think!" : `Your trial starts straight away and lasts ${TRIAL_DAYS} days.`}
+              </p>
+              <SignUpForm />
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-extrabold tracking-[-0.02em]">Sign-ups are paused while we test</h2>
+              <p className="mb-6 mt-2 leading-relaxed" style={{ color: BRAND.body }}>
+                Testing Praxxt Anatomy for us? Log in with the tester email and password you were given.
+              </p>
+              <Link
+                href="/login?callbackUrl=/anatomy"
+                className="block w-full rounded-full px-6 py-3.5 text-center text-base font-bold text-white transition hover:brightness-110"
+                style={{ background: BRAND.warm }}
+              >
+                Log in to Praxxt Anatomy
+              </Link>
+              <p className="mt-4 text-center text-sm" style={{ color: BRAND.body }}>
+                Want to try it?{" "}
+                <a href="mailto:hello@praxxt.com?subject=Praxxt%20Anatomy%20tester%20access" className="font-bold underline" style={{ color: BRAND.violet }}>
+                  Ask us for access
+                </a>
+              </p>
+            </>
+          )}
         </div>
       </main>
     </MarketingFrame>
