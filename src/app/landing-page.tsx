@@ -5,6 +5,8 @@ import { Wordmark } from "@/components/wordmark";
 import { LinkedInIcon, FacebookIcon, InstagramIcon, YouTubeIcon } from "@/components/social-icons";
 import { ContactForm } from "./contact-form";
 import { Reveal } from "@/components/reveal";
+import { ModulesShowcase } from "./modules-showcase";
+import { ProductsShowcase } from "./products-showcase";
 
 const INK = "#17153B";
 const BODY = "#4A4867";
@@ -27,35 +29,6 @@ const PARTNERS: { name: string; logoSrc: string; show: boolean }[] = [
   { name: "St. John of God College of Health", logoSrc: "/images/partners/st-john-of-god-logo.webp", show: false },
 ];
 const SHOWN_PARTNERS = PARTNERS.filter((p) => p.show);
-
-const MODULES = [
-  {
-    title: "Clinical Logbook",
-    body: "Structured SOAP case entries mapped to your competency framework, with entrustment levels rated by supervisors.",
-    gradient: "linear-gradient(135deg, #5A3BF0, #8B6BFF)",
-    linkColor: VIOLET,
-    icon: <path d="M5 5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2zM9 8h6M9 12h6M9 16h3" />,
-  },
-  {
-    title: "Rotations & Placements",
-    body: "Assign rotations, collect student site preferences, and track supervised hours at every clinical site.",
-    gradient: "linear-gradient(135deg, #2563EB, #4FA3FF)",
-    linkColor: BLUE,
-    icon: (
-      <>
-        <path d="M12 21s-7-4.5-7-10a7 7 0 0 1 14 0c0 5.5-7 10-7 10z" />
-        <circle cx="12" cy="11" r="2.4" />
-      </>
-    ),
-  },
-  {
-    title: "Compliance & Records",
-    body: "Verify required documents before placements start, and give every student a supervisor-verified CV.",
-    gradient: "linear-gradient(135deg, #0E9FB3, #3FD0C9)",
-    linkColor: "#0B7F8F",
-    icon: <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6zM9 12l2 2 4-4" />,
-  },
-];
 
 // Each has a discipline template (rubric + logbook fields) an admin can pick
 // when creating a program — see prisma/migrations/*discipline_templates*.
@@ -258,17 +231,17 @@ export function LandingPage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center text-center">
           <span className="inline-flex items-center gap-2 rounded-full border bg-white px-4 py-1.5 text-[13px] font-bold" style={{ borderColor: "#E2DEFB", color: "#4A3BB5" }}>
             <span className="h-2 w-2 rounded-full" style={{ background: "linear-gradient(135deg, #5A3BF0, #12B5C9)" }} />
-            Clinical education management platform
+            Clinical education platform
           </span>
           <h1 className="mt-6 max-w-4xl text-4xl font-extrabold leading-[1.05] tracking-[-0.035em] sm:text-6xl lg:text-7xl">
-            Every placement, every competency,{" "}
+            From the anatomy lab to the ward,{" "}
             <span style={{ background: TEXT_GRADIENT, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
-              one connected record.
+              one platform for health education.
             </span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed sm:text-xl" style={{ color: BODY }}>
-            Praxxt brings students, clinical supervisors and program coordinators onto one platform for
-            logbooks, placements, sign-offs and compliance.
+            Praxxt helps students learn the human body in 3D, then follows them onto clinical placements, with
+            logbooks, supervisor sign-offs and compliance in one place for students, supervisors and coordinators.
           </p>
           <div className="mt-9 flex flex-col gap-3 pb-16 sm:flex-row sm:pb-0">
             <a
@@ -278,9 +251,9 @@ export function LandingPage() {
             >
               Book a demo →
             </a>
-            <a href="#platform" className="rounded-full border bg-white px-7 py-4 text-base font-bold transition duration-200 hover:border-[#5A3BF0] hover:text-[#5A3BF0] hover:shadow-[0_8px_20px_rgba(37,32,110,.10)] motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-95" style={{ borderColor: "#DCD8F5" }}>
-              Explore the platform
-            </a>
+            <Link href="/anatomy/start" className="rounded-full border bg-white px-7 py-4 text-base font-bold transition duration-200 hover:border-[#5A3BF0] hover:text-[#5A3BF0] hover:shadow-[0_8px_20px_rgba(37,32,110,.10)] motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-95" style={{ borderColor: "#DCD8F5" }}>
+              Try Anatomy free
+            </Link>
           </div>
           <DashboardPreview />
         </div>
@@ -304,9 +277,9 @@ export function LandingPage() {
         </section>
       )}
 
-      <section id="platform" className="scroll-mt-24 px-6 py-20 sm:py-24">
-        <div className="mx-auto max-w-6xl">
-          <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
+      <section id="platform" className="scroll-mt-24 py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="flex max-w-3xl flex-col gap-4">
             <Eyebrow>The Praxxt platform</Eyebrow>
             <h2 className="text-3xl font-extrabold leading-tight tracking-[-0.03em] sm:text-5xl">
               One platform for the whole clinical training journey
@@ -315,33 +288,24 @@ export function LandingPage() {
               Three connected modules replace the paper logbook, the placement spreadsheet and the compliance folder.
             </p>
           </div>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {MODULES.map((m, i) => (
-              <Reveal key={m.title} delay={i * 120} className="h-full">
-              <div
-                className="group flex h-full cursor-default flex-col gap-4 rounded-3xl border border-[#ECEBF5] bg-white p-8 shadow-[0_12px_30px_rgba(37,32,110,.06)] transition duration-300 hover:border-[#D7D1FB] hover:shadow-[0_24px_48px_rgba(37,32,110,.14)] active:shadow-[0_24px_48px_rgba(37,32,110,.14)] motion-safe:hover:-translate-y-1.5 motion-safe:active:scale-[.98]"
-              >
-                <span
-                  className="flex h-14 w-14 items-center justify-center rounded-2xl transition duration-300 motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110"
-                  style={{ background: m.gradient }}
-                >
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    {m.icon}
-                  </svg>
-                </span>
-                <h3 className="text-2xl font-extrabold tracking-[-0.02em]">{m.title}</h3>
-                <p className="leading-relaxed" style={{ color: BODY }}>{m.body}</p>
-                <a href="#contact" className="mt-auto inline-flex items-center gap-1 text-[15px] font-bold" style={{ color: m.linkColor }}>
-                  See it in a demo
-                  <span aria-hidden="true" className="transition-transform duration-300 motion-safe:group-hover:translate-x-1.5">
-                    →
-                  </span>
-                </a>
-              </div>
-              </Reveal>
-            ))}
+        </div>
+        <ModulesShowcase />
+      </section>
+
+      <section id="products" className="scroll-mt-24 pb-20 sm:pb-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="flex max-w-3xl flex-col gap-4">
+            <Eyebrow>Our products</Eyebrow>
+            <h2 className="text-3xl font-extrabold leading-tight tracking-[-0.03em] sm:text-5xl">
+              Two products, each with its own way in
+            </h2>
+            <p className="text-lg leading-relaxed" style={{ color: BODY }}>
+              Schools subscribe to Praxxt Logbook for their whole programme. Students and professionals sign up for
+              Praxxt Anatomy themselves.
+            </p>
           </div>
         </div>
+        <ProductsShowcase />
       </section>
 
       <section
