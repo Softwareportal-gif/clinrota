@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Wordmark } from "@/components/wordmark";
 import { manrope } from "@/fonts/manrope";
+import { isAnatomySignupOpen } from "@/lib/anatomy/preview-access";
 
 export const BRAND = {
   ink: "#17153B",
@@ -34,16 +35,18 @@ export function MarketingFrame({ children }: { children: ReactNode }) {
             <Link href="/anatomy/plans" className="hidden transition-colors hover:text-[#5A3BF0] sm:inline">
               Plans
             </Link>
-            <Link href="/login?callbackUrl=/anatomy" className="rounded-full px-3 py-2 transition-colors hover:text-[#5A3BF0]">
+            <Link href="/anatomy/login" className="rounded-full px-3 py-2 transition-colors hover:text-[#5A3BF0]">
               Log in
             </Link>
-            <Link
-              href="/anatomy/start"
-              className="whitespace-nowrap rounded-full px-4 py-2 text-white transition hover:brightness-110"
-              style={{ background: BRAND.warm }}
-            >
-              Start free trial
-            </Link>
+            {isAnatomySignupOpen() && (
+              <Link
+                href="/anatomy/start"
+                className="whitespace-nowrap rounded-full px-4 py-2 text-white transition hover:brightness-110"
+                style={{ background: BRAND.warm }}
+              >
+                Start free trial
+              </Link>
+            )}
           </nav>
         </div>
       </header>

@@ -67,7 +67,7 @@ export default async function StartTrialPage() {
                 Testing Praxxt Anatomy for us? Log in with the tester email and password you were given.
               </p>
               <Link
-                href="/login?callbackUrl=/anatomy"
+                href="/anatomy/login"
                 className="block w-full rounded-full px-6 py-3.5 text-center text-base font-bold text-white transition hover:brightness-110"
                 style={{ background: BRAND.warm }}
               >

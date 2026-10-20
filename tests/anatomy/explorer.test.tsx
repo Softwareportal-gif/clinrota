@@ -285,4 +285,14 @@ describe("Explorer", () => {
     );
     expect(screen.queryByText(/days left/)).not.toBeInTheDocument();
   });
+
+  it("offers Log out when given a log-out action", async () => {
+    await renderExplorer({ logOut: async () => {} });
+    expect(screen.getByRole("button", { name: "Log out" })).toBeInTheDocument();
+  });
+
+  it("has no Log out without one", async () => {
+    await renderExplorer();
+    expect(screen.queryByRole("button", { name: "Log out" })).not.toBeInTheDocument();
+  });
 });

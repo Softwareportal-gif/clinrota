@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { ROLE_HOME, isPublicAnatomyPage, isSharedPath } from "@/lib/role-routes";
+import { ROLE_HOME, isPublicAnatomyPage, isSharedPath, loginPathFor } from "@/lib/role-routes";
 
 // Next.js 16 renamed `middleware.ts` to `proxy.ts` (the exported function
 // keeps working as a default export either way). This is the coarse,
@@ -28,8 +28,10 @@ export default auth((req) => {
 
   if (!isLoggedIn) {
     if (isPublicPage) return NextResponse.next();
-    const loginUrl = new URL("/login", nextUrl);
-    loginUrl.searchParams.set("callbackUrl", nextUrl.pathname);
+    // Praxxt Anatomy has its own login page, which always returns to /anatomy.
+    const loginPath = loginPathFor(nextUrl.pathname);
+    const loginUrl = new URL(loginPath, nextUrl);
+    if (loginPath === "/login") loginUrl.searchParams.set("callbackUrl", nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
 

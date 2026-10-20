@@ -7,6 +7,7 @@ import { isAnatomyOpenTo } from "@/lib/anatomy/preview-access";
 import { accessForUser } from "@/lib/anatomy/subscriptions";
 import { Explorer } from "./explorer";
 import { BRAND, MarketingFrame } from "./marketing";
+import { logOutOfAnatomy } from "./account-actions";
 import { startMyTrial } from "./plan-actions";
 
 export const metadata: Metadata = { title: "Praxxt Anatomy" };
@@ -16,7 +17,7 @@ export const metadata: Metadata = { title: "Praxxt Anatomy" };
 // decides: none yet → start a trial, ended → see plans, otherwise explore.
 export default async function AnatomyPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login?callbackUrl=/anatomy");
+  if (!session?.user?.id) redirect("/anatomy/login");
   if (!isAnatomyOpenTo(session.user.email)) notFound();
 
   const access = await accessForUser(session.user.id, session.user.role);
@@ -28,6 +29,7 @@ export default async function AnatomyPage() {
       allowedSystems={allowedSystems(access.level)}
       plan={access.plan ? { plan: access.plan, daysLeft: access.daysLeft } : null}
       freeTesting={freeTesting()}
+      logOut={logOutOfAnatomy}
     />
   );
 }

@@ -4,6 +4,7 @@
 // search along the top, the study panel for the selected structure on the
 // left (a bottom sheet on phones), view tools on the right and the body
 // systems bar along the bottom.
+import { LogOut } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { parseCatalogue, type AnatomySystem, type Catalogue, type Structure } from "@/lib/anatomy/catalogue";
 import type { PlanId } from "@/lib/anatomy/access";
@@ -46,11 +47,13 @@ export function Explorer({
   allowedSystems = null,
   plan = null,
   freeTesting = false,
+  logOut,
 }: {
   modelBaseUrl: string;
   allowedSystems?: AnatomySystem[] | null; // null: every system
   plan?: PlanBadge;
   freeTesting?: boolean; // free for everyone while testing: ask for feedback instead of plans
+  logOut?: () => Promise<void>; // server action; shows a Log out button
 }) {
   const [load, setLoad] = useState<Load>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
@@ -105,6 +108,7 @@ export function Explorer({
       allowedSystems={allowedSystems}
       plan={plan}
       freeTesting={freeTesting}
+      logOut={logOut}
     />
   );
 }
@@ -161,12 +165,14 @@ function ExplorerView({
   allowedSystems,
   plan,
   freeTesting,
+  logOut,
 }: {
   catalogue: Catalogue;
   modelBaseUrl: string;
   allowedSystems: AnatomySystem[] | null;
   plan: PlanBadge;
   freeTesting: boolean;
+  logOut?: () => Promise<void>;
 }) {
   const catalogue = useMemo(() => limitCatalogue(fullCatalogue, allowedSystems), [fullCatalogue, allowedSystems]);
   const [state, dispatch] = useReducer(explorerReducer, INITIAL_STATE, (initial) => {
@@ -264,26 +270,16 @@ function ExplorerView({
         search={<SearchBar catalogue={catalogue} query={query} onQueryChange={setQuery} onPick={pick} showResults={webgl} />}
       />
 
-      {freeTesting && (
-        <div className="pointer-events-none absolute left-3 top-24 sm:left-5 sm:top-14">
-          <a
-            href={FEEDBACK_MAILTO}
-            className="pointer-events-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-md"
-            style={{ backgroundColor: PANEL, border: `1px solid ${PANEL_BORDER}`, color: TEXT }}
-          >
+      <div className="pointer-events-none absolute left-3 top-24 flex flex-wrap items-center gap-2 sm:left-5 sm:top-14">
+        {freeTesting && (
+          <a href={FEEDBACK_MAILTO} className="pointer-events-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-md" style={{ backgroundColor: PANEL, border: `1px solid ${PANEL_BORDER}`, color: TEXT }}>
             Free during testing
             <span style={{ color: ACCENT }}>· Send feedback</span>
           </a>
-        </div>
-      )}
+        )}
 
-      {!freeTesting && plan && (plan.plan === "TRIAL" || (plan.daysLeft !== null && plan.daysLeft <= 30)) && (
-        <div className="pointer-events-none absolute left-3 top-24 sm:left-5 sm:top-14">
-          <a
-            href="/anatomy/plans"
-            className="pointer-events-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-md"
-            style={{ backgroundColor: PANEL, border: `1px solid ${PANEL_BORDER}`, color: TEXT }}
-          >
+        {!freeTesting && plan && (plan.plan === "TRIAL" || (plan.daysLeft !== null && plan.daysLeft <= 30)) && (
+          <a href="/anatomy/plans" className="pointer-events-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-md" style={{ backgroundColor: PANEL, border: `1px solid ${PANEL_BORDER}`, color: TEXT }}>
             {plan.plan === "TRIAL" ? "Free trial" : "Plan ends soon"}
             {plan.daysLeft !== null && (
               <span style={{ color: TEXT_MUTED }}>
@@ -292,8 +288,21 @@ function ExplorerView({
             )}
             <span style={{ color: ACCENT }}>· See plans</span>
           </a>
-        </div>
-      )}
+        )}
+
+        {logOut && (
+          <form action={logOut} className="pointer-events-auto">
+            <button
+              type="submit"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-md"
+              style={{ backgroundColor: PANEL, border: `1px solid ${PANEL_BORDER}`, color: TEXT }}
+            >
+              <LogOut size={13} aria-hidden />
+              Log out
+            </button>
+          </form>
+        )}
+      </div>
 
       {failedChunks.size > 0 && (
         <div className="pointer-events-none absolute inset-x-0 top-28 flex justify-center px-3 sm:top-20">

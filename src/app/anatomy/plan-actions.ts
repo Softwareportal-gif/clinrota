@@ -52,7 +52,7 @@ export async function signUpForTrial(_prev: SignUpState, formData: FormData): Pr
   try {
     await signIn("credentials", { email, password, redirectTo: "/anatomy" });
   } catch (error) {
-    if (error instanceof AuthError) redirect("/login?callbackUrl=/anatomy");
+    if (error instanceof AuthError) redirect("/anatomy/login");
     throw error;
   }
 }
@@ -60,7 +60,7 @@ export async function signUpForTrial(_prev: SignUpState, formData: FormData): Pr
 // For someone already signed in (any Praxxt account) who has never had a plan.
 export async function startMyTrial(): Promise<void> {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login?callbackUrl=/anatomy");
+  if (!session?.user?.id) redirect("/anatomy/login");
   await startTrial(session.user.id);
   redirect("/anatomy");
 }

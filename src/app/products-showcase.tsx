@@ -67,7 +67,7 @@ const PRODUCTS: Product[] = [
     },
     primary: { label: "Try it free", href: "/anatomy/start" },
     secondary: { label: "See plans", href: "/anatomy/plans" },
-    signIn: { prompt: "Already have an account?", href: "/login?callbackUrl=/anatomy" },
+    signIn: { prompt: "Already have an account?", href: "/anatomy/login" },
     background: "#E6EEFF",
     accent: "#2563EB",
     visual: (

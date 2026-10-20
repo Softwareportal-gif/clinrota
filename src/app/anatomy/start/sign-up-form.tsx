@@ -71,7 +71,7 @@ export function SignUpForm() {
       </button>
       <p className="text-center text-sm" style={{ color: BRAND.body }}>
         Already have a Praxxt account?{" "}
-        <Link href="/login?callbackUrl=/anatomy" className="font-bold underline" style={{ color: BRAND.violet }}>
+        <Link href="/anatomy/login" className="font-bold underline" style={{ color: BRAND.violet }}>
           Log in
         </Link>
       </p>
