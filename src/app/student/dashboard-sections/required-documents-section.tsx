@@ -29,12 +29,6 @@ const LABEL_STYLE: Record<EffectiveDocStatus, { color: string; bold: boolean }> 
   VERIFIED: { color: TEXT_SECONDARY, bold: false },
 };
 
-const LABEL_TEXT: Partial<Record<EffectiveDocStatus, string>> = {
-  MISSING: "Missing",
-  REJECTED: "Needs new file",
-  EXPIRED: "Needs new file",
-};
-
 export function RequiredDocumentsSection({ documents }: { documents: DocumentRow[] }) {
   return (
     <section className="rounded-2xl bg-white p-6" style={{ border: `1px solid ${BORDER}` }}>
@@ -64,7 +58,7 @@ export function RequiredDocumentsSection({ documents }: { documents: DocumentRow
                   className="shrink-0 text-xs"
                   style={{ color: labelStyle.color, fontWeight: labelStyle.bold ? 700 : 400 }}
                 >
-                  {LABEL_TEXT[doc.status] ?? DOC_STATUS_LABELS[doc.status]}
+                  {DOC_STATUS_LABELS[doc.status]}
                 </span>
               </div>
             );

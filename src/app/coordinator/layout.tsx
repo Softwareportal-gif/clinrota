@@ -2,13 +2,16 @@ import { requireRole } from "@/lib/require-role";
 import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
 import { totalUnreadMessages } from "@/lib/messaging";
 import { PortalShell, type PortalNavItem } from "@/components/portal-shell/portal-shell";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: { template: "%s · Praxxt", default: "Praxxt" } };
 
 const NAV_ITEMS: PortalNavItem[] = [
   { href: "/coordinator", label: "Dashboard", icon: "home", exact: true },
   { href: "/coordinator/students", label: "Students", icon: "users" },
   { href: "/coordinator/cohorts", label: "Cohorts", icon: "layers" },
   { href: "/coordinator/messages", label: "Messages", icon: "messages" },
-  { href: "/coordinator/rotations/new", label: "Assign rotations", icon: "calendar" },
+  { href: "/coordinator/rotations", label: "Rotations", icon: "calendar" },
   { href: "/coordinator/competencies", label: "Competencies", icon: "target" },
   { href: "/coordinator/compliance", label: "Compliance", icon: "shield" },
   { href: "/coordinator/document-types", label: "Required documents", icon: "file" },

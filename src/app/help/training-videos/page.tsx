@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/wordmark";
 import { BackLink } from "@/components/back-link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Training videos · Praxxt" };
 
 const INK = "#17153B";
 const HIGHLIGHT = "#D63A74";

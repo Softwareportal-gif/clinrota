@@ -8,6 +8,9 @@ import {
   DEFAULT_PASS_THRESHOLD,
 } from "@/lib/scoring";
 import { ScoringSettingsForm } from "./scoring-settings-form";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Scoring settings" };
 
 export default async function ScoringSettingsPage() {
   const session = await requireRole("COORDINATOR");

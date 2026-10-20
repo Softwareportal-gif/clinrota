@@ -6,6 +6,10 @@ import { Wordmark } from "@/components/wordmark";
 import { BackLink } from "@/components/back-link";
 import { Badge } from "@/components/badge";
 import { TicketForm } from "./ticket-form";
+import { formatDate } from "@/lib/format-date";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Support tickets · Praxxt" };
 
 const INK = "#17153B";
 
@@ -73,7 +77,7 @@ export default async function TicketsPage({
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-gray-900">{ticket.subject}</p>
                     <p className="text-xs text-gray-500">
-                      Submitted {ticket.createdAt.toLocaleDateString()}
+                      Submitted {formatDate(ticket.createdAt)}
                     </p>
                   </div>
                   <Badge label={STATUS_LABELS[ticket.status]} className={STATUS_CLASSES[ticket.status]} />

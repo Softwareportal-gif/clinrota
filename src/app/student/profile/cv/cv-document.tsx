@@ -248,7 +248,7 @@ export function StudentCvDocument({ data }: { data: StudentCvData }) {
                     </Text>
                   </View>
                   <Text style={styles.muted}>
-                    {[p.location, `Preceptor: ${p.preceptorName}`].filter(Boolean).join("  ·  ")}
+                    {[p.location, `Supervisor: ${p.supervisorName}`].filter(Boolean).join("  ·  ")}
                   </Text>
                   {(p.approvedHours > 0 || p.approvedCases > 0) && (
                     <View style={styles.badgeRow}>

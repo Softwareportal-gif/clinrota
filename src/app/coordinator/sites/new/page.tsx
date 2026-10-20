@@ -1,6 +1,9 @@
 import { requireRole } from "@/lib/require-role";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SiteForm } from "../site-form";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Add clinical site" };
 
 export default async function NewSitePage() {
   await requireRole("COORDINATOR");

@@ -5,6 +5,10 @@ import { Badge } from "@/components/badge";
 import { getEffectiveDocStatus, DOC_STATUS_LABELS, DOC_STATUS_BADGE_CLASSES } from "@/lib/compliance-status";
 import { UploadForm } from "./upload-form";
 import { INK, TEXT_SECONDARY, BORDER } from "../dashboard-sections/colors";
+import { formatDate } from "@/lib/format-date";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Required documents" };
 
 export default async function StudentCompliancePage() {
   const session = await requireRole("STUDENT");
@@ -48,7 +52,7 @@ export default async function StudentCompliancePage() {
                       <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
                         View uploaded file
                       </a>
-                      {doc.expiryDate && ` · expires ${new Date(doc.expiryDate).toLocaleDateString()}`}
+                      {doc.expiryDate && ` · expires ${formatDate(doc.expiryDate)}`}
                     </p>
                     {doc.verificationStatus === "REJECTED" && doc.rejectionReason && (
                       <p className="text-red-600">Rejected: {doc.rejectionReason}</p>

@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { AddForm } from "./add-form";
 import { ToggleActiveButton } from "./toggle-active-button";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Required documents" };
 
 export default async function DocumentTypesPage() {
   const session = await requireRole("COORDINATOR");

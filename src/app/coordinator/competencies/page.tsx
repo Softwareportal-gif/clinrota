@@ -6,6 +6,9 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import { AddForm } from "./add-form";
 import { ToggleActiveButton } from "./toggle-active-button";
 import { RequirementForm } from "./requirement-form";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Competencies" };
 
 export default async function CompetenciesPage() {
   const session = await requireRole("COORDINATOR");

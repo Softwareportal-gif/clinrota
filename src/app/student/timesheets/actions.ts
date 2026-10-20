@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/require-role";
 import { getStudentProfileByUserId } from "@/lib/student";
 import type { SubmitTimesheetPayload } from "@/lib/offline/payloads";
+import { loggableRotationWhere } from "@/lib/rotation-status";
 
 export type CoreResult = { error?: string; ok?: true };
 
@@ -15,7 +16,7 @@ export async function submitTimesheetCore(payload: SubmitTimesheetPayload): Prom
   const studentProfile = await getStudentProfileByUserId(session.user.id);
 
   const rotation = await prisma.rotation.findFirst({
-    where: { id: payload.rotationId, studentId: studentProfile.id, status: "ACTIVE" },
+    where: { id: payload.rotationId, studentId: studentProfile.id, ...loggableRotationWhere() },
   });
   if (!rotation) return { error: "That rotation is not available." };
 

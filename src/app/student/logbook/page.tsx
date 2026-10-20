@@ -4,6 +4,9 @@ import { getStudentProfileByUserId } from "@/lib/student";
 import { prisma } from "@/lib/prisma";
 import { LogbookList } from "./logbook-list";
 import { INK, ACCENT, TEXT_SECONDARY } from "../dashboard-sections/colors";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "My logbook" };
 
 export default async function LogbookPage() {
   const session = await requireRole("STUDENT");

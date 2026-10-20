@@ -3,6 +3,9 @@ import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
 import { prisma } from "@/lib/prisma";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { CycleForm } from "./cycle-form";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Preference cycle" };
 
 export default async function NewPreferenceCyclePage() {
   const session = await requireRole("COORDINATOR");

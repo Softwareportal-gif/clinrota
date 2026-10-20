@@ -6,6 +6,12 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import { RecalculateScoreButton } from "@/components/recalculate-score-button";
 import { getEffectiveDocStatus, isCompliant } from "@/lib/compliance-status";
 import { getSiteContractStatus, isSiteContractIssue } from "@/lib/site-status";
+import { rotationPhase, rotationPhaseLabel } from "@/lib/rotation-status";
+import { formatDate } from "@/lib/format-date";
+import type { Metadata } from "next";
+
+// The layout's "%s · Praxxt" template only reaches child pages, not this one.
+export const metadata: Metadata = { title: "Dashboard · Praxxt" };
 
 const WARD_REVIEW_BACKLOG_THRESHOLD_MS = 48 * 60 * 60 * 1000;
 
@@ -31,7 +37,7 @@ export default async function CoordinatorDashboard({
     prisma.rotation.findMany({
       where: {
         programId: coordinatorProfile.programId,
-        status: { in: ["ACTIVE", "COMPLETED"] },
+        status: { not: "CANCELLED" },
       },
       include: {
         student: { include: { user: true } },
@@ -178,8 +184,8 @@ export default async function CoordinatorDashboard({
                       <Link href={`/coordinator/scores/${rotation.id}`} className="hover:underline">
                         {rotation.clinicalSite.name}
                         {rotation.siteDepartment ? ` — ${rotation.siteDepartment.name}` : ""} ·{" "}
-                        {rotation.startDate.toLocaleDateString()} – {rotation.endDate.toLocaleDateString()} ·{" "}
-                        {rotation.supervisor.user.name} · {rotation.status}
+                        {formatDate(rotation.startDate)} – {formatDate(rotation.endDate)} ·{" "}
+                        {rotation.supervisor.user.name} · {rotationPhaseLabel(rotationPhase(rotation))}
                         {rotation.rotationScore
                           ? ` · ${rotation.rotationScore.finalScore.toFixed(1)}%${
                               rotation.rotationScore.isOverridden ? " (overridden)" : ""

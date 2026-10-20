@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePendingWrites } from "@/lib/offline/use-pending-writes";
 import type { SubmitReviewPayload } from "@/lib/offline/payloads";
+import { formatDate } from "@/lib/format-date";
 
 type PendingEntry = {
   id: string;
@@ -51,7 +52,7 @@ export function PendingReviewList({
                   <p className="text-xs text-gray-500">
                     {entry.studentName} · {entry.clinicalSiteName}
                     {entry.wardName ? ` — ${entry.wardName}` : ""} · submitted{" "}
-                    {entry.submittedAt ? entry.submittedAt.toLocaleDateString() : "—"}
+                    {entry.submittedAt ? formatDate(entry.submittedAt) : "—"}
                   </p>
                 </div>
                 <span className="shrink-0 text-sm font-medium text-blue-600">Review →</span>

@@ -4,6 +4,9 @@ import { totalUnreadMessages } from "@/lib/messaging";
 import { SyncStatusIndicator } from "@/components/sync-status-indicator";
 import { LogoutButton } from "@/components/logout-button";
 import { PortalShell, type PortalNavItem } from "@/components/portal-shell/portal-shell";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: { template: "%s · Praxxt", default: "Praxxt" } };
 
 const NAV_ITEMS: PortalNavItem[] = [
   { href: "/student", label: "Dashboard", icon: "grid", exact: true },
@@ -11,7 +14,7 @@ const NAV_ITEMS: PortalNavItem[] = [
   { href: "/student/preferences", label: "Rotation Preferences", icon: "star" },
   { href: "/student/placements", label: "My Placements", icon: "pin" },
   { href: "/student/compliance", label: "Required Documents", icon: "file" },
-  { href: "/student/log/new", label: "Clinical Log", icon: "clipboard" },
+  { href: "/student/log/new", label: "Log a case", icon: "clipboard" },
   { href: "/student/logbook", label: "My Logbook", icon: "list" },
   { href: "/student/timesheets", label: "Timesheets", icon: "clock" },
   { href: "/student/messages", label: "Messages", icon: "messages" },

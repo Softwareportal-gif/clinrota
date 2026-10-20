@@ -5,6 +5,10 @@ import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
 import { prisma } from "@/lib/prisma";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { ReviewDocForm } from "./review-doc-form";
+import { formatDate } from "@/lib/format-date";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Review document" };
 
 export default async function ReviewDocumentPage({
   params,
@@ -58,13 +62,13 @@ export default async function ReviewDocumentPage({
           <div className="flex justify-between">
             <dt className="text-gray-600">Issue date</dt>
             <dd className="text-gray-900">
-              {doc.issueDate ? new Date(doc.issueDate).toLocaleDateString() : "—"}
+              {doc.issueDate ? formatDate(doc.issueDate) : "—"}
             </dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-gray-600">Expiry date</dt>
             <dd className="text-gray-900">
-              {doc.expiryDate ? new Date(doc.expiryDate).toLocaleDateString() : "—"}
+              {doc.expiryDate ? formatDate(doc.expiryDate) : "—"}
             </dd>
           </div>
         </dl>

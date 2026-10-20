@@ -6,6 +6,7 @@ import { PendingSyncBadge } from "@/components/pending-sync-badge";
 import { StatusBadge } from "@/components/status-badge";
 import type { LogEntryStatus } from "@/generated/prisma/client";
 import type { CreateLogEntryPayload, SaveLogStepPayload } from "@/lib/offline/payloads";
+import { formatDate } from "@/lib/format-date";
 
 type ServerEntry = {
   id: string;
@@ -91,7 +92,7 @@ export function LogbookList({
               <p className="truncate text-sm font-medium text-gray-900">{entry.caseTitle}</p>
               <p className="text-xs text-gray-500">
                 {entry.clinicalSiteName}
-                {entry.wardName ? ` — ${entry.wardName}` : ""} · {entry.occurredAt.toLocaleDateString()}
+                {entry.wardName ? ` — ${entry.wardName}` : ""} · {formatDate(entry.occurredAt)}
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">

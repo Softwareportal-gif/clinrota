@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ENTRUSTMENT_LEVEL_VALUE } from "@/lib/entrustment";
 import type { EntrustmentLevel } from "@/generated/prisma/client";
+import { rotationPhase } from "@/lib/rotation-status";
 
 // Short, employer-readable wording for the entrustment scale.
 export const CV_LEVEL_LABELS: Record<EntrustmentLevel, string> = {
@@ -19,7 +20,7 @@ export type CvPlacement = {
   startDate: Date;
   endDate: Date;
   isCurrent: boolean;
-  preceptorName: string;
+  supervisorName: string;
   approvedHours: number;
   approvedCases: number;
 };
@@ -57,7 +58,7 @@ export async function getStudentCvData(studentProfileId: string): Promise<Studen
   if (!student) return null;
 
   const rotations = await prisma.rotation.findMany({
-    where: { studentId: student.id, status: { in: ["ACTIVE", "COMPLETED"] } },
+    where: { studentId: student.id, status: { not: "CANCELLED" }, startDate: { lte: new Date() } },
     include: { clinicalSite: true, siteDepartment: true, supervisor: { include: { user: true } } },
     orderBy: { startDate: "desc" },
   });
@@ -93,8 +94,8 @@ export async function getStudentCvData(studentProfileId: string): Promise<Studen
     location: r.clinicalSite.location,
     startDate: r.startDate,
     endDate: r.endDate,
-    isCurrent: r.status === "ACTIVE",
-    preceptorName: r.supervisor.user.name,
+    isCurrent: rotationPhase(r) === "ACTIVE",
+    supervisorName: r.supervisor.user.name,
     approvedHours: hoursByRotation.get(r.id) ?? 0,
     approvedCases: casesByRotation.get(r.id) ?? 0,
   }));

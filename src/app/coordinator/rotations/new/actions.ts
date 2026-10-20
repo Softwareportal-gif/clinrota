@@ -8,6 +8,7 @@ import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
 import { getEffectiveDocStatus, isCompliant } from "@/lib/compliance-status";
 import { getSiteContractStatus, isSiteContractIssue } from "@/lib/site-status";
 import { logAudit } from "@/lib/audit-log";
+import { statusForNewRotation } from "@/lib/rotation-status";
 
 export type AssignState = { error?: string } | undefined;
 
@@ -118,7 +119,7 @@ export async function assignRotations(_prevState: AssignState, formData: FormDat
             supervisorId: supervisor.id,
             startDate,
             endDate,
-            status: "ACTIVE",
+            status: statusForNewRotation(startDate),
           },
         })
       );

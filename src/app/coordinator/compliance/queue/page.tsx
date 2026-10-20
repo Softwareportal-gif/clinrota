@@ -3,6 +3,10 @@ import { requireRole } from "@/lib/require-role";
 import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
 import { prisma } from "@/lib/prisma";
 import { DashboardHeader } from "@/components/dashboard-header";
+import { formatDate } from "@/lib/format-date";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Documents to review" };
 
 export default async function ComplianceQueuePage() {
   const session = await requireRole("COORDINATOR");
@@ -39,7 +43,7 @@ export default async function ComplianceQueuePage() {
                     <Link href={`/coordinator/students/${doc.studentId}`} className="hover:underline">
                       {doc.student.user.name}
                     </Link>{" "}
-                    · uploaded {new Date(doc.createdAt).toLocaleDateString()}
+                    · uploaded {formatDate(doc.createdAt)}
                   </p>
                 </div>
                 <Link

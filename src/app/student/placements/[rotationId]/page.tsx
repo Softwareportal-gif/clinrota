@@ -4,11 +4,11 @@ import { requireRole } from "@/lib/require-role";
 import { getStudentProfileByUserId } from "@/lib/student";
 import { getPlacementSummaries } from "@/lib/placement-summary";
 import { BackLink } from "@/components/back-link";
+import { formatDateRange } from "@/lib/format-date";
 import { INK, ACCENT, TEXT_SECONDARY, BORDER, STATUS_GREEN, STATUS_AMBER } from "../../dashboard-sections/colors";
+import type { Metadata } from "next";
 
-function fmtDate(d: Date) {
-  return new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-}
+export const metadata: Metadata = { title: "Placement" };
 
 export default async function PlacementDetailPage({
   params,
@@ -33,7 +33,7 @@ export default async function PlacementDetailPage({
           {placement.departmentName ? ` — ${placement.departmentName}` : ""}
         </h1>
         <p className="mt-1 text-sm" style={{ color: TEXT_SECONDARY }}>
-          {fmtDate(placement.startDate)} – {fmtDate(placement.endDate)} · {placement.preceptorName}
+          {formatDateRange(placement.startDate, placement.endDate)} · Supervisor: {placement.supervisorName}
         </p>
       </div>
 
@@ -62,10 +62,10 @@ export default async function PlacementDetailPage({
                   {item.label}
                 </span>
                 <span className="text-xs" style={{ color: item.done ? STATUS_GREEN : STATUS_AMBER }}>
-                  {item.done ? "Complete" : "Pending"}
+                  {item.detail ?? (item.done ? "Complete" : "To do")}
                 </span>
               </div>
-              {!item.done && (
+              {!item.done && item.actionHref && (
                 <Link href={item.actionHref} className="shrink-0 text-xs font-semibold" style={{ color: ACCENT }}>
                   {item.actionLabel}
                 </Link>

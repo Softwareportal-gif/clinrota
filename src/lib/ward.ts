@@ -19,3 +19,18 @@ export function wardOptions(names: string[]): string[] {
   }
   return [...seen.values()].sort((a, b) => a.localeCompare(b));
 }
+
+// New wards typed by a coordinator (comma- or line-separated), tidied, minus
+// any the site already has or that repeat (ignoring case).
+export function newWardNames(input: string, existing: string[]): string[] {
+  const taken = new Set(existing.map((n) => n.toLowerCase()));
+  const out: string[] = [];
+  for (const raw of input.split(/[,\n]/)) {
+    const name = normalizeWardName(raw);
+    if (name && !taken.has(name.toLowerCase())) {
+      taken.add(name.toLowerCase());
+      out.push(name);
+    }
+  }
+  return out;
+}

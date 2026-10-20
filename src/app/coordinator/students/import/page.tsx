@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { currentAcademicYear, toDateInputValue } from "@/lib/cohorts";
 import { ImportForm } from "./import-form";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Import students" };
 
 export default async function ImportStudentsPage() {
   const session = await requireRole("COORDINATOR");

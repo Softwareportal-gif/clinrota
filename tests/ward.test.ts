@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeWardName, wardOptions, WARD_NAME_MAX } from "@/lib/ward";
+import { newWardNames, normalizeWardName, wardOptions, WARD_NAME_MAX } from "@/lib/ward";
 
 describe("normalizeWardName", () => {
   it("trims and collapses spaces", () => {
@@ -22,5 +22,11 @@ describe("wardOptions", () => {
 
   it("is empty when the site has no wards listed", () => {
     expect(wardOptions([])).toEqual([]);
+  });
+});
+
+describe("newWardNames", () => {
+  it("splits on commas and lines, tidies, and skips wards the site has", () => {
+    expect(newWardNames("Labour Ward, OPD\n  Surgical   Ward ,, labour ward", ["OPD"])).toEqual(["Labour Ward", "Surgical Ward"]);
   });
 });

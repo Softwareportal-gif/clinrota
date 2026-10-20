@@ -5,6 +5,10 @@ import { NewCaseFlow } from "./new-case-flow";
 import { parseExtraLogFields } from "@/lib/discipline-template";
 import { wardOptions } from "@/lib/ward";
 import { INK, TEXT_SECONDARY } from "../../dashboard-sections/colors";
+import { loggableRotationWhere } from "@/lib/rotation-status";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Log a case" };
 
 export default async function NewLogEntryPage() {
   const session = await requireRole("STUDENT");
@@ -15,7 +19,7 @@ export default async function NewLogEntryPage() {
 
   const [rotations, competencies] = await Promise.all([
     prisma.rotation.findMany({
-      where: { studentId: studentProfile.id, status: "ACTIVE" },
+      where: { studentId: studentProfile.id, ...loggableRotationWhere() },
       include: {
         clinicalSite: {
           include: {

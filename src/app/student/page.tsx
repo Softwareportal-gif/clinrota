@@ -11,9 +11,15 @@ import { MyPlacementsSection } from "./dashboard-sections/my-placements-section"
 import { RequiredDocumentsSection, type DocumentRow } from "./dashboard-sections/required-documents-section";
 import { ClinicalLogQuickAdd } from "./dashboard-sections/clinical-log-quick-add";
 import { ProfileSection } from "./dashboard-sections/profile-section";
+import { canLogAgainst } from "@/lib/rotation-status";
+import { formatDate } from "@/lib/format-date";
+import type { Metadata } from "next";
+
+// The layout's "%s · Praxxt" template only reaches child pages, not this one.
+export const metadata: Metadata = { title: "Dashboard · Praxxt" };
 
 function fmtDeadline(d: Date) {
-  return new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return formatDate(d);
 }
 
 // Priority-ordered — only the single most urgent thing surfaces in the
@@ -26,14 +32,17 @@ function computeNudge(params: {
   preferenceDeadline: Date | null;
 }): string | null {
   const { urgentDocCount, overdueChecklistCount, preferenceStatus, preferenceDeadline } = params;
-  if (urgentDocCount > 0) {
-    return `${urgentDocCount} document${urgentDocCount === 1 ? "" : "s"} need${urgentDocCount === 1 ? "s" : ""} your attention before your next rotation.`;
+  // The same things the "items need your attention" badge counts, in words.
+  const parts = [
+    urgentDocCount > 0 ? `${urgentDocCount} document${urgentDocCount === 1 ? "" : "s"}` : null,
+    overdueChecklistCount > 0 ? `${overdueChecklistCount} placement to-do${overdueChecklistCount === 1 ? "" : "s"}` : null,
+  ].filter((p): p is string => p !== null);
+  if (parts.length > 0) {
+    const total = urgentDocCount + overdueChecklistCount;
+    return `${parts.join(" and ")} need${total === 1 ? "s" : ""} your attention.`;
   }
   if (preferenceStatus === "DRAFT" && preferenceDeadline) {
     return `Rank your rotation preferences by ${fmtDeadline(preferenceDeadline)}.`;
-  }
-  if (overdueChecklistCount > 0) {
-    return `${overdueChecklistCount} placement to-do${overdueChecklistCount === 1 ? "" : "s"} still open.`;
   }
   return null;
 }
@@ -47,9 +56,12 @@ export default async function StudentDashboard() {
   const { student, rotations, compliance } = data;
 
   const placements = await getPlacementSummaries(studentProfile.id);
+  // Open to-dos on running placements the student can act on. Documents are
+  // counted once, below, not again as each placement's documents to-do; the
+  // supervisor's evaluation isn't the student's to do.
   const overdueChecklistCount = placements
     .filter((p) => p.status === "ACTIVE")
-    .reduce((sum, p) => sum + p.checklist.filter((c) => !c.done).length, 0);
+    .reduce((sum, p) => sum + p.checklist.filter((c) => !c.done && c.actionHref && c.label !== "Required documents").length, 0);
 
   const documentRows: DocumentRow[] = await (async () => {
     const docs = await prisma.complianceDocument.findMany({ where: { studentId: studentProfile.id } });
@@ -106,7 +118,7 @@ export default async function StudentDashboard() {
   }
 
   const preferenceStatus = getPreferenceStatus(cycle, !!submission);
-  const hasActiveRotation = rotations.some((r) => r.status === "ACTIVE");
+  const hasActiveRotation = rotations.some((r) => canLogAgainst(r));
 
   const cohortLabel = student.cohort
     ? `${student.cohort.name} · ${student.cohort.academicYear} ${student.cohort.term}`
@@ -137,7 +149,7 @@ export default async function StudentDashboard() {
             minSelections={cycle?.minSelections ?? 0}
             maxSelections={cycle?.maxSelections ?? 0}
             deadlineLabel={cycle ? fmtDeadline(cycle.submissionDeadline) : null}
-            submittedAtLabel={submission ? new Date(submission.submittedAt).toLocaleDateString() : null}
+            submittedAtLabel={submission ? formatDate(submission.submittedAt) : null}
             shortlist={shortlist}
             availableSites={availableSites}
           />

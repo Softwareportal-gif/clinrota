@@ -3,6 +3,9 @@ import { getSupervisorProfileByUserId } from "@/lib/supervisor";
 import { prisma } from "@/lib/prisma";
 import { totalUnreadMessages } from "@/lib/messaging";
 import { PortalShell, type PortalNavItem } from "@/components/portal-shell/portal-shell";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: { template: "%s · Praxxt", default: "Praxxt" } };
 
 export default async function SupervisorLayout({ children }: { children: React.ReactNode }) {
   const session = await requireRole("SUPERVISOR");

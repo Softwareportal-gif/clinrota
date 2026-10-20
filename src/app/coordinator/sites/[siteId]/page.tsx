@@ -7,13 +7,20 @@ import { Badge } from "@/components/badge";
 import { getSiteContractStatus, SITE_STATUS_LABELS, SITE_STATUS_BADGE_CLASSES } from "@/lib/site-status";
 import { SiteForm } from "../site-form";
 import { WardSupervisionSection } from "../ward-supervision-section";
+import { WardsSection } from "../wards-section";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Clinical site" };
 
 export default async function EditSitePage({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = await params;
   const session = await requireRole("COORDINATOR");
   const coordinatorProfile = await getCoordinatorProfileByUserId(session.user.id);
 
-  const site = await prisma.clinicalSite.findUnique({ where: { id: siteId } });
+  const site = await prisma.clinicalSite.findUnique({
+    where: { id: siteId },
+    include: { departments: { orderBy: { name: "asc" }, select: { id: true, name: true } } },
+  });
   if (!site || site.institutionId !== coordinatorProfile.program.institutionId) notFound();
 
   const status = getSiteContractStatus(site);
@@ -41,6 +48,8 @@ export default async function EditSitePage({ params }: { params: Promise<{ siteI
           <Badge label={SITE_STATUS_LABELS[status]} className={SITE_STATUS_BADGE_CLASSES[status]} />
         </div>
         <SiteForm site={site} siteId={site.id} />
+
+        <WardsSection siteId={site.id} wards={site.departments} />
 
         <WardSupervisionSection
           siteId={site.id}

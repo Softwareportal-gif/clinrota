@@ -8,6 +8,11 @@ import { answeredExtraFields } from "@/lib/discipline-template";
 import { StatusBadge } from "@/components/status-badge";
 import { EDITABLE_STATUSES } from "@/lib/log-entry-constants";
 import { ENTRUSTMENT_LEVEL_LABELS } from "@/lib/entrustment";
+import { formatDate, formatDateTime } from "@/lib/format-date";
+import type { Metadata } from "next";
+import { DeleteDraftButton } from "./delete-draft-button";
+
+export const metadata: Metadata = { title: "Case" };
 
 export default async function LogEntryDetailPage({
   params,
@@ -39,7 +44,7 @@ export default async function LogEntryDetailPage({
             <p className="text-sm text-gray-500">
               {entry.rotation.clinicalSite.name}
               {entry.wardName ? ` — ${entry.wardName}` : ""} ·{" "}
-              {new Date(entry.occurredAt).toLocaleDateString()}
+              {formatDate(entry.occurredAt)}
             </p>
           </div>
           <StatusBadge status={entry.status} />
@@ -52,7 +57,7 @@ export default async function LogEntryDetailPage({
               {entry.review.comments || "No comments left."}
             </p>
             <p className="mt-2 text-xs text-gray-400">
-              {new Date(entry.review.reviewedAt).toLocaleString()}
+              {formatDateTime(entry.review.reviewedAt)}
             </p>
           </div>
         )}
@@ -114,7 +119,8 @@ export default async function LogEntryDetailPage({
         </dl>
 
         {canEdit && (
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-3">
+            {entry.status === "DRAFT" && <DeleteDraftButton logEntryId={entry.id} />}
             <Link
               href={`/student/log/${entry.id}/edit`}
               className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white"

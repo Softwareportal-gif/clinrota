@@ -6,6 +6,10 @@ import { answeredExtraFields } from "@/lib/discipline-template";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { StatusBadge } from "@/components/status-badge";
 import { ENTRUSTMENT_LEVEL_LABELS } from "@/lib/entrustment";
+import { formatDate } from "@/lib/format-date";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Student logbook" };
 
 export default async function StudentLogbookPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -44,7 +48,7 @@ export default async function StudentLogbookPage({ params }: { params: Promise<{
                     <p className="text-sm font-medium text-gray-900">{entry.caseTitle}</p>
                     <p className="text-xs text-gray-500">
                       {entry.rotation.clinicalSite.name}
-                      {entry.wardName ? ` — ${entry.wardName}` : ""} · {new Date(entry.occurredAt).toLocaleDateString()} ·{" "}
+                      {entry.wardName ? ` — ${entry.wardName}` : ""} · {formatDate(entry.occurredAt)} ·{" "}
                       {ENTRUSTMENT_LEVEL_LABELS[entry.studentRole]}
                     </p>
                   </div>

@@ -1,6 +1,9 @@
 import { requireRole } from "@/lib/require-role";
 import { MessagesView } from "@/components/messaging/messages-view";
 import { INK, TEXT_SECONDARY } from "../dashboard-sections/colors";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Messages" };
 
 export default async function StudentMessagesPage() {
   const session = await requireRole("STUDENT");

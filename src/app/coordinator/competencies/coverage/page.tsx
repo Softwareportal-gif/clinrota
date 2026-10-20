@@ -10,6 +10,9 @@ import {
   COVERAGE_STATUS_LABELS,
   COVERAGE_STATUS_BADGE_CLASSES,
 } from "@/lib/coverage-status";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Competency coverage" };
 
 export default async function CoverageReportPage({
   searchParams,

@@ -1,12 +1,10 @@
 import Link from "next/link";
 import type { PlacementSummary } from "@/lib/placement-summary";
 import { INK, ACCENT, TEXT_SECONDARY, BORDER } from "./colors";
+import { formatDateRange } from "@/lib/format-date";
 
 export type { PlacementSummary as PlacementCardData } from "@/lib/placement-summary";
 
-function fmtDate(d: Date) {
-  return new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-}
 
 const STATUS_STYLES: Record<string, { bg: string; color: string; label: string }> = {
   ACTIVE: { bg: "#E4F3EA", color: "#1F6B3D", label: "In progress" },
@@ -54,7 +52,7 @@ export function MyPlacementsSection({
                       {p.departmentName ? ` — ${p.departmentName}` : ""}
                     </p>
                     <p className="truncate text-xs" style={{ color: TEXT_SECONDARY }}>
-                      {fmtDate(p.startDate)} – {fmtDate(p.endDate)} · {p.preceptorName}
+                      {formatDateRange(p.startDate, p.endDate)} · {p.supervisorName}
                     </p>
                   </div>
                   <span

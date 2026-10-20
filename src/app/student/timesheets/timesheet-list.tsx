@@ -3,12 +3,15 @@
 import { usePendingWrites } from "@/lib/offline/use-pending-writes";
 import { PendingSyncBadge } from "@/components/pending-sync-badge";
 import type { SubmitTimesheetPayload } from "@/lib/offline/payloads";
+import { formatDate } from "@/lib/format-date";
+import { TIMESHEET_STATUS_CLASSES, TIMESHEET_STATUS_LABELS } from "@/lib/timesheet-status";
 
 type ServerEntry = {
   id: string;
   shiftDate: Date;
   hours: number;
   status: "PENDING" | "APPROVED" | "REJECTED";
+  siteName: string;
 };
 
 type Row = {
@@ -16,6 +19,7 @@ type Row = {
   shiftDate: Date;
   hours: number;
   status: "PENDING" | "APPROVED" | "REJECTED";
+  siteName: string | null; // null while still waiting to sync
   pendingSync: boolean;
 };
 
@@ -39,6 +43,7 @@ export function TimesheetList({
         shiftDate: new Date(payload.shiftDate),
         hours: payload.hours,
         status: "PENDING",
+        siteName: null,
         pendingSync: true,
       };
     });
@@ -58,9 +63,14 @@ export function TimesheetList({
         <li key={entry.id} className="flex items-center justify-between gap-4 px-4 py-3">
           <div>
             <p className="text-sm font-medium text-gray-900">
-              {entry.shiftDate.toLocaleDateString()} · {entry.hours.toFixed(1)}h
+              {formatDate(entry.shiftDate)} · {entry.hours.toFixed(1)}h
             </p>
-            <p className="text-xs text-gray-500">{entry.status}</p>
+            <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+              {entry.siteName && <span>{entry.siteName}</span>}
+              <span className={`rounded-full px-2 py-0.5 font-semibold ${TIMESHEET_STATUS_CLASSES[entry.status]}`}>
+                {TIMESHEET_STATUS_LABELS[entry.status]}
+              </span>
+            </p>
           </div>
           {entry.pendingSync && <PendingSyncBadge />}
         </li>

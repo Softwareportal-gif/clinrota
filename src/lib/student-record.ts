@@ -14,7 +14,7 @@ async function loadRotations(studentId: string) {
       clinicalSite: true,
       siteDepartment: true,
       supervisor: { include: { user: true } },
-      program: { select: { defaultMinHours: true, disciplineTemplate: true } },
+      program: { select: { defaultMinHours: true, defaultMinCases: true, disciplineTemplate: true } },
       rotationScore: { include: { overriddenBy: true } },
       competencyEvaluations: { include: { ratings: true } },
     },

@@ -8,6 +8,7 @@ import { sendEmail, wardSupervisorAssignedEmailHtml } from "@/lib/email";
 import { logAudit } from "@/lib/audit-log";
 import { appBaseUrl } from "@/lib/app-url";
 import type { CreateWardAssignmentPayload, EndWardAssignmentPayload } from "@/lib/offline/payloads";
+import { loggableRotationWhere } from "@/lib/rotation-status";
 
 export type CoreResult = { error?: string; ok?: true };
 
@@ -24,7 +25,7 @@ export async function createWardAssignmentCore(payload: CreateWardAssignmentPayl
   }
 
   const rotation = await prisma.rotation.findFirst({
-    where: { id: payload.rotationId, studentId: studentProfile.id, status: "ACTIVE" },
+    where: { id: payload.rotationId, studentId: studentProfile.id, ...loggableRotationWhere() },
     include: { clinicalSite: true },
   });
   if (!rotation) return { error: "That rotation is not available." };

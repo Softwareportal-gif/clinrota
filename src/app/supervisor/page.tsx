@@ -4,6 +4,10 @@ import { getSupervisorProfileByUserId } from "@/lib/supervisor";
 import { prisma } from "@/lib/prisma";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { PendingReviewList } from "./pending-review-list";
+import type { Metadata } from "next";
+
+// The layout's "%s · Praxxt" template only reaches child pages, not this one.
+export const metadata: Metadata = { title: "Pending review · Praxxt" };
 
 export default async function SupervisorDashboard() {
   const session = await requireRole("SUPERVISOR");
@@ -12,7 +16,8 @@ export default async function SupervisorDashboard() {
   const pending = await prisma.logEntry.findMany({
     where: {
       status: "SUBMITTED",
-      rotation: { supervisorId: supervisorProfile.id, status: "ACTIVE" },
+      // Still reviewable after the rotation ends; only cancelled ones drop out.
+      rotation: { supervisorId: supervisorProfile.id, status: { not: "CANCELLED" } },
     },
     include: {
       student: { include: { user: true } },
@@ -29,7 +34,9 @@ export default async function SupervisorDashboard() {
   ]);
 
   const activeRotations = await prisma.rotation.findMany({
-    where: { supervisorId: supervisorProfile.id, status: "ACTIVE" },
+    // Started and not cancelled: evaluations are often finished after the end date.
+    where: { supervisorId: supervisorProfile.id, status: { not: "CANCELLED" }, startDate: { lte: new Date() } },
+    orderBy: { startDate: "desc" },
     include: { student: { include: { user: true } }, clinicalSite: true },
   });
   const evaluations = await prisma.competencyEvaluation.findMany({

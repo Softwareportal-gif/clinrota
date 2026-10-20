@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/require-role";
 import { getStudentProfileByUserId } from "@/lib/student";
 import type { CreateLogEntryPayload } from "@/lib/offline/payloads";
 import { normalizeWardName } from "@/lib/ward";
+import { loggableRotationWhere } from "@/lib/rotation-status";
 
 export type CoreResult = { error?: string; ok?: true };
 
@@ -21,7 +22,7 @@ export async function createLogEntryCore(payload: CreateLogEntryPayload): Promis
   }
 
   const rotation = await prisma.rotation.findFirst({
-    where: { id: payload.rotationId, studentId: studentProfile.id, status: "ACTIVE" },
+    where: { id: payload.rotationId, studentId: studentProfile.id, ...loggableRotationWhere() },
     include: { clinicalSite: true },
   });
   if (!rotation) return { error: "That rotation is not available." };

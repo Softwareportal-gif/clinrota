@@ -6,6 +6,9 @@ import { ROLE_HOME } from "@/lib/role-routes";
 import { LOGIN_ACCESS_FAQ } from "@/lib/faq";
 import { USING_PRAXXT_SECTIONS } from "@/lib/help-content";
 import { PlayIcon, TicketIcon } from "./help-icons";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Help · Praxxt" };
 
 // Same palette as the landing page / login page — kept as local constants
 // here too, matching how those two files already do it (no shared config

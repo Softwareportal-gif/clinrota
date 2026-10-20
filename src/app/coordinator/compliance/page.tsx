@@ -10,6 +10,9 @@ import {
   DOC_STATUS_LABELS,
   DOC_STATUS_BADGE_CLASSES,
 } from "@/lib/compliance-status";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Compliance" };
 
 export default async function ComplianceOverviewPage() {
   const session = await requireRole("COORDINATOR");

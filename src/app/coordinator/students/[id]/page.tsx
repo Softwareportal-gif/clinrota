@@ -10,9 +10,14 @@ import { RecalculateScoreButton } from "@/components/recalculate-score-button";
 import { COVERAGE_STATUS_LABELS, COVERAGE_STATUS_BADGE_CLASSES } from "@/lib/coverage-status";
 import { DOC_STATUS_LABELS, DOC_STATUS_BADGE_CLASSES, isCompliant } from "@/lib/compliance-status";
 import type { LogEntryStatus } from "@/generated/prisma/client";
+import { rotationPhase, rotationPhaseLabel } from "@/lib/rotation-status";
+import { formatDate } from "@/lib/format-date";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Student record" };
 
 function fmtDate(d: Date) {
-  return new Date(d).toLocaleDateString();
+  return formatDate(d);
 }
 
 function fmtPercent(n: number | null) {
@@ -96,7 +101,7 @@ export default async function StudentRecordPage({ params }: { params: Promise<{ 
                         </p>
                       </div>
                       <Badge
-                        label={rotation.status}
+                        label={rotationPhaseLabel(rotationPhase(rotation))}
                         className="bg-gray-100 text-gray-700"
                       />
                     </div>

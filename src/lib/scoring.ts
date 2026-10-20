@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { parseRubric, rubricPercent } from "@/lib/discipline-template";
+import { checkRequirements, isSoapComplete } from "@/lib/rotation-requirements";
 
 // ── Tunable constants ───────────────────────────────────────────────────
 // Logbook sub-component weights (must sum to 1.0). Only the top-level
@@ -20,14 +21,7 @@ export const DEFAULT_PASS_THRESHOLD = 60;
 // An entry is "on time" if submitted within this many hours of the case date.
 const TIMELINESS_WINDOW_MS = 48 * 60 * 60 * 1000;
 
-// Rough "meaningfully filled in" heuristic for SOAP completeness — a section
-// with more than this many words is treated as substantive, not a
-// one-word/placeholder answer. This is intentionally crude, not NLP-based.
-const SOAP_MIN_WORDS = 10;
-
-function wordCount(text: string): number {
-  return text.trim().split(/\s+/).filter(Boolean).length;
-}
+// SOAP completeness: see isSoapComplete in src/lib/rotation-requirements.ts.
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -50,6 +44,9 @@ export type ScoreResult =
       computedFinalScore: number;
       passed: boolean;
       passThreshold: number;
+      // Approved hours and cases still short of the rotation's requirement;
+      // a rotation can't pass until this is empty.
+      requirementsMissing: string[];
       supervisorWeight: number;
       logbookWeight: number;
     };
@@ -126,13 +123,7 @@ export async function computeRotationScore(rotationId: string): Promise<ScoreRes
   });
   let completenessScore = 0;
   if (approvedEntries.length > 0) {
-    const completeCount = approvedEntries.filter(
-      (e) =>
-        wordCount(e.subjective) > SOAP_MIN_WORDS &&
-        wordCount(e.objectiveFindings) > SOAP_MIN_WORDS &&
-        wordCount(e.assessment) > SOAP_MIN_WORDS &&
-        wordCount(e.plan) > SOAP_MIN_WORDS
-    ).length;
+    const completeCount = approvedEntries.filter(isSoapComplete).length;
     completenessScore = (completeCount / approvedEntries.length) * 100;
   }
 
@@ -156,6 +147,18 @@ export async function computeRotationScore(rotationId: string): Promise<ScoreRes
     100
   );
 
+  // ── Requirements: approved hours and cases, whatever the score ──
+  const approvedHours = await prisma.timesheetEntry.aggregate({
+    where: { rotationId, status: "APPROVED" },
+    _sum: { hours: true },
+  });
+  const requirements = checkRequirements({
+    approvedHours: approvedHours._sum.hours ?? 0,
+    requiredHours: rotation.minHoursOverride ?? rotation.program.defaultMinHours,
+    approvedCases: approvedCount,
+    requiredCases: rotation.minCasesOverride ?? rotation.program.defaultMinCases,
+  });
+
   return {
     scoreable: true,
     supervisorScore,
@@ -167,8 +170,9 @@ export async function computeRotationScore(rotationId: string): Promise<ScoreRes
       completenessScore,
     },
     computedFinalScore,
-    passed: computedFinalScore >= passThreshold,
+    passed: computedFinalScore >= passThreshold && requirements.met,
     passThreshold,
+    requirementsMissing: requirements.missing,
     supervisorWeight,
     logbookWeight,
   };

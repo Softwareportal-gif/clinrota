@@ -6,6 +6,11 @@ import { prisma } from "@/lib/prisma";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { RecalculateScoreButton } from "@/components/recalculate-score-button";
 import { OverrideForm } from "./override-form";
+import { formatDate, formatDateTime } from "@/lib/format-date";
+import type { Metadata } from "next";
+import { checkRequirements } from "@/lib/rotation-requirements";
+
+export const metadata: Metadata = { title: "Rotation score" };
 
 function Row({
   label,
@@ -40,12 +45,24 @@ export default async function ScoreDetailPage({
     include: {
       student: { include: { user: true } },
       clinicalSite: true,
+      program: { select: { defaultMinHours: true, defaultMinCases: true } },
       rotationScore: { include: { overriddenBy: true } },
     },
   });
   if (!rotation || rotation.programId !== coordinatorProfile.programId) notFound();
 
   const score = rotation.rotationScore;
+
+  // Approved hours and cases against the requirement: a rotation can't pass
+  // without them, whatever its score (see computeRotationScore).
+  const [hoursAgg, approvedCases] = await Promise.all([
+    prisma.timesheetEntry.aggregate({ where: { rotationId, status: "APPROVED" }, _sum: { hours: true } }),
+    prisma.logEntry.count({ where: { rotationId, status: "APPROVED" } }),
+  ]);
+  const approvedHours = hoursAgg._sum.hours ?? 0;
+  const requiredHours = rotation.minHoursOverride ?? rotation.program.defaultMinHours;
+  const requiredCases = rotation.minCasesOverride ?? rotation.program.defaultMinCases;
+  const requirements = checkRequirements({ approvedHours, requiredHours, approvedCases, requiredCases });
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -59,11 +76,22 @@ export default async function ScoreDetailPage({
               </Link>
             </h2>
             <p className="text-sm text-gray-500">
-              {rotation.clinicalSite.name} · {new Date(rotation.startDate).toLocaleDateString()} –{" "}
-              {new Date(rotation.endDate).toLocaleDateString()}
+              {rotation.clinicalSite.name} · {formatDate(rotation.startDate)} –{" "}
+              {formatDate(rotation.endDate)}
             </p>
           </div>
           <RecalculateScoreButton rotationId={rotation.id} hasScore={!!score} />
+        </div>
+
+        <div className="rounded-md border border-gray-200 bg-white p-4">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">Requirements</p>
+          <dl className="space-y-2">
+            <Row label="Approved hours" value={requiredHours !== null ? `${approvedHours} of ${requiredHours}` : `${approvedHours} (none required)`} />
+            <Row label="Approved cases" value={requiredCases !== null ? `${approvedCases} of ${requiredCases}` : `${approvedCases} (none required)`} />
+          </dl>
+          <p className={`mt-2 text-xs ${requirements.met ? "text-green-700" : "text-amber-700"}`}>
+            {requirements.met ? "Requirements met." : `Can't pass yet: needs ${requirements.missing.join(" and ")}.`}
+          </p>
         </div>
 
         {!score ? (
@@ -109,7 +137,7 @@ export default async function ScoreDetailPage({
                 />
               </dl>
               <p className="mt-2 text-xs text-gray-400">
-                Calculated {new Date(score.computedAt).toLocaleString()}
+                Calculated {formatDateTime(score.computedAt)}
               </p>
             </div>
 
@@ -118,7 +146,10 @@ export default async function ScoreDetailPage({
                 {score.isOverridden ? "Coordinator override (in effect)" : "Final (not overridden)"}
               </p>
               <Row strong label="Final score" value={`${score.finalScore.toFixed(1)}%`} />
-              <Row strong label="Result" value={score.passed ? "Pass" : "Fail"} />
+              <Row strong label="Result" value={score.passed ? "Pass" : requirements.met ? "Fail" : "Not passed (requirements not met)"} />
+              {score.passed && !requirements.met && !score.isOverridden && (
+                <p className="mt-2 text-xs text-amber-700">Calculated before the requirements were checked. Recalculate to update the result.</p>
+              )}
               {score.isOverridden && (
                 <div className="mt-3 space-y-1 border-t border-blue-200 pt-3 text-xs text-blue-700">
                   <p>
@@ -126,7 +157,7 @@ export default async function ScoreDetailPage({
                   </p>
                   <p>
                     <span className="font-medium">By:</span> {score.overriddenBy?.name} ·{" "}
-                    {score.overriddenAt ? new Date(score.overriddenAt).toLocaleString() : ""}
+                    {score.overriddenAt ? formatDateTime(score.overriddenAt) : ""}
                   </p>
                 </div>
               )}

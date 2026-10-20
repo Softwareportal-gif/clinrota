@@ -2,6 +2,9 @@ import { requireRole } from "@/lib/require-role";
 import { getStudentProfileByUserId } from "@/lib/student";
 import { INK, ACCENT, TEXT_SECONDARY, BORDER } from "../dashboard-sections/colors";
 import { ProfileEditForm } from "./profile-edit-form";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "My profile" };
 
 export default async function StudentProfilePage() {
   const session = await requireRole("STUDENT");
@@ -12,7 +15,7 @@ export default async function StudentProfilePage() {
       <div>
         <h1 className="text-xl font-bold" style={{ color: INK }}>My Profile</h1>
         <p className="mt-1 text-sm" style={{ color: TEXT_SECONDARY }}>
-          Keep your details up to date so coordinators and preceptors can reach you.
+          Keep your details up to date so coordinators and supervisors can reach you.
         </p>
       </div>
 

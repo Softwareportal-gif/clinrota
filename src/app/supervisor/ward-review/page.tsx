@@ -3,6 +3,9 @@ import { getSupervisorProfileByUserId } from "@/lib/supervisor";
 import { prisma } from "@/lib/prisma";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { PendingReviewList } from "../pending-review-list";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Ward review" };
 
 // A supervisor can be someone's ward supervisor without ever being a
 // rotation's main supervisor (Rotation.supervisorId) — so this queue is

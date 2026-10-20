@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Badge } from "@/components/badge";
 import { ResolveTicketButton } from "./resolve-ticket-button";
+import { formatDate } from "@/lib/format-date";
 
 const STATUS_LABELS = { OPEN: "Open", RESOLVED: "Resolved" } as const;
 const STATUS_CLASSES = {
@@ -38,7 +39,7 @@ export default async function AdminTicketsPage() {
                     <a href={`mailto:${ticket.createdBy.email}`} className="hover:underline">
                       {ticket.createdBy.email}
                     </a>{" "}
-                    · submitted {ticket.createdAt.toLocaleDateString()}
+                    · submitted {formatDate(ticket.createdAt)}
                   </p>
                   <p className="mt-2 whitespace-pre-wrap text-sm text-gray-700">{ticket.description}</p>
                 </div>

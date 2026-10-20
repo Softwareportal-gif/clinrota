@@ -5,6 +5,10 @@ import { prisma } from "@/lib/prisma";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { currentAcademicYear, toDateInputValue } from "@/lib/cohorts";
 import { AddCohortsForm, EditCohortForm } from "./cohort-forms";
+import { formatDate } from "@/lib/format-date";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Cohorts" };
 
 export default async function CohortsPage() {
   const session = await requireRole("COORDINATOR");
@@ -66,7 +70,7 @@ export default async function CohortsPage() {
                     </p>
                   </div>
                   <p className="text-xs text-gray-500">
-                    {c.academicYear} · {c.term} · {c.startDate.toLocaleDateString()} – {c.endDate.toLocaleDateString()}
+                    {c.academicYear} · {c.term} · {formatDate(c.startDate)} – {formatDate(c.endDate)}
                   </p>
                   <EditCohortForm
                     cohortId={c.id}

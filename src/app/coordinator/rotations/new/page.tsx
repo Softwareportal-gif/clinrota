@@ -5,6 +5,9 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import { getEffectiveDocStatus, isCompliant } from "@/lib/compliance-status";
 import { getSiteContractStatus } from "@/lib/site-status";
 import { AssignRotationForm } from "./assign-rotation-form";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Assign rotations" };
 
 export default async function NewRotationPage() {
   const session = await requireRole("COORDINATOR");

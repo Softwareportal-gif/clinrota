@@ -1,6 +1,9 @@
 import { requireRole } from "@/lib/require-role";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { MessagesView } from "@/components/messaging/messages-view";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Conversation" };
 
 export default async function SupervisorMessagesPage({
   params,

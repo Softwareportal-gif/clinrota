@@ -7,6 +7,10 @@ import { ENTRUSTMENT_LEVEL_LABELS } from "@/lib/entrustment";
 import { canReviewLogEntry } from "@/lib/log-entry-review";
 import { answeredExtraFields } from "@/lib/discipline-template";
 import { ReviewForm } from "./review-form";
+import { formatDate } from "@/lib/format-date";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Review case" };
 
 export default async function ReviewEntryPage({
   params,
@@ -40,7 +44,7 @@ export default async function ReviewEntryPage({
           <p className="text-sm text-gray-500">
             {entry.student.user.name} · {entry.rotation.clinicalSite.name}
             {(entry.wardName ?? entry.wardAssignment?.wardName) ? ` — ${entry.wardName ?? entry.wardAssignment?.wardName}` : ""} ·{" "}
-            {new Date(entry.occurredAt).toLocaleDateString()}
+            {formatDate(entry.occurredAt)}
           </p>
         </div>
 

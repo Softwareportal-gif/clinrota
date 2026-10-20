@@ -3,6 +3,8 @@ import { requireRole } from "@/lib/require-role";
 import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
 import { prisma } from "@/lib/prisma";
 import { buildCsv } from "@/lib/csv";
+import { rotationPhase, rotationPhaseLabel } from "@/lib/rotation-status";
+import { toDateInputValue } from "@/lib/format-date";
 
 // Every rotation at this site that overlaps the given [from, to] window
 // (both optional — omitting either leaves that end of the range open).
@@ -40,17 +42,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ site
 
   const rows = rotations.map((rotation) => [
     site.name,
-    site.mouStartDate ? new Date(site.mouStartDate).toLocaleDateString() : "",
-    site.mouEndDate ? new Date(site.mouEndDate).toLocaleDateString() : "",
+    site.mouStartDate ? toDateInputValue(site.mouStartDate) : "",
+    site.mouEndDate ? toDateInputValue(site.mouEndDate) : "",
     site.maxStudentCapacity ?? "",
     rotation.student.user.name,
     rotation.student.studentIdNumber,
     rotation.student.program.name,
     rotation.siteDepartment?.name ?? "",
     rotation.supervisor.user.name,
-    new Date(rotation.startDate).toLocaleDateString(),
-    new Date(rotation.endDate).toLocaleDateString(),
-    rotation.status,
+    toDateInputValue(rotation.startDate),
+    toDateInputValue(rotation.endDate),
+    rotationPhaseLabel(rotationPhase(rotation)),
   ]);
 
   const csv = buildCsv(

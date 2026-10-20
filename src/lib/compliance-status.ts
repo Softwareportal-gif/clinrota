@@ -32,7 +32,7 @@ export function isCompliant(status: EffectiveDocStatus): boolean {
 
 export const DOC_STATUS_LABELS: Record<EffectiveDocStatus, string> = {
   MISSING: "Missing",
-  PENDING_VERIFICATION: "Pending",
+  PENDING_VERIFICATION: "Pending review",
   VERIFIED: "Verified",
   REJECTED: "Rejected",
   EXPIRING_SOON: "Expiring soon",

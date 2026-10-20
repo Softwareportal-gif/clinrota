@@ -4,9 +4,13 @@ import { getActiveCycleForStudent, getPreferenceStatus } from "@/lib/preference-
 import { prisma } from "@/lib/prisma";
 import { INK, TEXT_SECONDARY } from "../dashboard-sections/colors";
 import { RotationPreferencesSection } from "../dashboard-sections/rotation-preferences-section";
+import { formatDate } from "@/lib/format-date";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Rotation preferences" };
 
 function fmtDeadline(d: Date) {
-  return new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return formatDate(d);
 }
 
 export default async function StudentPreferencesPage() {
@@ -64,7 +68,7 @@ export default async function StudentPreferencesPage() {
         minSelections={cycle?.minSelections ?? 0}
         maxSelections={cycle?.maxSelections ?? 0}
         deadlineLabel={cycle ? fmtDeadline(cycle.submissionDeadline) : null}
-        submittedAtLabel={submission ? new Date(submission.submittedAt).toLocaleDateString() : null}
+        submittedAtLabel={submission ? formatDate(submission.submittedAt) : null}
         shortlist={shortlist}
         availableSites={availableSites}
         showHeading={false}

@@ -3,6 +3,9 @@ import { getStudentProfileByUserId } from "@/lib/student";
 import { getPlacementSummaries } from "@/lib/placement-summary";
 import { INK, TEXT_SECONDARY } from "../dashboard-sections/colors";
 import { MyPlacementsSection } from "../dashboard-sections/my-placements-section";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "My placements" };
 
 export default async function StudentPlacementsPage() {
   const session = await requireRole("STUDENT");

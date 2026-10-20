@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { EDITABLE_STATUSES } from "@/lib/log-entry-constants";
 import { LogWizard, type FieldsState } from "./log-wizard";
 import { parseExtraLogFields } from "@/lib/discipline-template";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Edit case" };
 
 export default async function EditLogEntryPage({
   params,

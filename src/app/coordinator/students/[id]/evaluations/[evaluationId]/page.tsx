@@ -4,6 +4,10 @@ import { getCoordinatorProfileByUserId } from "@/lib/coordinator";
 import { prisma } from "@/lib/prisma";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { flattenRubric, parseRubric, rubricPercent } from "@/lib/discipline-template";
+import { formatDate } from "@/lib/format-date";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Evaluation" };
 
 export default async function EvaluationBreakdownPage({
   params,
@@ -46,7 +50,7 @@ export default async function EvaluationBreakdownPage({
           <h2 className="text-lg font-semibold text-gray-900">{evaluation.student.user.name}</h2>
           <p className="text-sm text-gray-500">
             {evaluation.rotation.clinicalSite.name} · Evaluated by {evaluation.supervisor.name} ·{" "}
-            {new Date(evaluation.evaluationDate).toLocaleDateString()}
+            {formatDate(evaluation.evaluationDate)}
           </p>
         </div>
 

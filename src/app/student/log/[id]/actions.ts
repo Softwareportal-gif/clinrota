@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/require-role";
 import { getStudentProfileByUserId } from "@/lib/student";
@@ -131,4 +132,14 @@ export async function saveLogStepCore(payload: SaveLogStepPayload): Promise<Core
   revalidatePath("/student/logbook");
   revalidatePath(`/student/log/${payload.logEntryId}`);
   return { ok: true };
+}
+
+// A student may delete their own case while it's still a draft (never
+// submitted), e.g. one started by mistake. Anything already submitted stays.
+export async function deleteDraftEntry(logEntryId: string): Promise<void> {
+  const session = await requireRole("STUDENT");
+  const studentProfile = await getStudentProfileByUserId(session.user.id);
+  await prisma.logEntry.deleteMany({ where: { id: logEntryId, studentId: studentProfile.id, status: "DRAFT" } });
+  revalidatePath("/student/logbook");
+  redirect("/student/logbook");
 }

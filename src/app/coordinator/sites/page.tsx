@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Badge } from "@/components/badge";
 import { getSiteContractStatus, SITE_STATUS_LABELS, SITE_STATUS_BADGE_CLASSES } from "@/lib/site-status";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Clinical sites" };
 
 export default async function SitesPage() {
   const session = await requireRole("COORDINATOR");

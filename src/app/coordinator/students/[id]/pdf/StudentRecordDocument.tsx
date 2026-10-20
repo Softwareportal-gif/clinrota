@@ -4,6 +4,8 @@ import { COVERAGE_STATUS_LABELS } from "@/lib/coverage-status";
 import { DOC_STATUS_LABELS, isCompliant } from "@/lib/compliance-status";
 import { STATUS_LABELS } from "@/lib/log-entry-constants";
 import type { LogEntryStatus } from "@/generated/prisma/client";
+import { formatDate } from "@/lib/format-date";
+import { rotationPhase, rotationPhaseLabel } from "@/lib/rotation-status";
 
 const styles = StyleSheet.create({
   page: { padding: 36, fontSize: 10, fontFamily: "Helvetica", color: "#2A2747" },
@@ -24,7 +26,7 @@ const styles = StyleSheet.create({
 });
 
 function fmtDate(d: Date) {
-  return new Date(d).toLocaleDateString();
+  return formatDate(d);
 }
 function fmtPercent(n: number | null) {
   return n === null ? "—" : `${n.toFixed(1)}%`;
@@ -39,7 +41,7 @@ export function StudentRecordDocument({ data }: { data: StudentRecordData }) {
       <Page size="A4" style={styles.page}>
         <Text style={styles.h1}>{student.user.name}</Text>
         <Text style={styles.subtitle}>
-          Rotation summary · Generated {new Date().toLocaleDateString()}
+          Rotation summary · Generated {formatDate(new Date())}
         </Text>
 
         <View style={styles.infoGrid}>
@@ -73,7 +75,7 @@ export function StudentRecordDocument({ data }: { data: StudentRecordData }) {
             <View key={rotation.id} style={styles.card} wrap={false}>
               <Text style={{ fontWeight: 700 }}>
                 {rotation.clinicalSite.name}
-                {rotation.siteDepartment ? ` — ${rotation.siteDepartment.name}` : ""} ({rotation.status})
+                {rotation.siteDepartment ? ` — ${rotation.siteDepartment.name}` : ""} ({rotationPhaseLabel(rotationPhase(rotation))})
               </Text>
               <Text style={styles.small}>
                 {fmtDate(rotation.startDate)} – {fmtDate(rotation.endDate)} · Supervisor:{" "}
