@@ -25,8 +25,25 @@ export function isPublicAnatomyPage(pathname: string): boolean {
   return PUBLIC_ANATOMY_PAGES.some((page) => pathname === page || pathname.startsWith(`${page}/`));
 }
 
-// Praxxt Anatomy is sold apart from the clinical platform, so it has its own
-// login page; a logged-out visitor is sent to the one for where they were going.
+const under = (pathname: string, section: string) => pathname === section || pathname.startsWith(`${section}/`);
+
+// Each product has its own login page: Praxxt Anatomy (sold apart from the
+// clinical platform), the owner's admin console, and the clinical platform
+// itself. A logged-out visitor is sent to the one for where they were going.
 export function loginPathFor(pathname: string): string {
-  return pathname === "/anatomy" || pathname.startsWith("/anatomy/") ? "/anatomy/login" : "/login";
+  if (under(pathname, "/anatomy")) return "/anatomy/login";
+  if (under(pathname, "/admin")) return "/admin/login";
+  return "/login";
+}
+
+// The login page a role signs in on, and returns to when it logs out.
+export function loginPageForRole(role: Role | undefined): string {
+  if (role === "SUPER_ADMIN") return "/admin/login";
+  if (role === "LEARNER") return "/anatomy/login";
+  return "/login";
+}
+
+// Login pages besides /login that visitors without a session may open.
+export function isPublicAuthPage(pathname: string): boolean {
+  return pathname === "/admin/login";
 }

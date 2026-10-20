@@ -101,7 +101,9 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
         <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
           <h1 className="text-4xl font-extrabold tracking-[-0.03em] sm:text-5xl">Choose your plan</h1>
           <p className="text-lg" style={{ color: BRAND.body }}>
-            Start with a free {TRIAL_DAYS}-day trial, then pick the plan that fits. Prices are per year, in Ghana cedis.
+            {free
+              ? "Three plans for students, professionals and institutions. Prices will be announced after testing."
+              : `Start with a free ${TRIAL_DAYS}-day trial, then pick the plan that fits. Prices are per year, in Ghana cedis.`}
           </p>
           {free && (
             <p className="mt-2 rounded-2xl px-5 py-3 text-[15px] font-semibold" style={{ backgroundColor: "#EEF9F1", color: "#1E7A3E" }}>
@@ -133,15 +135,18 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
                     <p className="mx-auto mt-1 max-w-[220px] text-xs font-medium" style={{ color: BRAND.muted }}>
                       {PLANS[plan].audience}
                     </p>
-                    <p className="mt-3 text-3xl font-extrabold tracking-[-0.02em]">
-                      {PLANS[plan].amount ? formatCedis(PLANS[plan].amount!) : "Custom"}
-                      {PLANS[plan].amount && (
-                        <span className="text-sm font-semibold" style={{ color: BRAND.muted }}>
-                          {" "}
-                          /year
-                        </span>
-                      )}
-                    </p>
+                    {/* Prices stay off the site while Anatomy is free for testing. */}
+                    {!free && (
+                      <p className="mt-3 text-3xl font-extrabold tracking-[-0.02em]">
+                        {PLANS[plan].amount ? formatCedis(PLANS[plan].amount!) : "Custom"}
+                        {PLANS[plan].amount && (
+                          <span className="text-sm font-semibold" style={{ color: BRAND.muted }}>
+                            {" "}
+                            /year
+                          </span>
+                        )}
+                      </p>
+                    )}
                     <div className="mt-4">{action(plan)}</div>
                   </th>
                 ))}

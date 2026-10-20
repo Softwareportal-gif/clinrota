@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isPublicAnatomyPage, isSharedPath, loginPathFor } from "@/lib/role-routes";
+import { isPublicAnatomyPage, isPublicAuthPage, isSharedPath, loginPageForRole, loginPathFor } from "@/lib/role-routes";
 
 describe("isSharedPath", () => {
   it.each(["/help", "/help/tickets", "/anatomy", "/anatomy/x"])("shares %s across roles", (p) => {
@@ -28,5 +28,26 @@ describe("loginPathFor", () => {
 
   it.each(["/student", "/coordinator/sites", "/anatomyx", "/help/tickets"])("sends %s to the main login", (p) => {
     expect(loginPathFor(p)).toBe("/login");
+  });
+});
+
+describe("admin login", () => {
+  it.each(["/admin", "/admin/anatomy", "/admin/tickets"])("sends %s to the admin login", (p) => {
+    expect(loginPathFor(p)).toBe("/admin/login");
+  });
+
+  it("opens the admin login to visitors", () => {
+    expect(isPublicAuthPage("/admin/login")).toBe(true);
+    expect(isPublicAuthPage("/admin")).toBe(false);
+  });
+});
+
+describe("loginPageForRole", () => {
+  it("returns each product's own login", () => {
+    expect(loginPageForRole("SUPER_ADMIN")).toBe("/admin/login");
+    expect(loginPageForRole("LEARNER")).toBe("/anatomy/login");
+    expect(loginPageForRole("STUDENT")).toBe("/login");
+    expect(loginPageForRole("COORDINATOR")).toBe("/login");
+    expect(loginPageForRole(undefined)).toBe("/login");
   });
 });

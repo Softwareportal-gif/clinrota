@@ -20,7 +20,7 @@ const MODULES = [
     body: "Structured SOAP case entries mapped to your competency framework, with entrustment levels rated by supervisors.",
     background: "#FDE8F0",
     accent: "#D9246B",
-    image: { src: "/images/illustrations/logbook.svg", alt: "A student logging a clinical case on her phone" },
+    image: { src: "/images/illustrations/logbook.svg", alt: "A student logging a clinical case on her phone", width: 792, height: 1277 },
   },
   {
     label: "Coordinators & clinical sites",
@@ -29,7 +29,7 @@ const MODULES = [
     body: "Assign rotations, collect student site preferences, and track supervised hours at every clinical site.",
     background: "#ECEAFE",
     accent: "#5A3BF0",
-    image: { src: "/images/illustrations/placements.svg", alt: "A clinical supervisor in scrubs with a stethoscope" },
+    image: { src: "/images/illustrations/placements.svg", alt: "A clinical supervisor in scrubs with a stethoscope", width: 955, height: 1260 },
   },
   {
     label: "Coordinators & students",
@@ -38,7 +38,7 @@ const MODULES = [
     body: "Verify required documents before placements start, and give every student a supervisor-verified CV.",
     background: "#DDF4F4",
     accent: "#0B7F8F",
-    image: { src: "/images/illustrations/compliance.svg", alt: "A clinician in a white coat" },
+    image: { src: "/images/illustrations/compliance.svg", alt: "A clinician in a white coat", width: 955, height: 1260 },
   },
 ];
 
@@ -82,14 +82,14 @@ export function ModulesShowcase() {
       </div>
       <div
         ref={scroller}
-        className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-10 pt-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ paddingInline: inset, scrollPaddingInline: inset }}
         aria-label="Praxxt Logbook modules"
       >
         {MODULES.map((m) => (
           <article
             key={m.accentWord}
-            className="relative flex min-h-[600px] w-[86vw] max-w-[640px] shrink-0 snap-start flex-col overflow-hidden rounded-[32px] px-8 pt-8 sm:min-h-[680px] sm:w-[560px] sm:px-12 sm:pt-12 lg:w-[640px]"
+            className="group relative flex min-h-[600px] w-[86vw] max-w-[640px] shrink-0 snap-start flex-col overflow-hidden rounded-[32px] px-8 pt-8 transition duration-300 hover:shadow-[0_24px_48px_rgba(37,32,110,.16)] motion-safe:hover:-translate-y-1.5 sm:min-h-[680px] sm:w-[560px] sm:px-12 sm:pt-12 lg:w-[640px]"
             style={{ backgroundColor: m.background, color: INK }}
           >
             <p className="text-sm font-bold uppercase tracking-[0.08em]" style={{ color: BODY }}>
@@ -111,8 +111,14 @@ export function ModulesShowcase() {
                 See it in a demo
               </a>
             </div>
-            <div className="mt-auto flex justify-end pt-6 sm:absolute sm:bottom-0 sm:right-4 sm:pt-0">
-              <Image src={m.image.src} alt={m.image.alt} width={850} height={1200} className="h-[300px] w-auto sm:h-[380px]" />
+            <div className="mt-auto flex justify-end pt-6 sm:absolute sm:bottom-0 sm:right-8 sm:pt-0">
+              <Image
+                src={m.image.src}
+                alt={m.image.alt}
+                width={m.image.width}
+                height={m.image.height}
+                className="h-[300px] w-auto origin-bottom transition-transform duration-500 ease-out motion-safe:group-hover:scale-[1.05] sm:h-[400px]"
+              />
             </div>
           </article>
         ))}

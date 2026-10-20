@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatCedis, PLANS } from "@/lib/anatomy/access";
 
 const INK = "#17153B";
 const BODY = "#4A4867";
@@ -47,9 +46,9 @@ const PRODUCTS: Product[] = [
     background: "#FDE8F0",
     accent: "#D9246B",
     visual: (
-      <div className="-mb-8 flex items-end justify-end sm:-mb-12">
-        <Image src="/images/illustrations/placements.svg" alt="" width={850} height={1200} className="h-[220px] w-auto" />
-        <Image src="/images/illustrations/logbook.svg" alt="" width={850} height={1200} className="-ml-16 h-[200px] w-auto" />
+      <div className="-mb-8 flex origin-bottom-right items-end justify-end transition-transform duration-500 ease-out motion-safe:group-hover:scale-[1.05] sm:-mb-12">
+        <Image src="/images/illustrations/placements.svg" alt="" width={955} height={1260} className="h-[220px] w-auto" />
+        <Image src="/images/illustrations/logbook.svg" alt="" width={792} height={1277} className="-ml-14 h-[200px] w-auto" />
       </div>
     ),
   },
@@ -59,11 +58,8 @@ const PRODUCTS: Product[] = [
     body: "Explore 3,000+ structures in 3D, from skin to bone, on a phone or a laptop.",
     pricing: {
       title: "How it's bought",
-      lines: [
-        `Student ${formatCedis(PLANS.STUDENT.amount!)} a year · Professional ${formatCedis(PLANS.PROFESSIONAL.amount!)} a year`,
-        "Institution plans for whole cohorts",
-        "Free for everyone while we test it",
-      ],
+      // Prices stay off the site while Anatomy is in testing; the plans themselves stay.
+      lines: ["Student and Professional plans, paid yearly", "Institution plans for whole cohorts", "Free for everyone while we test it"],
     },
     primary: { label: "Try it free", href: "/anatomy/start" },
     secondary: { label: "See plans", href: "/anatomy/plans" },
@@ -71,7 +67,7 @@ const PRODUCTS: Product[] = [
     background: "#E6EEFF",
     accent: "#2563EB",
     visual: (
-      <div className="h-[220px] w-[160px] rotate-[2deg] overflow-hidden rounded-[22px] border-4 border-white shadow-[0_18px_40px_rgba(37,32,110,.2)]" style={{ backgroundColor: "#EEF0F5" }}>
+      <div className="h-[220px] w-[160px] rotate-[2deg] overflow-hidden transition-transform duration-500 ease-out motion-safe:group-hover:rotate-0 motion-safe:group-hover:scale-[1.05] rounded-[22px] border-4 border-white shadow-[0_18px_40px_rgba(37,32,110,.2)]" style={{ backgroundColor: "#EEF0F5" }}>
         <Image src="/images/anatomy/anatomy-muscles.webp" alt="" width={640} height={1212} sizes="160px" className="h-full w-full object-cover object-top" />
       </div>
     ),
@@ -95,7 +91,9 @@ export function ProductsShowcase() {
   return (
     <div className="mx-auto mt-12 grid max-w-6xl gap-6 px-6 lg:grid-cols-2">
       {PRODUCTS.map((p) => (
-        <article key={p.name} className="flex flex-col overflow-hidden rounded-[32px] p-8 sm:p-12" style={{ backgroundColor: p.background, color: INK }}>
+        <article
+          key={p.name}
+          className="group flex flex-col overflow-hidden rounded-[32px] p-8 transition duration-300 hover:shadow-[0_24px_48px_rgba(37,32,110,.16)] motion-safe:hover:-translate-y-1.5 sm:p-12" style={{ backgroundColor: p.background, color: INK }}>
           <p className="text-sm font-bold uppercase tracking-[0.08em]" style={{ color: BODY }}>
             {p.label}
           </p>

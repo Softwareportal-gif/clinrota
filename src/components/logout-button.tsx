@@ -1,11 +1,14 @@
-import { signOut } from "@/auth";
+import { auth, signOut } from "@/auth";
+import { loginPageForRole } from "@/lib/role-routes";
 
 export function LogoutButton() {
   return (
     <form
       action={async () => {
         "use server";
-        await signOut({ redirectTo: "/login" });
+        // Back to the login page this account signs in on (admin, Anatomy or clinical).
+        const session = await auth();
+        await signOut({ redirectTo: loginPageForRole(session?.user?.role) });
       }}
     >
       <button

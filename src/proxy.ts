@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { ROLE_HOME, isPublicAnatomyPage, isSharedPath, loginPathFor } from "@/lib/role-routes";
+import { ROLE_HOME, isPublicAnatomyPage, isPublicAuthPage, isSharedPath, loginPathFor } from "@/lib/role-routes";
 
 // Next.js 16 renamed `middleware.ts` to `proxy.ts` (the exported function
 // keeps working as a default export either way). This is the coarse,
@@ -24,7 +24,8 @@ export default auth((req) => {
   // /help and /login. A logged-in visitor still gets bounced off "/" and
   // /login to their dashboard below — /help is the one exception that
   // stays reachable either way, handled with the shared pages below.
-  const isPublicPage = isLoginPage || nextUrl.pathname === "/" || isHelpPage || isPublicAnatomyPage(nextUrl.pathname);
+  const isPublicPage =
+    isLoginPage || isPublicAuthPage(nextUrl.pathname) || nextUrl.pathname === "/" || isHelpPage || isPublicAnatomyPage(nextUrl.pathname);
 
   if (!isLoggedIn) {
     if (isPublicPage) return NextResponse.next();
