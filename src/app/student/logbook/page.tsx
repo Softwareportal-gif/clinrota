@@ -40,6 +40,7 @@ export default async function LogbookPage() {
           status: e.status,
           occurredAt: e.occurredAt,
           clinicalSiteName: e.rotation.clinicalSite.name,
+          wardName: e.wardName,
         }))}
         userId={session.user.id}
       />

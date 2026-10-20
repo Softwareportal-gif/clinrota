@@ -39,7 +39,7 @@ export default async function ReviewEntryPage({
           <h2 className="text-lg font-semibold text-gray-900">{entry.caseTitle}</h2>
           <p className="text-sm text-gray-500">
             {entry.student.user.name} · {entry.rotation.clinicalSite.name}
-            {entry.wardAssignment ? ` — ${entry.wardAssignment.wardName}` : ""} ·{" "}
+            {(entry.wardName ?? entry.wardAssignment?.wardName) ? ` — ${entry.wardName ?? entry.wardAssignment?.wardName}` : ""} ·{" "}
             {new Date(entry.occurredAt).toLocaleDateString()}
           </p>
         </div>

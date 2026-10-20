@@ -3,6 +3,7 @@ import { getStudentProfileByUserId } from "@/lib/student";
 import { prisma } from "@/lib/prisma";
 import { NewCaseFlow } from "./new-case-flow";
 import { parseExtraLogFields } from "@/lib/discipline-template";
+import { wardOptions } from "@/lib/ward";
 import { INK, TEXT_SECONDARY } from "../../dashboard-sections/colors";
 
 export default async function NewLogEntryPage() {
@@ -17,11 +18,16 @@ export default async function NewLogEntryPage() {
       where: { studentId: studentProfile.id, status: "ACTIVE" },
       include: {
         clinicalSite: {
-          include: { wardSupervisorEligibilities: { include: { supervisorProfile: { include: { user: true } } } } },
+          include: {
+            wardSupervisorEligibilities: { include: { supervisorProfile: { include: { user: true } } } },
+            departments: { select: { name: true } },
+          },
         },
         siteDepartment: true,
         supervisor: { include: { user: true } },
         wardAssignments: { where: { endedAt: null }, include: { wardSupervisor: { include: { user: true } } } },
+        // The ward of this student's latest case here, to preselect next time.
+        logEntries: { where: { wardName: { not: null } }, orderBy: { createdAt: "desc" }, take: 1, select: { wardName: true } },
       },
     }),
     prisma.competency.findMany({
@@ -36,6 +42,9 @@ export default async function NewLogEntryPage() {
     siteDepartment: r.siteDepartment,
     supervisor: r.supervisor,
     wardSupervisionEnabled: r.clinicalSite.wardSupervisionEnabled,
+    // Wards to choose from first: the site's wards, plus the last one used.
+    wards: wardOptions([...r.clinicalSite.departments.map((d) => d.name), ...(r.logEntries[0]?.wardName ? [r.logEntries[0].wardName] : [])]),
+    defaultWard: r.logEntries[0]?.wardName ?? r.siteDepartment?.name ?? "",
     eligibleWardSupervisors: r.clinicalSite.wardSupervisorEligibilities.map((e) => ({
       supervisorProfileId: e.supervisorProfileId,
       name: e.supervisorProfile.user.name,

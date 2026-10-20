@@ -19,11 +19,16 @@ type Rotation = {
   siteDepartment: { name: string } | null;
   supervisor: { user: { name: string } };
   wardSupervisionEnabled: boolean;
+  wards: string[]; // the site's wards, to choose from first
+  defaultWard: string; // the ward of the student's last case here, if any
   eligibleWardSupervisors: EligibleWardSupervisor[];
   activeWardAssignment: ActiveWardAssignment | null;
 };
 
 type Competency = { id: string; name: string };
+
+// Picker value for a ward that isn't in the site's list.
+const OTHER_WARD = "__other";
 
 const EMPTY_FIELDS: FieldsState = {
   subjective: "",
@@ -75,6 +80,21 @@ export function NewCaseFlow({
       ? wardOverrides[selectedRotationId]
       : (selectedRotation?.activeWardAssignment ?? null);
   const needsWardSelection = !!selectedRotation?.wardSupervisionEnabled && !activeWardAssignment;
+
+  // Every case starts with its ward (unless ward supervision already fixes
+  // it): one of the site's wards, preselected to the last one used, or
+  // "Other" to type one in. The rest of the form waits until it's chosen.
+  const [wardChoices, setWardChoices] = useState<Record<string, string>>({});
+  const [otherWards, setOtherWards] = useState<Record<string, string>>({});
+  const wardFixed = !!activeWardAssignment;
+  const wardChoice = selectedRotation
+    ? (wardChoices[selectedRotation.id] ??
+      (selectedRotation.wards.length === 0 ? OTHER_WARD : selectedRotation.defaultWard))
+    : "";
+  const otherWard = selectedRotation ? (otherWards[selectedRotation.id] ?? "") : "";
+  const chosenWard = wardFixed ? activeWardAssignment.wardName : wardChoice === OTHER_WARD ? otherWard.trim() : wardChoice;
+  const needsWard = !!selectedRotation && !needsWardSelection && !chosenWard;
+  const formLocked = !selectedRotation || needsWardSelection || needsWard;
 
   if (createdId) {
     return (
@@ -155,6 +175,7 @@ export function NewCaseFlow({
       studentRole: formData.get("studentRole") as EntrustmentLevel,
       occurredAt: new Date().toISOString(),
       wardAssignmentId: activeWardAssignment?.id,
+      wardName: chosenWard || undefined,
     };
 
     const outcome = await submitWithFallback({
@@ -281,10 +302,49 @@ export function NewCaseFlow({
         </form>
       )}
 
+      {selectedRotation && !needsWardSelection && !wardFixed && (
+        <div className="space-y-2 rounded-md border border-blue-200 bg-blue-50/60 p-4">
+          <label htmlFor="wardChoice" className="block text-sm font-semibold text-gray-800">
+            Which ward is this case from?
+          </label>
+          {selectedRotation.wards.length > 0 && (
+            <select
+              id="wardChoice"
+              value={wardChoice}
+              onChange={(e) => setWardChoices((prev) => ({ ...prev, [selectedRotation.id]: e.target.value }))}
+              className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-base"
+            >
+              <option value="" disabled>
+                Select the ward
+              </option>
+              {selectedRotation.wards.map((w) => (
+                <option key={w} value={w}>
+                  {w}
+                </option>
+              ))}
+              <option value={OTHER_WARD}>Other (type the ward)</option>
+            </select>
+          )}
+          {wardChoice === OTHER_WARD && (
+            <input
+              id={selectedRotation.wards.length > 0 ? "otherWard" : "wardChoice"}
+              type="text"
+              value={otherWard}
+              maxLength={80}
+              onChange={(e) => setOtherWards((prev) => ({ ...prev, [selectedRotation.id]: e.target.value }))}
+              placeholder="e.g. Labour Ward"
+              aria-label="Ward name"
+              className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-base"
+            />
+          )}
+          {needsWard && <p className="text-xs text-gray-600">Choose the ward first, then fill in the case.</p>}
+        </div>
+      )}
+
       <form
         onSubmit={handleSubmit}
-        className={`space-y-5 ${!selectedRotation || needsWardSelection ? "pointer-events-none opacity-40" : ""}`}
-        inert={!selectedRotation || needsWardSelection ? true : undefined}
+        className={`space-y-5 ${formLocked ? "pointer-events-none opacity-40" : ""}`}
+        inert={formLocked ? true : undefined}
       >
         <input type="hidden" name="rotationId" value={selectedRotationId} />
 
@@ -343,7 +403,7 @@ export function NewCaseFlow({
 
         <button
           type="submit"
-          disabled={isPending || !selectedRotation || needsWardSelection}
+          disabled={isPending || formLocked}
           className="rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60"
         >
           {isPending ? "Starting..." : "Start entry"}

@@ -43,7 +43,8 @@ export default async function StudentLogbookPage({ params }: { params: Promise<{
                   <div>
                     <p className="text-sm font-medium text-gray-900">{entry.caseTitle}</p>
                     <p className="text-xs text-gray-500">
-                      {entry.rotation.clinicalSite.name} · {new Date(entry.occurredAt).toLocaleDateString()} ·{" "}
+                      {entry.rotation.clinicalSite.name}
+                      {entry.wardName ? ` — ${entry.wardName}` : ""} · {new Date(entry.occurredAt).toLocaleDateString()} ·{" "}
                       {ENTRUSTMENT_LEVEL_LABELS[entry.studentRole]}
                     </p>
                   </div>

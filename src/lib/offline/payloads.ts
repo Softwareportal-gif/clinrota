@@ -16,6 +16,10 @@ export type CreateLogEntryPayload = {
   // per entry, and the server re-validates it regardless. Omitted/undefined
   // when the site doesn't use ward supervision.
   wardAssignmentId?: string;
+  // The ward the case happened on, chosen first in the new-case form.
+  // Optional only so entries queued offline by an older version of the app
+  // still sync; the form itself always asks for it.
+  wardName?: string;
 };
 
 export type CreateWardAssignmentPayload = {

@@ -13,6 +13,7 @@ type ServerEntry = {
   status: LogEntryStatus;
   occurredAt: Date;
   clinicalSiteName: string;
+  wardName: string | null;
 };
 
 type Row = ServerEntry & { pendingSync: boolean; localOnly: boolean };
@@ -41,6 +42,7 @@ export function LogbookList({
         status: existing?.status ?? "DRAFT",
         occurredAt: new Date(payload.occurredAt),
         clinicalSiteName: "(syncing…)",
+        wardName: payload.wardName ?? null,
         pendingSync: true,
         localOnly: true,
       });
@@ -88,7 +90,8 @@ export function LogbookList({
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-gray-900">{entry.caseTitle}</p>
               <p className="text-xs text-gray-500">
-                {entry.clinicalSiteName} · {entry.occurredAt.toLocaleDateString()}
+                {entry.clinicalSiteName}
+                {entry.wardName ? ` — ${entry.wardName}` : ""} · {entry.occurredAt.toLocaleDateString()}
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">

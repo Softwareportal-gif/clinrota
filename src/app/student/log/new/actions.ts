@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/require-role";
 import { getStudentProfileByUserId } from "@/lib/student";
 import type { CreateLogEntryPayload } from "@/lib/offline/payloads";
+import { normalizeWardName } from "@/lib/ward";
 
 export type CoreResult = { error?: string; ok?: true };
 
@@ -38,6 +39,7 @@ export async function createLogEntryCore(payload: CreateLogEntryPayload): Promis
   // supervision but has none active yet (student skipped the step, or it
   // ended between page load and submit) blocks entry creation entirely.
   let wardAssignmentId: string | null = null;
+  let assignedWard: string | null = null;
   if (rotation.clinicalSite.wardSupervisionEnabled) {
     const active = await prisma.wardAssignment.findFirst({
       where: { rotationId: rotation.id, endedAt: null },
@@ -46,7 +48,11 @@ export async function createLogEntryCore(payload: CreateLogEntryPayload): Promis
       return { error: "Select a ward and ward supervisor before logging a case here." };
     }
     wardAssignmentId = active.id;
+    assignedWard = active.wardName;
   }
+  // Under ward supervision the ward is the active assignment's; otherwise
+  // it's the one the student chose first in the form.
+  const wardName = assignedWard ?? normalizeWardName(payload.wardName);
 
   await prisma.logEntry.upsert({
     where: { id: payload.id },
@@ -62,6 +68,7 @@ export async function createLogEntryCore(payload: CreateLogEntryPayload): Promis
       assessment: "",
       plan: "",
       wardAssignmentId,
+      wardName,
       competencies: { create: [{ competencyId: competency.id }] },
     },
     update: {},

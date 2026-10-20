@@ -710,6 +710,11 @@ model LogEntry {
   // and grading both treat null exactly as before. See src/lib/log-entry-review.ts.
   wardAssignmentId String?
 
+  // The ward the case happened on, chosen first when the student logs it
+  // (one of the site's SiteDepartment names, or typed in). Null for entries
+  // logged before students were asked. See src/lib/ward.ts.
+  wardName String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

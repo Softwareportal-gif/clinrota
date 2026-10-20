@@ -37,7 +37,8 @@ export default async function LogEntryDetailPage({
           <div>
             <h2 className="text-lg font-semibold text-gray-900">{entry.caseTitle}</h2>
             <p className="text-sm text-gray-500">
-              {entry.rotation.clinicalSite.name} ·{" "}
+              {entry.rotation.clinicalSite.name}
+              {entry.wardName ? ` — ${entry.wardName}` : ""} ·{" "}
               {new Date(entry.occurredAt).toLocaleDateString()}
             </p>
           </div>
