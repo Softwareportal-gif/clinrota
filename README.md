@@ -178,3 +178,4 @@ Built in phases, checking in after each one:
    competency CRUD + coverage report that had been deferred from Phase 5)
 7. Offline PWA support (service worker + IndexedDB sync queue)
 8. Reporting/export (CSV/PDF) + Unified Student Record view
+
