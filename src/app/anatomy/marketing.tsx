@@ -32,9 +32,11 @@ export function MarketingFrame({ children }: { children: ReactNode }) {
             <Wordmark size={26} />
           </Link>
           <nav className="flex items-center gap-2 text-sm font-bold sm:gap-5">
-            <Link href="/anatomy/plans" className="hidden transition-colors hover:text-[#5A3BF0] sm:inline">
-              Plans
-            </Link>
+            {isAnatomySignupOpen() && (
+              <Link href="/anatomy/plans" className="hidden transition-colors hover:text-[#5A3BF0] sm:inline">
+                Plans
+              </Link>
+            )}
             <Link href="/anatomy/login" className="rounded-full px-3 py-2 transition-colors hover:text-[#5A3BF0]">
               Log in
             </Link>

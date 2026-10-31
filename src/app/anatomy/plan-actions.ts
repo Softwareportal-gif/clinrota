@@ -61,6 +61,8 @@ export async function signUpForTrial(_prev: SignUpState, formData: FormData): Pr
 export async function startMyTrial(): Promise<void> {
   const session = await auth();
   if (!session?.user?.id) redirect("/anatomy/login");
+  // No new trials while Anatomy is "coming soon"; testers already have a plan.
+  if (!isAnatomySignupOpen()) redirect("/#anatomy");
   await startTrial(session.user.id);
   redirect("/anatomy");
 }

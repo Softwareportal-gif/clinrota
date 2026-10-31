@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { allowedSystems, freeTesting, TRIAL_DAYS } from "@/lib/anatomy/access";
-import { isAnatomyOpenTo } from "@/lib/anatomy/preview-access";
+import { isAnatomyOpenTo, isAnatomySignupOpen } from "@/lib/anatomy/preview-access";
 import { accessForUser } from "@/lib/anatomy/subscriptions";
 import { Explorer } from "./explorer";
 import { BRAND, MarketingFrame } from "./marketing";
@@ -21,7 +21,7 @@ export default async function AnatomyPage() {
   if (!isAnatomyOpenTo(session.user.email)) notFound();
 
   const access = await accessForUser(session.user.id, session.user.role);
-  if (access.level === "none") return <NoAccess ended={access.plan !== null} />;
+  if (access.level === "none") return <NoAccess ended={access.plan !== null} open={isAnatomySignupOpen()} />;
 
   return (
     <Explorer
@@ -34,11 +34,21 @@ export default async function AnatomyPage() {
   );
 }
 
-function NoAccess({ ended }: { ended: boolean }) {
+function NoAccess({ ended, open }: { ended: boolean; open: boolean }) {
   return (
     <MarketingFrame>
       <main className="mx-auto max-w-xl px-6 py-20 text-center">
-        {ended ? (
+        {!open ? (
+          <>
+            <h1 className="text-3xl font-extrabold tracking-[-0.02em]">Praxxt Anatomy is coming soon</h1>
+            <p className="mt-3 text-lg" style={{ color: BRAND.body }}>
+              It&apos;s open to our testers for now. Join the waitlist and we&apos;ll email you when it opens.
+            </p>
+            <Link href="/#anatomy" className="mt-8 inline-block rounded-full px-7 py-3.5 font-bold text-white" style={{ background: BRAND.gradient }}>
+              Join the waitlist
+            </Link>
+          </>
+        ) : ended ? (
           <>
             <h1 className="text-3xl font-extrabold tracking-[-0.02em]">Your Praxxt Anatomy access has ended</h1>
             <p className="mt-3 text-lg" style={{ color: BRAND.body }}>
