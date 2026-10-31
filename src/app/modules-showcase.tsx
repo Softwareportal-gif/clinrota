@@ -48,17 +48,17 @@ function Arrow({ direction, onClick }: { direction: "previous" | "next"; onClick
       type="button"
       onClick={onClick}
       aria-label={direction === "previous" ? "Previous module" : "Next module"}
-      className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border bg-white transition hover:border-[#5A3BF0] hover:text-[#5A3BF0] active:scale-95"
+      className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border bg-white transition hover:border-[#5A3BF0] hover:text-[#5A3BF0] active:scale-95"
       style={{ borderColor: "#DCD8F5" }}
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d={direction === "previous" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"} />
       </svg>
     </button>
   );
 }
 
-// Large module cards in a row that scrolls sideways: swipe on a phone, or use
+// Compact module cards in a row that scrolls sideways: swipe on a phone, or use
 // the arrows. Cards snap into place, lined up with the page column.
 export function ModulesShowcase() {
   const scroller = useRef<HTMLDivElement>(null);
@@ -68,7 +68,7 @@ export function ModulesShowcase() {
     const card = el?.querySelector("article");
     if (!el || !card) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    el.scrollBy({ left: direction * (card.getBoundingClientRect().width + 24), behavior: reduce ? "auto" : "smooth" });
+    el.scrollBy({ left: direction * (card.getBoundingClientRect().width + 20), behavior: reduce ? "auto" : "smooth" });
   }
 
   // Lines the first card up with the page's max-w-6xl column (72rem, 1.5rem gutter).
@@ -82,42 +82,42 @@ export function ModulesShowcase() {
       </div>
       <div
         ref={scroller}
-        className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-10 pt-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-10 pt-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ paddingInline: inset, scrollPaddingInline: inset }}
         aria-label="Praxxt Logbook modules"
       >
         {MODULES.map((m) => (
           <article
             key={m.accentWord}
-            className="group relative flex min-h-[600px] w-[86vw] max-w-[640px] shrink-0 snap-start flex-col overflow-hidden rounded-[32px] px-8 pt-8 transition duration-300 hover:shadow-[0_24px_48px_rgba(37,32,110,.16)] motion-safe:hover:-translate-y-1.5 sm:min-h-[680px] sm:w-[560px] sm:px-12 sm:pt-12 lg:w-[640px]"
+            className="group relative flex min-h-[440px] w-[82vw] max-w-[440px] shrink-0 snap-start flex-col overflow-hidden rounded-[24px] px-7 pt-7 transition duration-300 hover:shadow-[0_16px_32px_rgba(37,32,110,.12)] motion-safe:hover:-translate-y-1 sm:min-h-[460px] sm:w-[420px] sm:px-9 sm:pt-9 lg:w-[440px]"
             style={{ backgroundColor: m.background, color: INK }}
           >
-            <p className="text-sm font-bold uppercase tracking-[0.08em]" style={{ color: BODY }}>
+            <p className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: BODY }}>
               {m.label}
             </p>
-            <h3 className="mt-4 text-[40px] font-extrabold leading-[1.02] tracking-[-0.03em] sm:text-[52px]">
+            <h3 className="mt-3 text-[28px] font-extrabold leading-[1.1] tracking-[-0.02em] sm:text-[34px]">
               {m.lead}{" "}
               <span className="font-bold" style={{ fontFamily: SERIF, color: m.accent, letterSpacing: "-0.02em" }}>
                 {m.accentWord}
               </span>
             </h3>
-            <p className="relative z-10 mt-6 max-w-[290px] text-lg leading-relaxed">{m.body}</p>
-            <div className="relative z-10 mt-8">
+            <p className="relative z-10 mt-4 max-w-[240px] text-[15px] leading-relaxed">{m.body}</p>
+            <div className="relative z-10 mt-6">
               <a
                 href="#contact"
-                className="inline-block rounded-full border-2 bg-white/70 px-7 py-3 text-base font-bold transition hover:bg-white"
+                className="inline-block rounded-full border-2 bg-white/70 px-5 py-2 text-sm font-semibold transition hover:bg-white"
                 style={{ borderColor: m.accent }}
               >
                 See it in a demo
               </a>
             </div>
-            <div className="mt-auto flex justify-end pt-6 sm:absolute sm:bottom-0 sm:right-8 sm:pt-0">
+            <div className="mt-auto flex justify-end pt-6 sm:absolute sm:bottom-0 sm:right-6 sm:pt-0">
               <Image
                 src={m.image.src}
                 alt={m.image.alt}
                 width={m.image.width}
                 height={m.image.height}
-                className="h-[300px] w-auto origin-bottom transition-transform duration-500 ease-out motion-safe:group-hover:scale-[1.05] sm:h-[400px]"
+                className="h-[200px] w-auto origin-bottom transition-transform duration-500 ease-out motion-safe:group-hover:scale-[1.03] sm:h-[260px]"
               />
             </div>
           </article>
