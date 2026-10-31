@@ -7,6 +7,7 @@ import { isAnatomyPublic, isAnatomySignupOpen } from "@/lib/anatomy/preview-acce
 import { freeTesting, TRIAL_DAYS } from "@/lib/anatomy/access";
 import { BRAND, MarketingFrame } from "../marketing";
 import { SignUpForm } from "./sign-up-form";
+import { AnatomyWaitlistForm } from "../../anatomy-waitlist-form";
 
 export const metadata: Metadata = { title: "Start your free trial · Praxxt Anatomy" };
 // Depends on the session and launch settings, so never pre-rendered.
@@ -24,6 +25,7 @@ export default async function StartTrialPage() {
   const session = await auth();
   if (session?.user) redirect("/anatomy");
   const free = freeTesting();
+  const open = isAnatomySignupOpen();
 
   return (
     <MarketingFrame>
@@ -33,7 +35,7 @@ export default async function StartTrialPage() {
             className="inline-flex w-fit items-center gap-2 rounded-full border bg-white px-4 py-1.5 text-[13px] font-bold"
             style={{ borderColor: "#FBD5E0", color: "#C2295A" }}
           >
-            {free ? "Free while we test · no card needed" : `${TRIAL_DAYS}-day free trial · no card needed`}
+            {!open ? "Coming soon" : free ? "Free while we test · no card needed" : `${TRIAL_DAYS}-day free trial · no card needed`}
           </span>
           <h1 className="text-4xl font-extrabold leading-tight tracking-[-0.03em] sm:text-5xl">Explore the human body in 3D</h1>
           <p className="text-lg leading-relaxed" style={{ color: BRAND.body }}>
@@ -52,7 +54,7 @@ export default async function StartTrialPage() {
           </div>
         </div>
         <div className="rounded-3xl bg-white p-6 shadow-[0_12px_40px_rgba(37,32,110,.10)] sm:p-8" style={{ border: `1px solid ${BRAND.line}` }}>
-          {isAnatomySignupOpen() ? (
+          {open ? (
             <>
               <h2 className="text-2xl font-extrabold tracking-[-0.02em]">Create your account</h2>
               <p className="mb-6 mt-1 text-sm" style={{ color: BRAND.body }}>
@@ -62,8 +64,12 @@ export default async function StartTrialPage() {
             </>
           ) : (
             <>
-              <h2 className="text-2xl font-extrabold tracking-[-0.02em]">Sign-ups are paused while we test</h2>
-              <p className="mb-6 mt-2 leading-relaxed" style={{ color: BRAND.body }}>
+              <h2 className="text-2xl font-extrabold tracking-[-0.02em]">Praxxt Anatomy is coming soon</h2>
+              <p className="mb-5 mt-2 leading-relaxed" style={{ color: BRAND.body }}>
+                Leave your email and we&apos;ll let you know as soon as it opens.
+              </p>
+              <AnatomyWaitlistForm idPrefix="start-waitlist" />
+              <p className="mb-4 mt-8 text-sm font-bold" style={{ color: BRAND.body }}>
                 Testing Praxxt Anatomy for us? Log in with the tester email and password you were given.
               </p>
               <Link
