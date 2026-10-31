@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { formatCedis, freeTesting, PLANS, TRIAL_DAYS } from "@/lib/anatomy/access";
 import { isPaystackConfigured } from "@/lib/anatomy/paystack";
-import { isAnatomyPublic } from "@/lib/anatomy/preview-access";
+import { isAnatomyPublic, isAnatomySignupOpen } from "@/lib/anatomy/preview-access";
 import { BRAND, MarketingFrame } from "../marketing";
 import { buyPlan } from "../plan-actions";
 
@@ -45,7 +45,8 @@ function Tick() {
 }
 
 export default async function PlansPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  if (!isAnatomyPublic()) notFound();
+  // While Anatomy is "coming soon" (sign-up closed), plans aren't on sale.
+  if (!isAnatomyPublic() || !isAnatomySignupOpen()) notFound();
   const { error } = await searchParams;
   const session = await auth();
   const canPayOnline = isPaystackConfigured();
