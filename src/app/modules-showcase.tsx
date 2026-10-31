@@ -58,7 +58,8 @@ function Arrow({ direction, onClick }: { direction: "previous" | "next"; onClick
   );
 }
 
-// Compact module cards in a row that scrolls sideways: swipe on a phone, or use
+// Compact module cards: three side by side on laptops; on phones and tablets
+// they sit in a row that scrolls sideways: swipe, or use
 // the arrows. Cards snap into place, lined up with the page column.
 export function ModulesShowcase() {
   const scroller = useRef<HTMLDivElement>(null);
@@ -76,32 +77,32 @@ export function ModulesShowcase() {
 
   return (
     <div className="mt-10">
-      <div className="mx-auto mb-6 flex max-w-6xl justify-end gap-3 px-6">
+      <div className="mx-auto mb-6 flex max-w-6xl justify-end gap-3 px-6 lg:hidden">
         <Arrow direction="previous" onClick={() => scroll(-1)} />
         <Arrow direction="next" onClick={() => scroll(1)} />
       </div>
       <div
         ref={scroller}
-        className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-10 pt-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-10 pt-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-3 lg:overflow-visible"
         style={{ paddingInline: inset, scrollPaddingInline: inset }}
         aria-label="Praxxt Logbook modules"
       >
         {MODULES.map((m) => (
           <article
             key={m.accentWord}
-            className="group relative flex min-h-[440px] w-[82vw] max-w-[440px] shrink-0 snap-start flex-col overflow-hidden rounded-[24px] px-7 pt-7 transition duration-300 hover:shadow-[0_16px_32px_rgba(37,32,110,.12)] motion-safe:hover:-translate-y-1 sm:min-h-[460px] sm:w-[420px] sm:px-9 sm:pt-9 lg:w-[440px]"
+            className="group relative flex min-h-[440px] w-[82vw] max-w-[440px] shrink-0 snap-start flex-col overflow-hidden rounded-[24px] px-7 pt-7 transition duration-300 hover:shadow-[0_16px_32px_rgba(37,32,110,.12)] motion-safe:hover:-translate-y-1 sm:min-h-[460px] sm:w-[420px] sm:px-9 sm:pt-9 lg:w-auto lg:max-w-none lg:px-8 lg:pt-8"
             style={{ backgroundColor: m.background, color: INK }}
           >
             <p className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: BODY }}>
               {m.label}
             </p>
-            <h3 className="mt-3 text-[28px] font-extrabold leading-[1.1] tracking-[-0.02em] sm:text-[34px]">
+            <h3 className="mt-3 text-[28px] font-extrabold leading-[1.1] tracking-[-0.02em] sm:text-[34px] lg:text-[30px]">
               {m.lead}{" "}
               <span className="font-bold" style={{ fontFamily: SERIF, color: m.accent, letterSpacing: "-0.02em" }}>
                 {m.accentWord}
               </span>
             </h3>
-            <p className="relative z-10 mt-4 max-w-[240px] text-[15px] leading-relaxed">{m.body}</p>
+            <p className="relative z-10 mt-4 max-w-[240px] text-[15px] lg:max-w-[210px] leading-relaxed">{m.body}</p>
             <div className="relative z-10 mt-6">
               <a
                 href="#contact"
@@ -111,13 +112,13 @@ export function ModulesShowcase() {
                 See it in a demo
               </a>
             </div>
-            <div className="mt-auto flex justify-end pt-6 sm:absolute sm:bottom-0 sm:right-6 sm:pt-0">
+            <div className="mt-auto flex justify-end pt-6 sm:absolute sm:bottom-0 sm:right-6 sm:pt-0 lg:right-4">
               <Image
                 src={m.image.src}
                 alt={m.image.alt}
                 width={m.image.width}
                 height={m.image.height}
-                className="h-[200px] w-auto origin-bottom transition-transform duration-500 ease-out motion-safe:group-hover:scale-[1.03] sm:h-[260px]"
+                className="h-[200px] w-auto origin-bottom transition-transform duration-500 ease-out motion-safe:group-hover:scale-[1.03] sm:h-[260px] lg:h-[190px] xl:h-[220px]"
               />
             </div>
           </article>
