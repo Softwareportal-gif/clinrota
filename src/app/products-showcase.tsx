@@ -53,17 +53,16 @@ const PRODUCTS: Product[] = [
     ),
   },
   {
-    label: "New · For students & professionals",
+    label: "Coming soon · For students & professionals",
     name: "Anatomy",
     body: "Explore 3,000+ structures in 3D, from skin to bone, on a phone or a laptop.",
     pricing: {
       title: "How it's bought",
       // Prices stay off the site while Anatomy is in testing; the plans themselves stay.
-      lines: ["Student and Professional plans, paid yearly", "Institution plans for whole cohorts", "Free for everyone while we test it"],
+      lines: ["Student and Professional plans, paid yearly", "Institution plans for whole cohorts", "Join the waitlist to hear when it opens"],
     },
-    primary: { label: "Try it free", href: "/anatomy/start" },
-    secondary: { label: "See plans", href: "/anatomy/plans" },
-    signIn: { prompt: "Already have an account?", href: "/anatomy/login" },
+    primary: { label: "Join the waitlist", href: "#anatomy" },
+    signIn: { prompt: "Testing it for us?", href: "/anatomy/login" },
     background: "#E6EEFF",
     accent: "#2563EB",
     visual: (

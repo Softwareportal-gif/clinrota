@@ -7,6 +7,7 @@ import { ContactForm } from "./contact-form";
 import { Reveal } from "@/components/reveal";
 import { ModulesShowcase } from "./modules-showcase";
 import { ProductsShowcase } from "./products-showcase";
+import { AnatomyWaitlistForm } from "./anatomy-waitlist-form";
 
 const INK = "#17153B";
 const BODY = "#4A4867";
@@ -177,10 +178,10 @@ export function LandingPage() {
       <div className="px-6 py-2.5 text-[13px] font-medium text-white" style={{ background: `linear-gradient(90deg, ${VIOLET}, ${BLUE} 55%, #0E8FA3)` }}>
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <p>
-            New: Praxxt Anatomy, the human body in 3D.{" "}
-            <Link href="/anatomy/start" className="font-bold underline">
-              Try it free
-            </Link>
+            Coming soon: Praxxt Anatomy, the human body in 3D.{" "}
+            <a href="#anatomy" className="font-bold underline">
+              Join the waitlist
+            </a>
           </p>
           <div className="hidden items-center gap-6 sm:flex">
             <a href="#contact" className="hover:opacity-80">Contact us</a>
@@ -200,7 +201,7 @@ export function LandingPage() {
             <a href="#anatomy" className="flex items-center gap-1.5 transition-colors hover:text-[#5A3BF0]">
               Anatomy
               <span className="rounded-full px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white" style={{ background: "linear-gradient(90deg, #FF5C8A, #5A3BF0)" }}>
-                New
+                Soon
               </span>
             </a>
             <a href="#disciplines" className="transition-colors hover:text-[#5A3BF0]">Disciplines</a>
@@ -251,9 +252,9 @@ export function LandingPage() {
             >
               Book a demo →
             </a>
-            <Link href="/anatomy/start" className="rounded-full border bg-white px-7 py-4 text-base font-bold transition duration-200 hover:border-[#5A3BF0] hover:text-[#5A3BF0] hover:shadow-[0_8px_20px_rgba(37,32,110,.10)] motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-95" style={{ borderColor: "#DCD8F5" }}>
-              Try Anatomy free
-            </Link>
+            <a href="#anatomy" className="rounded-full border bg-white px-7 py-4 text-base font-bold transition duration-200 hover:border-[#5A3BF0] hover:text-[#5A3BF0] hover:shadow-[0_8px_20px_rgba(37,32,110,.10)] motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-95" style={{ borderColor: "#DCD8F5" }}>
+              Anatomy: join the waitlist
+            </a>
           </div>
           <DashboardPreview />
         </div>
@@ -300,8 +301,8 @@ export function LandingPage() {
               Two products, each with its own way in
             </h2>
             <p className="text-lg leading-relaxed" style={{ color: BODY }}>
-              Schools subscribe to Praxxt Logbook for their whole programme. Students and professionals sign up for
-              Praxxt Anatomy themselves.
+              Schools subscribe to Praxxt Logbook for their whole programme. Students and professionals will sign up
+              for Praxxt Anatomy themselves when it launches.
             </p>
           </div>
         </div>
@@ -320,7 +321,7 @@ export function LandingPage() {
               style={{ borderColor: "#FBD5E0", color: "#C2295A" }}
             >
               <span className="h-2 w-2 rounded-full" style={{ background: "linear-gradient(135deg, #FF5C8A, #5A3BF0)" }} />
-              New · Try it free
+              Coming soon
             </span>
             <h2 className="text-3xl font-extrabold leading-tight tracking-[-0.03em] sm:text-5xl">
               Praxxt Anatomy:{" "}
@@ -348,21 +349,17 @@ export function LandingPage() {
                 </li>
               ))}
             </ul>
-            <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
-                href="/anatomy/start"
-                className="w-fit rounded-full px-7 py-4 text-base font-bold text-white transition duration-200 hover:brightness-110 motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-95"
-                style={{ background: "linear-gradient(90deg, #FF5C8A, #5A3BF0)", boxShadow: "0 10px 24px rgba(194,41,90,.25)" }}
-              >
-                Try it free →
-              </Link>
-              <Link
-                href="/anatomy/plans"
-                className="w-fit rounded-full border bg-white px-7 py-4 text-base font-bold transition duration-200 hover:border-[#5A3BF0] hover:text-[#5A3BF0]"
-                style={{ borderColor: "#DCD8F5" }}
-              >
-                See plans
-              </Link>
+            <div className="mt-2 flex flex-col gap-3">
+              <p className="font-bold" style={{ color: INK }}>
+                Be the first to know when it opens.
+              </p>
+              <AnatomyWaitlistForm idPrefix="anatomy-waitlist" />
+              <p className="text-sm" style={{ color: MUTED }}>
+                Testing Praxxt Anatomy for us?{" "}
+                <Link href="/anatomy/login" className="font-bold underline" style={{ color: VIOLET }}>
+                  Log in
+                </Link>
+              </p>
             </div>
           </div>
 
@@ -544,7 +541,7 @@ export function LandingPage() {
             <div className="flex flex-col gap-3 text-[15px]">
               <p className="text-xs font-extrabold uppercase tracking-widest text-white">Platform</p>
               <a href="#platform" className="hover:text-white">Modules</a>
-              <Link href="/anatomy/plans" className="hover:text-white">Anatomy plans</Link>
+              <a href="#anatomy" className="hover:text-white">Anatomy (coming soon)</a>
               <a href="#disciplines" className="hover:text-white">Disciplines</a>
               <a href="#security" className="hover:text-white">Security</a>
             </div>
