@@ -1,6 +1,6 @@
 import Groq from "groq-sdk";
 
-const MODEL = "llama-3.1-8b-instant";
+const MODEL = "openai/gpt-oss-120b";
 
 export const MAX_MESSAGE_LENGTH = 4000;
 export const MAX_HISTORY_MESSAGES = 20;
