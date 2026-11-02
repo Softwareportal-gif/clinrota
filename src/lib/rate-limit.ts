@@ -19,6 +19,7 @@ export const LIMITS = {
   contactForm: { limit: 5, windowMs: 60 * MINUTE },
   supportTicket: { limit: 10, windowMs: 60 * MINUTE },
   assistant: { limit: 15, windowMs: 10 * MINUTE },
+  reasoning: { limit: 30, windowMs: 60 * MINUTE },
   message: { limit: 120, windowMs: 10 * MINUTE },
   // Praxxt Anatomy: new trial accounts per network address, and checkouts per user.
   anatomySignup: { limit: 5, windowMs: 60 * MINUTE },
