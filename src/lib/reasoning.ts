@@ -1,6 +1,6 @@
-import Anthropic from "@anthropic-ai/sdk";
+import Groq from "groq-sdk";
 
-const MODEL = "claude-haiku-5-5";
+const MODEL = "llama-3.3-70b-versatile";
 
 export const MAX_MESSAGE_LENGTH = 4000;
 export const MAX_HISTORY_MESSAGES = 20;
@@ -46,32 +46,24 @@ SCOPE — what you help with:
 export async function* streamReasoningReply(
   history: ChatMessage[]
 ): AsyncGenerator<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     yield "The clinical reasoning AI is not configured yet. Please contact hello@praxxt.com.";
     return;
   }
 
-  const client = new Anthropic({ apiKey });
+  const client = new Groq({ apiKey });
   const trimmed = history.slice(-MAX_HISTORY_MESSAGES);
 
-  const stream = client.messages.stream({
+  const stream = await client.chat.completions.create({
     model: MODEL,
     max_tokens: 4096,
-    system: SYSTEM_PROMPT,
-    messages: trimmed,
+    messages: [{ role: "system", content: SYSTEM_PROMPT }, ...trimmed],
+    stream: true,
   });
 
-  let wroteText = false;
-  for await (const event of stream) {
-    if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-      wroteText = true;
-      yield event.delta.text;
-    }
-  }
-
-  const final = await stream.finalMessage();
-  if (final.stop_reason === "refusal" && !wroteText) {
-    yield "I'm not able to respond to that. Please rephrase your clinical question, or email hello@praxxt.com if you think this is an error.";
+  for await (const chunk of stream) {
+    const text = chunk.choices[0]?.delta?.content;
+    if (text) yield text;
   }
 }

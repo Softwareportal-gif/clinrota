@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { auth } from "@/auth";
 import { consume, ipFrom, LIMITS } from "@/lib/rate-limit";
+// Uses GROQ_API_KEY — set in Vercel env vars
 import {
   streamReasoningReply,
   MAX_MESSAGE_LENGTH,
