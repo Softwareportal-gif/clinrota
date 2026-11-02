@@ -1,7 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-const MODEL = "claude-opus-5-5";
-const EFFORT = "high";
+const MODEL = "claude-haiku-5-5";
 
 export const MAX_MESSAGE_LENGTH = 4000;
 export const MAX_HISTORY_MESSAGES = 20;
@@ -58,8 +57,7 @@ export async function* streamReasoningReply(
 
   const stream = client.messages.stream({
     model: MODEL,
-    max_tokens: 8192,
-    output_config: { effort: EFFORT },
+    max_tokens: 4096,
     system: SYSTEM_PROMPT,
     messages: trimmed,
   });
