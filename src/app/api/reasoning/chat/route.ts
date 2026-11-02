@@ -72,11 +72,8 @@ export async function POST(req: NextRequest) {
         }
       } catch (err) {
         console.error("[reasoning] Streaming failed:", err);
-        controller.enqueue(
-          encoder.encode(
-            "Something went wrong. Please try again, or email hello@praxxt.com."
-          )
-        );
+        const msg = err instanceof Error ? err.message : String(err);
+        controller.enqueue(encoder.encode(`[DEBUG] ${msg}`));
       } finally {
         controller.close();
       }
