@@ -11,7 +11,7 @@ export const ROLE_HOME: Record<Role, string> = {
 
 // Sections every signed-in role can reach, unlike the role homes above:
 // /help (training videos, support tickets) and /anatomy (Body Explorer).
-const SHARED_SECTIONS = ["/help", "/anatomy"];
+const SHARED_SECTIONS = ["/help", "/anatomy", "/reasoning"];
 
 export function isSharedPath(pathname: string): boolean {
   return SHARED_SECTIONS.some((section) => pathname === section || pathname.startsWith(`${section}/`));
