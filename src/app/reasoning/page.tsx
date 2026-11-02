@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, type FormEvent, type KeyboardEvent } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { useState, useRef, useEffect, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -12,6 +10,144 @@ const STARTER_PROMPTS = [
   { label: "Haemoptysis in a young man", text: "Help me work through the differential for a 22-year-old man with haemoptysis." },
   { label: "Chest pain approach", text: "Explain the clinical reasoning approach to a patient presenting with chest pain." },
 ];
+
+// Lightweight markdown renderer (handles the patterns the AI produces)
+function renderInline(text: string): ReactNode[] {
+  const parts: ReactNode[] = [];
+  const re = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`)/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  let key = 0;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    if (m[2]) parts.push(<strong key={key++} className="font-semibold text-gray-900">{m[2]}</strong>);
+    else if (m[3]) parts.push(<em key={key++}>{m[3]}</em>);
+    else if (m[4]) parts.push(<code key={key++} className="rounded bg-gray-100 px-1 py-0.5 font-mono text-xs text-gray-800">{m[4]}</code>);
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+}
+
+function MarkdownContent({ content }: { content: string }) {
+  const lines = content.split("\n");
+  const nodes: ReactNode[] = [];
+  let i = 0;
+  let key = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Heading
+    if (/^#{1,3} /.test(line)) {
+      const level = (line.match(/^#+/) ?? [""])[0].length;
+      const text = line.replace(/^#+\s*/, "");
+      const cls = level === 1
+        ? "mt-4 mb-1 text-base font-bold text-gray-900"
+        : level === 2
+        ? "mt-3 mb-1 text-sm font-semibold text-gray-800 uppercase tracking-wide"
+        : "mt-2 mb-0.5 text-sm font-semibold text-gray-800";
+      nodes.push(<p key={key++} className={cls}>{renderInline(text)}</p>);
+      i++; continue;
+    }
+
+    // Table
+    if (/^\|/.test(line)) {
+      const tableLines: string[] = [];
+      while (i < lines.length && /^\|/.test(lines[i])) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      const rows = tableLines
+        .filter(l => !/^\|[-| :]+\|/.test(l))
+        .map(l => l.replace(/^\||\|$/g, "").split("|").map(c => c.trim()));
+      if (rows.length > 0) {
+        nodes.push(
+          <div key={key++} className="my-3 overflow-x-auto rounded-lg border border-gray-200">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-gray-50 text-left">
+                  {rows[0].map((h, ci) => (
+                    <th key={ci} className="px-3 py-2 font-semibold text-gray-700 border-b border-gray-200">{renderInline(h)}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.slice(1).map((row, ri) => (
+                  <tr key={ri} className={ri % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                    {row.map((cell, ci) => (
+                      <td key={ci} className="px-3 py-2 text-gray-700 align-top border-b border-gray-100">{renderInline(cell)}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      }
+      continue;
+    }
+
+    // Bullet list
+    if (/^[-*•] /.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^[-*•] /.test(lines[i])) {
+        items.push(lines[i].replace(/^[-*•] /, ""));
+        i++;
+      }
+      nodes.push(
+        <ul key={key++} className="my-2 space-y-1 pl-4">
+          {items.map((item, ii) => (
+            <li key={ii} className="flex gap-2 text-gray-700">
+              <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-blue-500" />
+              <span>{renderInline(item)}</span>
+            </li>
+          ))}
+        </ul>
+      );
+      continue;
+    }
+
+    // Numbered list
+    if (/^\d+\. /.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^\d+\. /.test(lines[i])) {
+        items.push(lines[i].replace(/^\d+\. /, ""));
+        i++;
+      }
+      nodes.push(
+        <ol key={key++} className="my-2 space-y-1 pl-4">
+          {items.map((item, ii) => (
+            <li key={ii} className="flex gap-2 text-gray-700">
+              <span className="shrink-0 font-medium text-blue-600">{ii + 1}.</span>
+              <span>{renderInline(item)}</span>
+            </li>
+          ))}
+        </ol>
+      );
+      continue;
+    }
+
+    // Horizontal rule
+    if (/^---+$/.test(line.trim())) {
+      nodes.push(<hr key={key++} className="my-3 border-gray-200" />);
+      i++; continue;
+    }
+
+    // Blank line
+    if (line.trim() === "") {
+      i++; continue;
+    }
+
+    // Paragraph
+    nodes.push(
+      <p key={key++} className="my-1.5 leading-relaxed text-gray-700">{renderInline(line)}</p>
+    );
+    i++;
+  }
+
+  return <div className="space-y-0.5 text-sm">{nodes}</div>;
+}
 
 export default function ReasoningPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -95,7 +231,7 @@ export default function ReasoningPage() {
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden bg-gray-50">
-      {/* Disclaimer banner */}
+      {/* Disclaimer */}
       <div className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs text-amber-800">
         Educational use only — not for real patient care decisions. Emergency? Call 999 / 112.
       </div>
@@ -103,7 +239,6 @@ export default function ReasoningPage() {
       {/* Chat area */}
       <div className="flex-1 overflow-y-auto">
         {messages.length === 0 ? (
-          /* Empty state */
           <div className="mx-auto flex max-w-2xl flex-col items-center px-4 pt-16 pb-8 sm:px-6">
             <div className="mb-5 flex size-16 items-center justify-center rounded-2xl bg-blue-600 shadow-lg">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="size-8">
@@ -112,7 +247,7 @@ export default function ReasoningPage() {
             </div>
             <h1 className="mb-2 text-2xl font-bold text-gray-900">Clinical Reasoning AI</h1>
             <p className="mb-2 text-center text-sm text-gray-500 max-w-md">
-              Present a case, explore a differential, or discuss evidence-based management. I&apos;ll guide you through it step by step.
+              Present a case, explore a differential, or discuss evidence-based management.
             </p>
             <p className="mb-8 text-center text-xs text-gray-400">Powered by Praxxt Reason · West Africa clinical context</p>
             <div className="w-full grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -129,7 +264,6 @@ export default function ReasoningPage() {
             </div>
           </div>
         ) : (
-          /* Messages */
           <div className="mx-auto max-w-2xl space-y-6 px-4 py-6 sm:px-6">
             {messages.map((msg, i) => (
               <div key={i} className={msg.role === "user" ? "flex justify-end" : "flex items-start gap-3"}>
@@ -146,7 +280,7 @@ export default function ReasoningPage() {
                     <p className="whitespace-pre-wrap">{msg.content}</p>
                   </div>
                 ) : (
-                  <div className="min-w-0 flex-1 rounded-2xl rounded-tl-sm bg-white px-5 py-4 text-sm text-gray-800 shadow-sm ring-1 ring-gray-200">
+                  <div className="min-w-0 flex-1 rounded-2xl rounded-tl-sm bg-white px-5 py-4 shadow-sm ring-1 ring-gray-200">
                     {msg.content === "" && loading && i === messages.length - 1 ? (
                       <span className="inline-flex items-center gap-1.5 text-gray-400">
                         <span className="size-1.5 rounded-full bg-current animate-bounce" />
@@ -154,11 +288,7 @@ export default function ReasoningPage() {
                         <span className="size-1.5 rounded-full bg-current animate-bounce [animation-delay:0.3s]" />
                       </span>
                     ) : (
-                      <div className="prose prose-sm max-w-none prose-headings:font-semibold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-relaxed prose-li:text-gray-700 prose-strong:text-gray-900 prose-table:text-xs prose-th:bg-gray-50 prose-th:font-semibold prose-th:text-gray-700 prose-td:text-gray-700 prose-td:align-top prose-a:text-blue-600">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {msg.content}
-                        </ReactMarkdown>
-                      </div>
+                      <MarkdownContent content={msg.content} />
                     )}
                   </div>
                 )}
